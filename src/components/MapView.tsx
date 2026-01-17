@@ -1,11 +1,11 @@
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import { WebView } from 'react-native-webview';
+import React from 'react'
+import { StyleSheet, View } from 'react-native'
+import { WebView } from 'react-native-webview'
 
 interface MapViewProps {
-  latitude: number;
-  longitude: number;
-  city: string;
+  latitude: number
+  longitude: number
+  city: string
 }
 
 export const MapView: React.FC<MapViewProps> = ({ latitude, longitude, city }) => {
@@ -93,7 +93,7 @@ export const MapView: React.FC<MapViewProps> = ({ latitude, longitude, city }) =
         </script>
       </body>
     </html>
-  `;
+  `
 
   return (
     <View style={styles.container}>
@@ -104,8 +104,8 @@ export const MapView: React.FC<MapViewProps> = ({ latitude, longitude, city }) =
         bounces={false}
       />
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -116,4 +116,4 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F1E8',
   },
-});
+})
