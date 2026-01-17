@@ -3,15 +3,39 @@
     "submit": "Valider",
     "cancel": "Annuler",
     "logout": "Se déconnecter",
-    "back": "Retour"
+    "back": "Retour",
+    "delete": "Supprimer",
+    "deleteProfile": "Supprimer le profil",
+    "createProfile": "Créer mon profil"
   },
   "errors": {
     "generic": "Une erreur est survenue",
     "network": "Erreur de connexion",
-    "fillAllFields": "Veuillez remplir tous les champs"
+    "fillAllFields": "Veuillez remplir tous les champs",
+    "profileNotFound": "Profil non trouvé",
+    "usernameTaken": "Ce pseudo est déjà pris",
+    "duplicateValue": "Cette valeur existe déjà",
+    "noPermission": "Tu n'as pas la permission d'effectuer cette action"
   },
   "validation": {
     "required": "Ce champ est requis",
-    "invalidEmail": "Email invalide"
+    "invalidEmail": "Email invalide",
+    "usernameMin": "Minimum 2 caractères",
+    "usernameMax": "Maximum 30 caractères",
+    "usernameChars": "Caractères autorisés : lettres, chiffres, espaces, - _ &",
+    "vanNameRequired": "Le nom du van est requis",
+    "vanNameMax": "Maximum 50 caractères",
+    "vanNameChars": "Caractères autorisés : lettres, chiffres, espaces, - _ '"
+  },
+  "profile": {
+    "deleteTitle": "Supprimer le profil",
+    "deleteConfirmation": "Es-tu sûr de vouloir supprimer ton profil ? Cette action est irréversible.",
+    "setupTitle": "Bienvenue !",
+    "setupSubtitle": "Configure ton profil vanlife",
+    "usernameLabel": "Ton pseudo",
+    "usernamePlaceholder": "Ex: Alex & Dims",
+    "vanNameLabel": "Nom de ton van",
+    "vanNamePlaceholder": "Ex: Marcel, Fernand...",
+    "mainSpecialtyLabel": "Ta spécialité principale"
   }
 }
