@@ -1,6 +1,8 @@
 import React, { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
+  ActivityIndicator,
+  Alert,
   Animated,
   Dimensions,
   Image,
@@ -12,6 +14,7 @@ import {
   View,
 } from 'react-native'
 import { useAuth } from '../contexts/AuthContext'
+import { useDeleteProfile } from '../hooks/useProfiles'
 import { UserProfile } from '../types/user'
 import { SkillBadge } from './SkillBadge'
 
@@ -26,6 +29,7 @@ interface BottomSheetProps {
 export const BottomSheet: React.FC<BottomSheetProps> = ({ profile }) => {
   const { t } = useTranslation(['home', 'common'])
   const { signOut } = useAuth()
+  const { mutate: deleteProfile, isPending: isDeleting } = useDeleteProfile()
   const scrollViewRef = useRef<ScrollView>(null)
   const [sheetHeight] = useState(new Animated.Value(MIN_HEIGHT))
 
@@ -35,6 +39,23 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile }) => {
     } catch (error) {
       console.error('Erreur lors de la déconnexion:', error)
     }
+  }
+
+  const handleDeleteProfile = () => {
+    Alert.alert(t('common:profile.deleteTitle'), t('common:profile.deleteConfirmation'), [
+      { text: t('common:buttons.cancel'), style: 'cancel' },
+      {
+        text: t('common:buttons.delete'),
+        style: 'destructive',
+        onPress: () => {
+          deleteProfile(undefined, {
+            onError: (error: Error) => {
+              Alert.alert(t('common:errors.generic'), error.message)
+            },
+          })
+        },
+      },
+    ])
   }
 
   const panResponder = useRef(
@@ -99,18 +120,20 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile }) => {
           {/* Nom utilisateur + van */}
           <View style={styles.header}>
             <Text style={styles.username}>{profile.username}</Text>
-            <Text style={styles.vanName}>{profile.vanName}</Text>
+            {profile.van_name ? <Text style={styles.vanName}>{profile.van_name}</Text> : null}
           </View>
 
           {/* Badge principal */}
-          <View style={styles.mainBadgeContainer}>
-            <SkillBadge skill={profile.mainSpecialty} isMain />
-          </View>
+          {profile.main_specialty ? (
+            <View style={styles.mainBadgeContainer}>
+              <SkillBadge skill={profile.main_specialty} isMain />
+            </View>
+          ) : null}
 
           {/* Autres badges */}
           <View style={styles.skillsContainer}>
             {profile.skills
-              .filter(skill => skill !== profile.mainSpecialty)
+              .filter(skill => skill !== profile.main_specialty)
               .map(skill => (
                 <SkillBadge key={skill} skill={skill} />
               ))}
@@ -120,21 +143,38 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile }) => {
           <View style={styles.statsContainer}>
             <View style={styles.stat}>
               <Text style={styles.statLabel}>{t('profile.currentCity')}</Text>
-              <Text style={styles.statValue}>{profile.city}</Text>
+              <Text style={styles.statValue}>{profile.city ?? '-'}</Text>
             </View>
             <View style={styles.stat}>
               <Text style={styles.statLabel}>{t('profile.daysOnRoad')}</Text>
-              <Text style={styles.statValue}>{profile.daysOnRoad}</Text>
+              <Text style={styles.statValue}>{profile.days_on_road}</Text>
             </View>
             <View style={styles.stat}>
               <Text style={styles.statLabel}>{t('profile.connections')}</Text>
-              <Text style={styles.statValue}>{profile.connectionsCount}</Text>
+              <Text style={styles.statValue}>{profile.connections_count}</Text>
             </View>
           </View>
 
           {/* Bouton déconnexion */}
-          <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+          <TouchableOpacity
+            style={styles.signOutButton}
+            onPress={handleSignOut}
+            disabled={isDeleting}
+          >
             <Text style={styles.signOutText}>{t('common:buttons.logout')}</Text>
+          </TouchableOpacity>
+
+          {/* Bouton supprimer profil (dev/test) */}
+          <TouchableOpacity
+            style={[styles.deleteButton, isDeleting && styles.buttonDisabled]}
+            onPress={handleDeleteProfile}
+            disabled={isDeleting}
+          >
+            {isDeleting ? (
+              <ActivityIndicator color="#E07A5F" size="small" />
+            ) : (
+              <Text style={styles.deleteButtonText}>{t('common:buttons.deleteProfile')}</Text>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -253,5 +293,22 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  deleteButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#E07A5F',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  deleteButtonText: {
+    color: '#E07A5F',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
 })

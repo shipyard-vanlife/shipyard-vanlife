@@ -1,14 +1,26 @@
 import React from 'react'
-import { StyleSheet, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { WebView } from 'react-native-webview'
 
 interface MapViewProps {
-  latitude: number
-  longitude: number
-  city: string
+  latitude: number | null
+  longitude: number | null
+  city: string | null
 }
 
-export const MapView: React.FC<MapViewProps> = ({ latitude, longitude, city }) => {
+export const MapView: React.FC<MapViewProps> = ({ latitude, longitude }) => {
+  const { t } = useTranslation('home')
+
+  // Si pas de localisation, afficher un état vide
+  if (latitude === null || longitude === null) {
+    return (
+      <View style={[styles.container, styles.noLocation]}>
+        <Text style={styles.noLocationText}>{t('map.noLocation')}</Text>
+      </View>
+    )
+  }
+
   // HTML pour une map interactive Leaflet avec les couleurs du design
   const mapHTML = `
     <!DOCTYPE html>
@@ -115,5 +127,15 @@ const styles = StyleSheet.create({
   webview: {
     flex: 1,
     backgroundColor: '#F5F1E8',
+  },
+  noLocation: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noLocationText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    paddingHorizontal: 40,
   },
 })
