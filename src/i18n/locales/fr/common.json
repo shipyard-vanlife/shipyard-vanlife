@@ -1,0 +1,17 @@
+{
+  "buttons": {
+    "submit": "Valider",
+    "cancel": "Annuler",
+    "logout": "Se déconnecter",
+    "back": "Retour"
+  },
+  "errors": {
+    "generic": "Une erreur est survenue",
+    "network": "Erreur de connexion",
+    "fillAllFields": "Veuillez remplir tous les champs"
+  },
+  "validation": {
+    "required": "Ce champ est requis",
+    "invalidEmail": "Email invalide"
+  }
+}

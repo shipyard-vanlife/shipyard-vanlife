@@ -1,44 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
-  View,
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  Alert,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
-import { useAuth } from '../contexts/AuthContext';
+  View,
+} from 'react-native'
+import { useAuth } from '../contexts/AuthContext'
 
 interface LoginScreenProps {
-  onNavigateToRegister: () => void;
+  onNavigateToRegister: () => void
 }
 
-export const LoginScreen: React.FC<LoginScreenProps> = ({
-  onNavigateToRegister,
-}) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister }) => {
+  const { t } = useTranslation(['login', 'common'])
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const { signIn } = useAuth()
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
-      return;
+      Alert.alert(t('common:errors.generic'), t('common:errors.fillAllFields'))
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
     try {
-      await signIn(email, password);
+      await signIn(email, password)
     } catch (error: any) {
-      Alert.alert('Erreur de connexion', error.message);
+      Alert.alert(t('errors.title'), error.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <KeyboardAvoidingView
@@ -46,11 +46,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       style={styles.container}
     >
       <View style={styles.content}>
-        <Text style={styles.title}>Connexion</Text>
+        <Text style={styles.title}>{t('title')}</Text>
 
         <TextInput
           style={styles.input}
-          placeholder="Email"
+          placeholder={t('email')}
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
@@ -60,7 +60,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
         <TextInput
           style={styles.input}
-          placeholder="Mot de passe"
+          placeholder={t('password')}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
@@ -75,7 +75,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Se connecter</Text>
+            <Text style={styles.buttonText}>{t('submit')}</Text>
           )}
         </TouchableOpacity>
 
@@ -84,14 +84,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           disabled={loading}
           style={styles.linkContainer}
         >
-          <Text style={styles.linkText}>
-            Pas de compte ? Créer un compte
-          </Text>
+          <Text style={styles.linkText}>{t('noAccount')}</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -140,4 +138,4 @@ const styles = StyleSheet.create({
     color: '#007AFF',
     fontSize: 14,
   },
-});
+})

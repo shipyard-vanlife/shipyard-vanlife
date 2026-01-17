@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
-import { useAuth } from '../contexts/AuthContext';
-import { BottomSheet } from '../components/BottomSheet';
-import { MapView } from '../components/MapView';
-import { UserProfile } from '../types/user';
+import React, { useState } from 'react'
+import { StyleSheet, View, Text } from 'react-native'
+import { useAuth } from '../contexts/AuthContext'
+import { BottomSheet } from '../components/BottomSheet'
+import { MapView } from '../components/MapView'
+import { UserProfile } from '../types/user'
 
 export const HomeScreen: React.FC = () => {
-  const { user } = useAuth();
+  const { user } = useAuth()
 
   // Mock data - à remplacer par les vraies données Supabase
   const [userProfile, setUserProfile] = useState<UserProfile>({
@@ -21,7 +21,7 @@ export const HomeScreen: React.FC = () => {
     skills: ['mechanic', 'electricity', 'carpentry'],
     daysOnRoad: 127,
     connectionsCount: 23,
-  });
+  })
 
   return (
     <View style={styles.container}>
@@ -40,8 +40,8 @@ export const HomeScreen: React.FC = () => {
 
       <BottomSheet profile={userProfile} />
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -72,4 +72,4 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 2,
   },
-});
+})

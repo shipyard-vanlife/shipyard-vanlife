@@ -1,0 +1,17 @@
+{
+  "buttons": {
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "logout": "Log out",
+    "back": "Back"
+  },
+  "errors": {
+    "generic": "An error occurred",
+    "network": "Connection error",
+    "fillAllFields": "Please fill in all fields"
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "mechanic": "Mechanic",
+  "plumbing": "Plumbing",
+  "decoration": "Decor/Design",
+  "construction": "Construction",
+  "electricity": "Electricity",
+  "carpentry": "Carpentry"
+}

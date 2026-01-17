@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   View,
   Text,
@@ -9,52 +9,50 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native';
-import { useAuth } from '../contexts/AuthContext';
+} from 'react-native'
+import { useTranslation } from 'react-i18next'
+import { useAuth } from '../contexts/AuthContext'
 
 interface RegisterScreenProps {
-  onNavigateToLogin: () => void;
+  onNavigateToLogin: () => void
 }
 
-export const RegisterScreen: React.FC<RegisterScreenProps> = ({
-  onNavigateToLogin,
-}) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { signUp } = useAuth();
+export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogin }) => {
+  const { t } = useTranslation(['register', 'common'])
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const { signUp } = useAuth()
 
   const handleRegister = async () => {
     if (!email || !password || !confirmPassword) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
-      return;
+      Alert.alert(t('common:errors.generic'), t('common:errors.fillAllFields'))
+      return
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('Erreur', 'Les mots de passe ne correspondent pas');
-      return;
+      Alert.alert(t('common:errors.generic'), t('errors.passwordMismatch'))
+      return
     }
 
     if (password.length < 6) {
-      Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
-      return;
+      Alert.alert(t('common:errors.generic'), t('errors.passwordTooShort', { min: 6 }))
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
     try {
-      await signUp(email, password);
-      Alert.alert(
-        'Succès',
-        'Compte créé avec succès ! Vérifiez votre email pour confirmer votre compte.',
-        [{ text: 'OK', onPress: onNavigateToLogin }]
-      );
+      await signUp(email, password)
+      Alert.alert(t('success.title'), t('success.message'), [
+        { text: 'OK', onPress: onNavigateToLogin },
+      ])
     } catch (error: any) {
-      Alert.alert('Erreur d\'inscription', error.message);
+      Alert.alert(t('errors.title'), error.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <KeyboardAvoidingView
@@ -62,11 +60,11 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
       style={styles.container}
     >
       <View style={styles.content}>
-        <Text style={styles.title}>Créer un compte</Text>
+        <Text style={styles.title}>{t('title')}</Text>
 
         <TextInput
           style={styles.input}
-          placeholder="Email"
+          placeholder={t('email')}
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
@@ -76,7 +74,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
 
         <TextInput
           style={styles.input}
-          placeholder="Mot de passe"
+          placeholder={t('password')}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
@@ -85,7 +83,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
 
         <TextInput
           style={styles.input}
-          placeholder="Confirmer le mot de passe"
+          placeholder={t('confirmPassword')}
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           secureTextEntry
@@ -100,7 +98,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>S'inscrire</Text>
+            <Text style={styles.buttonText}>{t('submit')}</Text>
           )}
         </TouchableOpacity>
 
@@ -109,14 +107,12 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
           disabled={loading}
           style={styles.linkContainer}
         >
-          <Text style={styles.linkText}>
-            Déjà un compte ? Se connecter
-          </Text>
+          <Text style={styles.linkText}>{t('hasAccount')}</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -165,4 +161,4 @@ const styles = StyleSheet.create({
     color: '#007AFF',
     fontSize: 14,
   },
-});
+})
