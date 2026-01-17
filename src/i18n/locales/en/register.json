@@ -1,0 +1,17 @@
+{
+  "title": "Create account",
+  "email": "Email",
+  "password": "Password",
+  "confirmPassword": "Confirm password",
+  "submit": "Sign up",
+  "hasAccount": "Already have an account? Sign in",
+  "success": {
+    "title": "Success",
+    "message": "Account created successfully! Check your email to confirm your account."
+  },
+  "errors": {
+    "title": "Registration error",
+    "passwordMismatch": "Passwords do not match",
+    "passwordTooShort": "Password must be at least {{min}} characters"
+  }
+}

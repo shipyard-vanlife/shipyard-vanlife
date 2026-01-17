@@ -1,0 +1,10 @@
+{
+  "title": "Login",
+  "email": "Email",
+  "password": "Password",
+  "submit": "Sign in",
+  "noAccount": "No account? Create one",
+  "errors": {
+    "title": "Login error"
+  }
+}

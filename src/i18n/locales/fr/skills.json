@@ -1,0 +1,8 @@
+{
+  "mechanic": "Mécanique",
+  "plumbing": "Plomberie",
+  "decoration": "Décor/Aménagement",
+  "construction": "Travaux/Construction",
+  "electricity": "Électricité",
+  "carpentry": "Menuiserie"
+}

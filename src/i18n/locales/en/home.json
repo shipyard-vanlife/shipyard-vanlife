@@ -1,0 +1,10 @@
+{
+  "profile": {
+    "currentCity": "Current city",
+    "daysOnRoad": "Days on the road",
+    "connections": "Connections"
+  },
+  "map": {
+    "loading": "Loading map..."
+  }
+}

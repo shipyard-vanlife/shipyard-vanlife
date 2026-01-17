@@ -1,0 +1,17 @@
+{
+  "title": "Créer un compte",
+  "email": "Email",
+  "password": "Mot de passe",
+  "confirmPassword": "Confirmer le mot de passe",
+  "submit": "S'inscrire",
+  "hasAccount": "Déjà un compte ? Se connecter",
+  "success": {
+    "title": "Succès",
+    "message": "Compte créé avec succès ! Vérifiez votre email pour confirmer votre compte."
+  },
+  "errors": {
+    "title": "Erreur d'inscription",
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "passwordTooShort": "Le mot de passe doit contenir au moins {{min}} caractères"
+  }
+}

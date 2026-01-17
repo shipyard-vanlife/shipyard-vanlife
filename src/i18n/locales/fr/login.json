@@ -1,0 +1,10 @@
+{
+  "title": "Connexion",
+  "email": "Email",
+  "password": "Mot de passe",
+  "submit": "Se connecter",
+  "noAccount": "Pas de compte ? Créer un compte",
+  "errors": {
+    "title": "Erreur de connexion"
+  }
+}
