@@ -1,48 +1,50 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-  ScrollView,
-  Dimensions,
   Animated,
+  Dimensions,
+  Image,
   PanResponder,
-} from 'react-native';
-import { UserProfile } from '../types/user';
-import { SkillBadge } from './SkillBadge';
-import { useAuth } from '../contexts/AuthContext';
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native'
+import { useAuth } from '../contexts/AuthContext'
+import { UserProfile } from '../types/user'
+import { SkillBadge } from './SkillBadge'
 
-const SCREEN_HEIGHT = Dimensions.get('window').height;
-const MIN_HEIGHT = 280;
-const MAX_HEIGHT = SCREEN_HEIGHT * 0.9;
+const SCREEN_HEIGHT = Dimensions.get('window').height
+const MIN_HEIGHT = 280
+const MAX_HEIGHT = SCREEN_HEIGHT * 0.9
 
 interface BottomSheetProps {
-  profile: UserProfile;
+  profile: UserProfile
 }
 
 export const BottomSheet: React.FC<BottomSheetProps> = ({ profile }) => {
-  const { signOut } = useAuth();
-  const scrollViewRef = useRef<ScrollView>(null);
-  const [sheetHeight] = useState(new Animated.Value(MIN_HEIGHT));
+  const { t } = useTranslation(['home', 'common'])
+  const { signOut } = useAuth()
+  const scrollViewRef = useRef<ScrollView>(null)
+  const [sheetHeight] = useState(new Animated.Value(MIN_HEIGHT))
 
   const handleSignOut = async () => {
     try {
-      await signOut();
+      await signOut()
     } catch (error) {
-      console.error('Erreur lors de la déconnexion:', error);
+      console.error('Erreur lors de la déconnexion:', error)
     }
-  };
+  }
 
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
       onPanResponderMove: (_, gesture) => {
-        const newHeight = MIN_HEIGHT - gesture.dy;
+        const newHeight = MIN_HEIGHT - gesture.dy
         if (newHeight >= MIN_HEIGHT && newHeight <= MAX_HEIGHT) {
-          sheetHeight.setValue(newHeight);
+          sheetHeight.setValue(newHeight)
         }
       },
       onPanResponderRelease: (_, gesture) => {
@@ -51,25 +53,25 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile }) => {
           Animated.spring(sheetHeight, {
             toValue: MAX_HEIGHT,
             useNativeDriver: false,
-          }).start();
+          }).start()
         } else if (gesture.dy > 100) {
           // Swipe down - minimize
           Animated.spring(sheetHeight, {
             toValue: MIN_HEIGHT,
             useNativeDriver: false,
-          }).start();
+          }).start()
         } else {
           // Return to closest state
-          const currentHeight = MIN_HEIGHT - gesture.dy;
-          const target = currentHeight > (MIN_HEIGHT + MAX_HEIGHT) / 2 ? MAX_HEIGHT : MIN_HEIGHT;
+          const currentHeight = MIN_HEIGHT - gesture.dy
+          const target = currentHeight > (MIN_HEIGHT + MAX_HEIGHT) / 2 ? MAX_HEIGHT : MIN_HEIGHT
           Animated.spring(sheetHeight, {
             toValue: target,
             useNativeDriver: false,
-          }).start();
+          }).start()
         }
       },
     })
-  ).current;
+  ).current
 
   return (
     <Animated.View style={[styles.container, { height: sheetHeight }]}>
@@ -84,62 +86,61 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile }) => {
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-
-      <View style={styles.contentContainer}>
-        {/* Photo du van */}
-        <View style={styles.vanPhotoContainer}>
-          <Image
-            source={require('../../assets/van-life.jpg')}
-            style={styles.vanPhoto}
-            resizeMode="cover"
-          />
-        </View>
-
-        {/* Nom utilisateur + van */}
-        <View style={styles.header}>
-          <Text style={styles.username}>{profile.username}</Text>
-          <Text style={styles.vanName}>{profile.vanName}</Text>
-        </View>
-
-        {/* Badge principal */}
-        <View style={styles.mainBadgeContainer}>
-          <SkillBadge skill={profile.mainSpecialty} isMain />
-        </View>
-
-        {/* Autres badges */}
-        <View style={styles.skillsContainer}>
-          {profile.skills
-            .filter((skill) => skill !== profile.mainSpecialty)
-            .map((skill) => (
-              <SkillBadge key={skill} skill={skill} />
-            ))}
-        </View>
-
-        {/* Stats */}
-        <View style={styles.statsContainer}>
-          <View style={styles.stat}>
-            <Text style={styles.statLabel}>Ville actuelle</Text>
-            <Text style={styles.statValue}>{profile.city}</Text>
+        <View style={styles.contentContainer}>
+          {/* Photo du van */}
+          <View style={styles.vanPhotoContainer}>
+            <Image
+              source={require('../../assets/van-life.jpg')}
+              style={styles.vanPhoto}
+              resizeMode="cover"
+            />
           </View>
-          <View style={styles.stat}>
-            <Text style={styles.statLabel}>Jours sur la route</Text>
-            <Text style={styles.statValue}>{profile.daysOnRoad}</Text>
-          </View>
-          <View style={styles.stat}>
-            <Text style={styles.statLabel}>Connexions</Text>
-            <Text style={styles.statValue}>{profile.connectionsCount}</Text>
-          </View>
-        </View>
 
-        {/* Bouton déconnexion */}
-        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-          <Text style={styles.signOutText}>Se déconnecter</Text>
-        </TouchableOpacity>
-      </View>
+          {/* Nom utilisateur + van */}
+          <View style={styles.header}>
+            <Text style={styles.username}>{profile.username}</Text>
+            <Text style={styles.vanName}>{profile.vanName}</Text>
+          </View>
+
+          {/* Badge principal */}
+          <View style={styles.mainBadgeContainer}>
+            <SkillBadge skill={profile.mainSpecialty} isMain />
+          </View>
+
+          {/* Autres badges */}
+          <View style={styles.skillsContainer}>
+            {profile.skills
+              .filter(skill => skill !== profile.mainSpecialty)
+              .map(skill => (
+                <SkillBadge key={skill} skill={skill} />
+              ))}
+          </View>
+
+          {/* Stats */}
+          <View style={styles.statsContainer}>
+            <View style={styles.stat}>
+              <Text style={styles.statLabel}>{t('profile.currentCity')}</Text>
+              <Text style={styles.statValue}>{profile.city}</Text>
+            </View>
+            <View style={styles.stat}>
+              <Text style={styles.statLabel}>{t('profile.daysOnRoad')}</Text>
+              <Text style={styles.statValue}>{profile.daysOnRoad}</Text>
+            </View>
+            <View style={styles.stat}>
+              <Text style={styles.statLabel}>{t('profile.connections')}</Text>
+              <Text style={styles.statValue}>{profile.connectionsCount}</Text>
+            </View>
+          </View>
+
+          {/* Bouton déconnexion */}
+          <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+            <Text style={styles.signOutText}>{t('common:buttons.logout')}</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </Animated.View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -253,4 +254,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-});
+})
