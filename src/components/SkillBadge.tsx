@@ -1,32 +1,23 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
-import { SkillBadge as SkillBadgeType, SKILL_BADGES } from '../types/user';
+import React from 'react'
+import { View, Text, StyleSheet } from 'react-native'
+import { useTranslation } from 'react-i18next'
+import { SkillBadge as SkillBadgeType, SKILL_COLORS } from '../types/user'
 
 interface SkillBadgeProps {
-  skill: SkillBadgeType;
-  isMain?: boolean;
+  skill: SkillBadgeType
+  isMain?: boolean
 }
 
 export const SkillBadge: React.FC<SkillBadgeProps> = ({ skill, isMain = false }) => {
-  const badgeInfo = SKILL_BADGES[skill];
+  const { t } = useTranslation('skills')
+  const color = SKILL_COLORS[skill]
 
   return (
-    <View
-      style={[
-        styles.badge,
-        { backgroundColor: badgeInfo.color },
-        isMain && styles.mainBadge,
-      ]}
-    >
-      {/* TODO: Remplacer par une vraie image de badge
-          Exemple: <Image source={badgeInfo.icon} style={styles.icon} />
-          Pour l'instant, affichage du texte uniquement */}
-      <Text style={[styles.label, isMain && styles.mainLabel]}>
-        {badgeInfo.label}
-      </Text>
+    <View style={[styles.badge, { backgroundColor: color }, isMain && styles.mainBadge]}>
+      <Text style={[styles.label, isMain && styles.mainLabel]}>{t(skill)}</Text>
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   badge: {
@@ -57,4 +48,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
   },
-});
+})
