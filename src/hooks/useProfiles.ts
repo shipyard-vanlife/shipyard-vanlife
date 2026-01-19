@@ -3,6 +3,13 @@ import { supabase } from '../services/supabase'
 import type { NearbyProfile, NearbyProfilesParams, ZoneProfilesParams } from '../types/location'
 import type { ProfileInput, UserProfile } from '../types/user'
 
+// Extended input for profile creation (location optional)
+export interface CreateProfileInput extends ProfileInput {
+  latitude?: number
+  longitude?: number
+  tripName: string
+}
+
 // Query keys
 export const profileKeys = {
   all: ['profiles'] as const,
@@ -97,23 +104,25 @@ export function useZoneProfiles(params: ZoneProfilesParams | null) {
 }
 
 // ============================================
-// CREATE PROFILE
+// CREATE PROFILE (with first trip)
 // ============================================
 
 export function useCreateProfile() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (input: ProfileInput): Promise<void> => {
+    mutationFn: async (input: CreateProfileInput): Promise<void> => {
       const {
         data: { user },
       } = await supabase.auth.getUser()
 
       if (!user) throw new Error('Not authenticated')
 
-      const { error } = await supabase.from('profiles').insert({
+      // 1. Create profile
+      const { error: profileError } = await supabase.from('profiles').insert({
         id: user.id,
         username: input.username,
+        avatar_url: input.avatar_url ?? null,
         van_name: input.van_name ?? null,
         van_photo_url: input.van_photo_url ?? null,
         city: input.city ?? null,
@@ -123,7 +132,30 @@ export function useCreateProfile() {
         is_visible: input.is_visible ?? true,
       })
 
-      if (error) throw error
+      if (profileError) throw profileError
+
+      // 2. Update location and create first trip (only if location provided)
+      const hasLocation = input.latitude !== undefined && input.longitude !== undefined
+
+      if (hasLocation) {
+        const { error: locationError } = await supabase.rpc('update_my_location', {
+          lat: input.latitude,
+          lng: input.longitude,
+          city_name: input.city ?? null,
+        })
+
+        if (locationError) throw locationError
+
+        // 3. Create first trip with first stage
+        const { error: tripError } = await supabase.rpc('create_first_trip', {
+          trip_name: input.tripName,
+          lat: input.latitude,
+          lng: input.longitude,
+          city_name: input.city ?? null,
+        })
+
+        if (tripError) throw tripError
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: profileKeys.my() })

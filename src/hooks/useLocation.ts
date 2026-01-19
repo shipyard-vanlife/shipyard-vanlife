@@ -1,90 +1,108 @@
-import { useState, useEffect } from 'react'
 import * as Location from 'expo-location'
+import { useCallback, useState } from 'react'
+
+export type LocationStatus = 'idle' | 'requesting' | 'granted' | 'denied' | 'error'
+
+export type LocationErrorCode = 'PERMISSION_DENIED' | 'LOCATION_UNAVAILABLE' | 'TIMEOUT' | 'UNKNOWN'
+
+export interface LocationError {
+  code: LocationErrorCode
+  message: string
+}
 
 export interface LocationData {
   latitude: number
   longitude: number
-  city: string
+  city: string | null
 }
 
-
-function randomizeCoordinates(lat: number, lng: number): { latitude: number; longitude: number } {
-  const minRadiusInDegrees = 0.018 // ~2km
-  const maxRadiusInDegrees = 0.09  // ~10km
-
-  // Angle aléatoire (0 à 360 degrés)
-  const angle = Math.random() * 2 * Math.PI
-
-  // Distance aléatoire entre min et max
-  const distance = minRadiusInDegrees + Math.random() * (maxRadiusInDegrees - minRadiusInDegrees)
-
-  // Ajuster la longitude en fonction de la latitude pour une distribution correcte
-  const randomLat = lat + distance * Math.cos(angle)
-  const randomLng = lng + (distance * Math.sin(angle)) / Math.cos(lat * Math.PI / 180)
-
-  return {
-    latitude: randomLat,
-    longitude: randomLng,
-  }
+export interface UseLocationReturn {
+  status: LocationStatus
+  location: LocationData | null
+  error: LocationError | null
+  requestLocation: () => Promise<LocationData | null>
+  isLoading: boolean
 }
 
-
-export function useLocation() {
+export function useLocation(): UseLocationReturn {
+  const [status, setStatus] = useState<LocationStatus>('idle')
   const [location, setLocation] = useState<LocationData | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<LocationError | null>(null)
 
-  const requestLocation = async (): Promise<LocationData | null> => {
-    setLoading(true)
+  const requestLocation = useCallback(async (): Promise<LocationData | null> => {
+    setStatus('requesting')
     setError(null)
 
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync()
+      // Request permission
+      const { status: permissionStatus } = await Location.requestForegroundPermissionsAsync()
 
-      if (status !== 'granted') {
-        setError('Permission de localisation refusée')
-        setLoading(false)
+      if (permissionStatus !== 'granted') {
+        setStatus('denied')
+        setError({
+          code: 'PERMISSION_DENIED',
+          message: 'Location permission was denied',
+        })
         return null
       }
 
-      
-      const currentLocation = await Location.getCurrentPositionAsync({
+      // Get current position
+      const position = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       })
 
-      
-      const [geocode] = await Location.reverseGeocodeAsync({
-        latitude: currentLocation.coords.latitude,
-        longitude: currentLocation.coords.longitude,
-      })
+      const { latitude, longitude } = position.coords
 
-      // Randomiser les coordonnées pour la vie privée
-      const randomized = randomizeCoordinates(
-        currentLocation.coords.latitude,
-        currentLocation.coords.longitude
-      )
-
-      const locationData: LocationData = {
-        latitude: randomized.latitude,
-        longitude: randomized.longitude,
-        city: geocode.city || geocode.subregion || geocode.region || 'Ville inconnue',
+      // Reverse geocode to get city name
+      let city: string | null = null
+      try {
+        const [geocode] = await Location.reverseGeocodeAsync({ latitude, longitude })
+        if (geocode) {
+          // Build city string: "City, Country" or just "City" or "Country"
+          const parts = [geocode.city, geocode.country].filter(Boolean)
+          city = parts.join(', ') || null
+        }
+      } catch {
+        // Reverse geocoding failed, continue without city
+        console.warn('Reverse geocoding failed')
       }
 
+      const locationData: LocationData = { latitude, longitude, city }
       setLocation(locationData)
-      setLoading(false)
+      setStatus('granted')
       return locationData
     } catch (err) {
-      console.error('Erreur de localisation:', err)
-      setError('Impossible de récupérer la localisation')
-      setLoading(false)
+      console.error('Location error:', err)
+
+      let errorCode: LocationErrorCode = 'UNKNOWN'
+      let errorMessage = 'An unknown error occurred'
+
+      if (err instanceof Error) {
+        if (err.message.includes('permission')) {
+          errorCode = 'PERMISSION_DENIED'
+          errorMessage = 'Location permission was denied'
+        } else if (err.message.includes('timeout')) {
+          errorCode = 'TIMEOUT'
+          errorMessage = 'Location request timed out'
+        } else if (err.message.includes('unavailable') || err.message.includes('disabled')) {
+          errorCode = 'LOCATION_UNAVAILABLE'
+          errorMessage = 'Location services are unavailable'
+        } else {
+          errorMessage = err.message
+        }
+      }
+
+      setStatus('error')
+      setError({ code: errorCode, message: errorMessage })
       return null
     }
-  }
+  }, [])
 
   return {
+    status,
     location,
-    loading,
     error,
     requestLocation,
+    isLoading: status === 'requesting',
   }
 }

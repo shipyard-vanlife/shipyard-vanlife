@@ -38,6 +38,38 @@
     "vanNamePlaceholder": "e.g. Marcel, Fernand...",
     "mainSpecialtyLabel": "Your main specialty"
   },
+  "location": {
+    "title": "Your location",
+    "subtitle": "Enable location to connect with vanlifers around you",
+    "requestButton": "Enable location",
+    "requesting": "Getting location...",
+    "granted": "Location obtained",
+    "cityDetected": "You're in {{city}}",
+    "noCityDetected": "GPS position obtained",
+    "required": "Location is required to create your profile",
+    "errors": {
+      "permissionDenied": "You denied location access. Enable it in settings.",
+      "unavailable": "Location is not available on this device",
+      "timeout": "Location request timed out. Try again.",
+      "unknown": "An error occurred while getting location"
+    }
+  },
+  "trip": {
+    "defaultName": "My journey"
+  },
+  "photo": {
+    "addPhoto": "Add",
+    "optional": "Optional",
+    "chooseSource": "Choose a source",
+    "takePhoto": "Take a photo",
+    "fromGallery": "Choose from gallery",
+    "errors": {
+      "permissionDenied": "You denied access. Enable it in settings.",
+      "cancelled": "Selection cancelled",
+      "uploadFailed": "Failed to upload photo",
+      "unknown": "An error occurred"
+    }
+  },
   "terms": {
     "title": "Terms and Conditions",
     "section1Title": "Acceptance of terms",

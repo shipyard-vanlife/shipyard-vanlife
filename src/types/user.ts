@@ -14,6 +14,7 @@ export type SkillBadge = SkillType
 export interface UserProfile {
   id: string
   username: string
+  avatar_url: string | null
   van_name: string | null
   van_photo_url: string | null
   // Exact location (private)
@@ -25,6 +26,7 @@ export interface UserProfile {
   main_specialty: SkillType | null
   skills: SkillType[]
   days_on_road: number
+  total_distance_km: number
   connections_count: number
   is_visible: boolean
   last_location_update: string | null
@@ -35,19 +37,24 @@ export interface UserProfile {
 // Profile creation/update payload
 export interface ProfileInput {
   username: string
+  avatar_url?: string | null
   van_name?: string | null
   van_photo_url?: string | null
-  city?: string | null
+  latitude?: number
+  longitude?: number
+  city?: string
   main_specialty?: SkillType | null
   skills?: SkillType[]
   days_on_road?: number
   is_visible?: boolean
+  tripName?: string
 }
 
 // Database row type (matches Supabase table exactly)
 export interface ProfileRow {
   id: string
   username: string
+  avatar_url: string | null
   van_name: string | null
   van_photo_url: string | null
   location: string | null // PostGIS geography as string
@@ -55,6 +62,7 @@ export interface ProfileRow {
   main_specialty: SkillType | null
   skills: SkillType[] | null
   days_on_road: number
+  total_distance_km: number
   connections_count: number
   is_visible: boolean
   last_location_update: string | null

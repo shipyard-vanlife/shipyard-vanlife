@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -13,19 +12,43 @@ import {
   View,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { useCreateProfile, useUpdateLocation } from '../hooks/useProfiles'
-import { useLocation } from '../hooks/useLocation'
+import { ProfilePhotoInput } from '../components/ProfilePhotoInput'
+import { useImagePicker } from '../hooks/useImagePicker'
+import { useLocation, LocationErrorCode } from '../hooks/useLocation'
+import { useCreateProfile } from '../hooks/useProfiles'
+import { supabase } from '../services/supabase'
 import { ALL_SKILLS, SKILL_COLORS, SkillType } from '../types/user'
 import { createProfileSchema, getFieldErrors, parseSupabaseError } from '../utils/validation'
-import { colors } from '../styles/theme'
+import { colors, spacing, borderRadius, fontSize, fontWeight } from '../styles/theme'
 
 type ProfileFields = { username?: string; van_name?: string }
+
+// Map location error codes to i18n keys
+const locationErrorKeys: Record<LocationErrorCode, string> = {
+  PERMISSION_DENIED: 'location.errors.permissionDenied',
+  LOCATION_UNAVAILABLE: 'location.errors.unavailable',
+  TIMEOUT: 'location.errors.timeout',
+  UNKNOWN: 'location.errors.unknown',
+}
 
 export const ProfileSetupScreen: React.FC = () => {
   const { t } = useTranslation(['common', 'skills'])
   const { mutate: createProfile, isPending } = useCreateProfile()
-  const { mutate: updateLocation } = useUpdateLocation()
-  const { location, loading: locationLoading, error: locationError, requestLocation } = useLocation()
+  const {
+    status: locationStatus,
+    location,
+    error: locationError,
+    requestLocation,
+    isLoading: isLocationLoading,
+  } = useLocation()
+  const {
+    imageUri,
+    isLoading: isImageLoading,
+    error: imageError,
+    pickImage,
+    takePhoto,
+    uploadImage,
+  } = useImagePicker()
 
   const [username, setUsername] = useState('')
   const [vanName, setVanName] = useState('')
@@ -39,14 +62,22 @@ export const ProfileSetupScreen: React.FC = () => {
     }
   }
 
-  const isFormValid = createProfileSchema.safeParse({
+  const formValidation = createProfileSchema.safeParse({
     username: username.trim(),
     van_name: vanName.trim(),
     main_specialty: mainSpecialty,
     skills: mainSpecialty ? [mainSpecialty] : [],
-  }).success
+  })
 
-  const handleSubmit = () => {
+  // Form is valid if form fields are valid (location is optional)
+  const isFormValid = formValidation.success
+
+  const handleRequestLocation = async () => {
+    setGlobalError(null)
+    await requestLocation()
+  }
+
+  const handleSubmit = async () => {
     setFieldErrors({})
     setGlobalError(null)
 
@@ -62,36 +93,38 @@ export const ProfileSetupScreen: React.FC = () => {
       return
     }
 
+    // Upload avatar if selected (get user ID first)
+    let avatarUrl: string | null = null
+    if (imageUri) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (user) {
+        avatarUrl = await uploadImage(user.id)
+      }
+    }
+
     createProfile(
       {
         username: result.data.username,
         van_name: result.data.van_name,
+        avatar_url: avatarUrl,
         main_specialty: result.data.main_specialty ?? null,
         skills: result.data.skills,
-        city: location?.city,
+        latitude: location?.latitude,
+        longitude: location?.longitude,
+        city: location?.city ?? undefined,
+        tripName: t('trip.defaultName'),
       },
       {
-        onSuccess: () => {
-          // Après création du profil, mettre à jour la localisation si elle existe
-          if (location) {
-            updateLocation({
-              latitude: location.latitude,
-              longitude: location.longitude,
-              city: location.city,
-            })
-          }
-        },
         onError: (err: Error) => setGlobalError(parseSupabaseError(err)),
       }
     )
   }
 
-  const handleRequestLocation = async () => {
-    const loc = await requestLocation()
-    if (!loc && locationError) {
-      Alert.alert('Erreur', locationError)
-    }
-  }
+  // Get location error message
+  const locationErrorMessage = locationError ? locationErrorKeys[locationError.code] : null
+  const hasLocation = locationStatus === 'granted' && location !== null
 
   return (
     <KeyboardAvoidingView
@@ -105,10 +138,22 @@ export const ProfileSetupScreen: React.FC = () => {
 
           {globalError ? <Text style={styles.errorBanner}>{t(globalError)}</Text> : null}
 
+          {/* Profile Photo */}
+          <ProfilePhotoInput
+            imageUri={imageUri}
+            isLoading={isImageLoading}
+            error={imageError}
+            onPickImage={pickImage}
+            onTakePhoto={takePhoto}
+            disabled={isPending}
+          />
+
+          {/* Username Input */}
           <Text style={styles.label}>{t('profile.usernameLabel')}</Text>
           <TextInput
             style={[styles.input, fieldErrors.username && styles.inputError]}
             placeholder={t('profile.usernamePlaceholder')}
+            placeholderTextColor={colors.text.muted}
             value={username}
             onChangeText={text => {
               setUsername(text)
@@ -123,10 +168,12 @@ export const ProfileSetupScreen: React.FC = () => {
             <Text style={styles.fieldError}>{t(fieldErrors.username)}</Text>
           ) : null}
 
+          {/* Van Name Input */}
           <Text style={styles.label}>{t('profile.vanNameLabel')}</Text>
           <TextInput
             style={[styles.input, fieldErrors.van_name && styles.inputError]}
             placeholder={t('profile.vanNamePlaceholder')}
+            placeholderTextColor={colors.text.muted}
             value={vanName}
             onChangeText={text => {
               setVanName(text)
@@ -141,6 +188,7 @@ export const ProfileSetupScreen: React.FC = () => {
             <Text style={styles.fieldError}>{t(fieldErrors.van_name)}</Text>
           ) : null}
 
+          {/* Skills Selection */}
           <Text style={styles.label}>{t('profile.mainSpecialtyLabel')}</Text>
           <View style={styles.skillsGrid}>
             {ALL_SKILLS.map(skill => {
@@ -150,12 +198,17 @@ export const ProfileSetupScreen: React.FC = () => {
                   key={skill}
                   style={[
                     styles.skillButton,
-                    { backgroundColor: isSelected ? SKILL_COLORS[skill] : '#f0f0f0' },
+                    { backgroundColor: isSelected ? SKILL_COLORS[skill] : colors.primary.dark },
                   ]}
                   onPress={() => setMainSpecialty(isSelected ? null : skill)}
                   disabled={isPending}
                 >
-                  <Text style={[styles.skillButtonText, { color: isSelected ? '#fff' : '#333' }]}>
+                  <Text
+                    style={[
+                      styles.skillButtonText,
+                      { color: isSelected ? colors.white : colors.text.secondary },
+                    ]}
+                  >
                     {t(`skills:${skill}`)}
                   </Text>
                 </TouchableOpacity>
@@ -163,37 +216,43 @@ export const ProfileSetupScreen: React.FC = () => {
             })}
           </View>
 
-          {/* Localisation */}
-          <Text style={styles.label}>Localisation (optionnel)</Text>
+          {/* Location Section (Optional) */}
+          <View style={styles.locationHeader}>
+            <Text style={styles.label}>{t('location.title')}</Text>
+            <Text style={styles.optionalBadge}>{t('photo.optional')}</Text>
+          </View>
           <TouchableOpacity
-            style={[styles.locationButton, location && styles.locationButtonSuccess]}
+            style={[styles.locationButton, hasLocation && styles.locationButtonSuccess]}
             onPress={handleRequestLocation}
-            disabled={isPending || locationLoading}
+            disabled={isPending || isLocationLoading}
           >
-            {locationLoading ? (
+            {isLocationLoading ? (
               <ActivityIndicator color={colors.white} />
             ) : (
               <>
                 <Ionicons
-                  name={location ? 'checkmark-circle' : 'location'}
+                  name={hasLocation ? 'checkmark-circle' : 'location'}
                   size={20}
                   color={colors.white}
                 />
                 <Text style={styles.locationButtonText}>
-                  {location ? `${location.city}` : 'Activer la localisation'}
+                  {hasLocation ? location.city : t('location.requestButton')}
                 </Text>
               </>
             )}
           </TouchableOpacity>
-          {locationError ? <Text style={styles.fieldError}>{locationError}</Text> : null}
+          {locationErrorMessage ? (
+            <Text style={styles.fieldError}>{t(locationErrorMessage)}</Text>
+          ) : null}
 
+          {/* Submit Button */}
           <TouchableOpacity
             style={[styles.button, (!isFormValid || isPending) && styles.buttonDisabled]}
             onPress={handleSubmit}
             disabled={!isFormValid || isPending}
           >
             {isPending ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={colors.white} />
             ) : (
               <Text style={styles.buttonText}>{t('buttons.createProfile')}</Text>
             )}
@@ -207,106 +266,120 @@ export const ProfileSetupScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.background.card,
   },
   scrollContent: {
     flexGrow: 1,
   },
   content: {
     flex: 1,
-    padding: 20,
+    padding: spacing.xl,
     paddingTop: 60,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 8,
+    fontSize: fontSize.display,
+    fontWeight: fontWeight.bold,
+    color: colors.text.primary,
+    marginBottom: spacing.sm,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 32,
+    fontSize: fontSize.lg,
+    color: colors.text.tertiary,
+    marginBottom: spacing.xxxl,
     textAlign: 'center',
   },
   errorBanner: {
     backgroundColor: '#FEE2E2',
-    color: '#DC2626',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
+    color: colors.error,
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.lg,
     textAlign: 'center',
-    fontWeight: '500',
+    fontWeight: fontWeight.medium,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
-    marginTop: 16,
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.semibold,
+    color: colors.text.primary,
+    marginBottom: spacing.sm,
+    marginTop: spacing.lg,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 15,
-    fontSize: 16,
+    borderColor: colors.border.main,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    fontSize: fontSize.lg,
+    color: colors.text.primary,
+    backgroundColor: colors.white,
   },
   inputError: {
-    borderColor: '#DC2626',
+    borderColor: colors.error,
     borderWidth: 2,
   },
   fieldError: {
-    color: '#DC2626',
-    fontSize: 13,
-    marginTop: 4,
+    color: colors.error,
+    fontSize: fontSize.sm,
+    marginTop: spacing.xs,
   },
   skillsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 8,
+    gap: spacing.sm,
+    marginTop: spacing.sm,
   },
   skillButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.round,
   },
   skillButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.medium,
+  },
+  locationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
+  },
+  optionalBadge: {
+    fontSize: fontSize.xs,
+    color: colors.text.muted,
+    fontStyle: 'italic',
   },
   locationButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.secondary.main,
-    padding: 14,
-    borderRadius: 8,
-    marginTop: 8,
-    gap: 8,
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    gap: spacing.sm,
   },
   locationButtonSuccess: {
     backgroundColor: colors.success,
   },
   locationButtonText: {
     color: colors.white,
-    fontSize: 15,
-    fontWeight: '500',
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.medium,
   },
   button: {
     backgroundColor: colors.secondary.main,
-    padding: 16,
-    borderRadius: 8,
+    padding: spacing.lg,
+    borderRadius: borderRadius.md,
     alignItems: 'center',
-    marginTop: 40,
+    marginTop: spacing.huge,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   buttonText: {
     color: colors.white,
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
   },
 })
