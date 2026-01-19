@@ -9,6 +9,7 @@ export const profileKeys = {
   my: () => [...profileKeys.all, 'my'] as const,
   nearby: (params: NearbyProfilesParams) => [...profileKeys.all, 'nearby', params] as const,
   zone: (params: ZoneProfilesParams) => [...profileKeys.all, 'zone', params] as const,
+  allVisible: () => [...profileKeys.all, 'visible'] as const,
 }
 
 // ============================================
@@ -28,6 +29,22 @@ export function useMyProfile() {
       }
 
       return data as UserProfile
+    },
+  })
+}
+
+// ============================================
+// GET ALL VISIBLE PROFILES (sauf son compte perso évidemment lolilol)
+// ============================================
+
+export function useAllVisibleProfiles() {
+  return useQuery({
+    queryKey: profileKeys.allVisible(),
+    queryFn: async (): Promise<UserProfile[]> => {
+      const { data, error } = await supabase.rpc('get_all_visible_profiles')
+
+      if (error) throw error
+      return (data as UserProfile[]) ?? []
     },
   })
 }

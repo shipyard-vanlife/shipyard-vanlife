@@ -2,14 +2,18 @@ import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { WebView } from 'react-native-webview'
+import { UserProfile } from '../types/user'
+import { colors } from '../styles/theme'
 
 interface MapViewProps {
   latitude: number | null
   longitude: number | null
   city: string | null
+  otherProfiles: UserProfile[]
+  onProfileSelect: (profile: UserProfile) => void
 }
 
-export const MapView: React.FC<MapViewProps> = ({ latitude, longitude }) => {
+export const MapView: React.FC<MapViewProps> = ({ latitude, longitude, otherProfiles, onProfileSelect }) => {
   const { t } = useTranslation('home')
 
   // Si pas de localisation, afficher un état vide
@@ -19,6 +23,23 @@ export const MapView: React.FC<MapViewProps> = ({ latitude, longitude }) => {
         <Text style={styles.noLocationText}>{t('map.noLocation')}</Text>
       </View>
     )
+  }
+
+  // Préparer les données des autres profils pour le JS
+  const profilesData = otherProfiles
+    .filter(p => p.location?.latitude && p.location?.longitude)
+    .map(p => ({
+      id: p.id,
+      username: p.username,
+      lat: p.location!.latitude,
+      lng: p.location!.longitude,
+    }))
+
+  // Debug
+  console.log('🗺️ MapView - Total autres profils:', otherProfiles.length)
+  console.log('🗺️ MapView - Profils avec coordonnées:', profilesData.length)
+  if (profilesData.length > 0) {
+    console.log('🗺️ MapView - Exemple profil:', profilesData[0])
   }
 
   // HTML pour une map interactive Leaflet avec les couleurs du design
@@ -41,13 +62,13 @@ export const MapView: React.FC<MapViewProps> = ({ latitude, longitude }) => {
             width: 100%;
           }
           .leaflet-container {
-            background: #F5F1E8;
+            background: ${colors.primary.main};
           }
           .custom-marker {
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background-color: #E07A5F;
+            background-color: ${colors.secondary.main};
             border: 4px solid #fff;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
             display: flex;
@@ -58,6 +79,25 @@ export const MapView: React.FC<MapViewProps> = ({ latitude, longitude }) => {
             content: '';
             width: 12px;
             height: 12px;
+            border-radius: 50%;
+            background-color: #fff;
+          }
+          .other-marker {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: ${colors.tertiary.main};
+            border: 3px solid #fff;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+          }
+          .other-marker::after {
+            content: '';
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background-color: #fff;
           }
@@ -82,30 +122,69 @@ export const MapView: React.FC<MapViewProps> = ({ latitude, longitude }) => {
             minZoom: 8
           }).addTo(map);
 
-          // Créer un marqueur personnalisé
+          // Créer un marqueur personnalisé pour ma position
           const customIcon = L.divIcon({
             className: 'custom-marker',
             iconSize: [50, 50],
             iconAnchor: [25, 25]
           });
 
-          // Ajouter le marqueur
+          // Ajouter mon marqueur
           L.marker([${latitude}, ${longitude}], {
             icon: customIcon
           }).addTo(map);
 
-          // Cercle de pulse autour du marqueur
+          // Cercle de pulse autour de mon marqueur
           L.circle([${latitude}, ${longitude}], {
-            color: '#E07A5F',
-            fillColor: '#E07A5F',
+            color: '${colors.secondary.main}',
+            fillColor: '${colors.secondary.main}',
             fillOpacity: 0.15,
             radius: 3000,
             weight: 0
           }).addTo(map);
+
+          // Données des autres profils
+          const otherProfiles = ${JSON.stringify(profilesData)};
+
+          // Ajouter les marqueurs des autres profils
+          const otherIcon = L.divIcon({
+            className: 'other-marker',
+            iconSize: [40, 40],
+            iconAnchor: [20, 20]
+          });
+
+          otherProfiles.forEach(profile => {
+            const marker = L.marker([profile.lat, profile.lng], {
+              icon: otherIcon
+            }).addTo(map);
+
+            // Gérer le clic sur le marqueur
+            marker.on('click', () => {
+              window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: 'profileSelect',
+                profileId: profile.id
+              }));
+            });
+          });
         </script>
       </body>
     </html>
   `
+
+  // Gérer les messages de la WebView (clic sur marqueur)
+  const handleMessage = (event: any) => {
+    try {
+      const message = JSON.parse(event.nativeEvent.data)
+      if (message.type === 'profileSelect') {
+        const profile = otherProfiles.find(p => p.id === message.profileId)
+        if (profile) {
+          onProfileSelect(profile)
+        }
+      }
+    } catch (error) {
+      console.error('Error parsing WebView message:', error)
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -114,6 +193,7 @@ export const MapView: React.FC<MapViewProps> = ({ latitude, longitude }) => {
         style={styles.webview}
         scrollEnabled={false}
         bounces={false}
+        onMessage={handleMessage}
       />
     </View>
   )
@@ -122,11 +202,11 @@ export const MapView: React.FC<MapViewProps> = ({ latitude, longitude }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F1E8',
+    backgroundColor: colors.primary.main,
   },
   webview: {
     flex: 1,
-    backgroundColor: '#F5F1E8',
+    backgroundColor: colors.primary.main,
   },
   noLocation: {
     justifyContent: 'center',
@@ -134,7 +214,7 @@ const styles = StyleSheet.create({
   },
   noLocationText: {
     fontSize: 16,
-    color: '#666',
+    color: colors.text.tertiary,
     textAlign: 'center',
     paddingHorizontal: 40,
   },

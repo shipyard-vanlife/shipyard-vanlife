@@ -26,6 +26,15 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-router", "expo-localization"]
+    "plugins": [
+      "expo-router",
+      "expo-localization",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Nous avons besoin de votre position pour afficher les autres utilisateurs autour de vous sur la carte."
+        }
+      ]
+    ]
   }
 }
