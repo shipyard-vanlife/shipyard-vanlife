@@ -37,5 +37,22 @@
     "vanNameLabel": "Nom de ton van",
     "vanNamePlaceholder": "Ex: Marcel, Fernand...",
     "mainSpecialtyLabel": "Ta spécialité principale"
+  },
+  "terms": {
+    "title": "Conditions Générales d'Utilisation",
+    "section1Title": "Acceptation des conditions",
+    "section1Content": "En utilisant l'application Nomli, vous acceptez d'être lié par ces conditions générales d'utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser l'application.",
+    "section2Title": "Description du service",
+    "section2Content": "Nomli est une plateforme de mise en relation dédiée aux passionnés de vanlife. L'application permet aux utilisateurs de partager leurs compétences, de se géolocaliser et d'échanger des services entre membres de la communauté.",
+    "section3Title": "Utilisation des données personnelles",
+    "section3Content": "Vos données personnelles (email, pseudonyme, localisation) sont collectées uniquement dans le but de vous fournir le service. Nous ne partageons pas vos données avec des tiers sans votre consentement. Vous disposez d'un droit d'accès, de modification et de suppression de vos données conformément au RGPD.",
+    "section4Title": "Responsabilités de l'utilisateur",
+    "section4Content": "Vous vous engagez à utiliser l'application de manière responsable et respectueuse. Tout contenu offensant, frauduleux ou illégal est strictement interdit. Vous êtes responsable de la confidentialité de votre compte.",
+    "section5Title": "Limitation de responsabilité",
+    "section5Content": "Nomli agit en tant qu'intermédiaire de mise en relation. Nous ne sommes pas responsables des interactions, transactions ou services échangés entre utilisateurs. Chaque utilisateur est responsable de ses propres actions.",
+    "section6Title": "Modification des conditions",
+    "section6Content": "Nous nous réservons le droit de modifier ces conditions à tout moment. Les utilisateurs seront informés des modifications importantes par notification dans l'application.",
+    "lastUpdate": "Dernière mise à jour : Janvier 2026",
+    "acceptButton": "J'accepte les conditions"
   }
 }
