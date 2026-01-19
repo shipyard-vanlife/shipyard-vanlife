@@ -3,15 +3,39 @@
     "submit": "Submit",
     "cancel": "Cancel",
     "logout": "Log out",
-    "back": "Back"
+    "back": "Back",
+    "delete": "Delete",
+    "deleteProfile": "Delete profile",
+    "createProfile": "Create my profile"
   },
   "errors": {
     "generic": "An error occurred",
     "network": "Connection error",
-    "fillAllFields": "Please fill in all fields"
+    "fillAllFields": "Please fill in all fields",
+    "profileNotFound": "Profile not found",
+    "usernameTaken": "This username is already taken",
+    "duplicateValue": "This value already exists",
+    "noPermission": "You don't have permission to perform this action"
   },
   "validation": {
     "required": "This field is required",
-    "invalidEmail": "Invalid email"
+    "invalidEmail": "Invalid email",
+    "usernameMin": "Minimum 2 characters",
+    "usernameMax": "Maximum 30 characters",
+    "usernameChars": "Allowed characters: letters, numbers, spaces, - _ &",
+    "vanNameRequired": "Van name is required",
+    "vanNameMax": "Maximum 50 characters",
+    "vanNameChars": "Allowed characters: letters, numbers, spaces, - _ '"
+  },
+  "profile": {
+    "deleteTitle": "Delete profile",
+    "deleteConfirmation": "Are you sure you want to delete your profile? This action is irreversible.",
+    "setupTitle": "Welcome!",
+    "setupSubtitle": "Set up your vanlife profile",
+    "usernameLabel": "Your username",
+    "usernamePlaceholder": "e.g. Alex & Dims",
+    "vanNameLabel": "Your van's name",
+    "vanNamePlaceholder": "e.g. Marcel, Fernand...",
+    "mainSpecialtyLabel": "Your main specialty"
   }
 }

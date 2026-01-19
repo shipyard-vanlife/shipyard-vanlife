@@ -5,6 +5,7 @@
     "connections": "Connections"
   },
   "map": {
-    "loading": "Loading map..."
+    "loading": "Loading map...",
+    "noLocation": "No location set. Declare your position to see the map."
   }
 }

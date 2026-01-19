@@ -1,44 +1,48 @@
-import React, { useState } from 'react'
-import { StyleSheet, View, Text } from 'react-native'
-import { useAuth } from '../contexts/AuthContext'
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
 import { BottomSheet } from '../components/BottomSheet'
 import { MapView } from '../components/MapView'
-import { UserProfile } from '../types/user'
+import { useMyProfile } from '../hooks/useProfiles'
 
 export const HomeScreen: React.FC = () => {
-  const { user } = useAuth()
+  const { t } = useTranslation('common')
+  const { data: profile, isLoading } = useMyProfile()
 
-  // Mock data - à remplacer par les vraies données Supabase
-  const [userProfile, setUserProfile] = useState<UserProfile>({
-    id: user?.id || '1',
-    username: 'Alex et Dims',
-    email: user?.email || '',
-    vanName: 'les rebeux',
-    city: 'Paris',
-    latitude: 48.8566,
-    longitude: 2.3522,
-    mainSpecialty: 'mechanic',
-    skills: ['mechanic', 'electricity', 'carpentry'],
-    daysOnRoad: 127,
-    connectionsCount: 23,
-  })
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#E07A5F" />
+      </View>
+    )
+  }
+
+  // Sécurité : ne devrait pas arriver car vérifié dans AuthenticatedApp
+  if (!profile) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>{t('errors.profileNotFound')}</Text>
+      </View>
+    )
+  }
 
   return (
     <View style={styles.container}>
-      {/* Vraie map interactive avec Leaflet */}
+      {/* Carte interactive avec Leaflet */}
       <MapView
-        latitude={userProfile.latitude}
-        longitude={userProfile.longitude}
-        city={userProfile.city}
+        latitude={profile.location?.latitude ?? null}
+        longitude={profile.location?.longitude ?? null}
+        city={profile.city}
       />
 
       {/* Card overlay avec info ville */}
-      <View style={styles.mapOverlay}>
-        <Text style={styles.cityLabel}>{userProfile.city}</Text>
-        <Text style={styles.regionLabel}>Île-de-France</Text>
-      </View>
+      {profile.city ? (
+        <View style={styles.mapOverlay}>
+          <Text style={styles.cityLabel}>{profile.city}</Text>
+        </View>
+      ) : null}
 
-      <BottomSheet profile={userProfile} />
+      <BottomSheet profile={profile} />
     </View>
   )
 }
@@ -47,6 +51,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F5F1E8',
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#F5F1E8',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   mapOverlay: {
     position: 'absolute',
@@ -66,10 +76,5 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#2C2C2C',
-  },
-  regionLabel: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 2,
   },
 })
