@@ -3,6 +3,9 @@
   "email": "Email",
   "password": "Password",
   "confirmPassword": "Confirm password",
+  "passwordRequirements": "Min 8 chars, 1 uppercase, 1 number, 1 special character",
+  "termsPrefix": "I accept the",
+  "termsLink": "terms and conditions",
   "submit": "Sign up",
   "hasAccount": "Already have an account? Sign in",
   "success": {
@@ -12,6 +15,10 @@
   "errors": {
     "title": "Registration error",
     "passwordMismatch": "Passwords do not match",
-    "passwordTooShort": "Password must be at least {{min}} characters"
+    "passwordTooShort": "Password must be at least {{min}} characters",
+    "passwordRequirements": "Password does not meet requirements",
+    "invalidEmail": "Email address is not valid",
+    "suspiciousInput": "Invalid characters detected in input data",
+    "termsRequired": "You must accept the terms and conditions to create an account"
   }
 }

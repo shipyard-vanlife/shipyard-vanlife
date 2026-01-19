@@ -11,7 +11,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
 import { useAuth } from '../contexts/AuthContext'
+import { sanitizeEmail, isValidEmail } from '../utils/security/validation'
 
 interface LoginScreenProps {
   onNavigateToRegister: () => void
@@ -22,6 +24,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister }
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const { signIn } = useAuth()
 
   const handleLogin = async () => {
@@ -30,9 +33,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister }
       return
     }
 
+    // Nettoyage et validation de l'email
+    const cleanEmail = sanitizeEmail(email)
+    if (!isValidEmail(cleanEmail)) {
+      Alert.alert(t('common:errors.generic'), t('errors.invalidEmail'))
+      return
+    }
+
     setLoading(true)
     try {
-      await signIn(email, password)
+      await signIn(cleanEmail, password)
     } catch (error: any) {
       Alert.alert(t('errors.title'), error.message)
     } finally {
@@ -58,14 +68,26 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister }
           editable={!loading}
         />
 
-        <TextInput
-          style={styles.input}
-          placeholder={t('password')}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          editable={!loading}
-        />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={styles.passwordInput}
+            placeholder={t('password')}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            editable={!loading}
+          />
+          <TouchableOpacity
+            style={styles.eyeButton}
+            onPress={() => setShowPassword(!showPassword)}
+          >
+            <Ionicons
+              name={showPassword ? 'eye-off' : 'eye'}
+              size={24}
+              color="#666"
+            />
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
           style={[styles.button, loading && styles.buttonDisabled]}
@@ -94,7 +116,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister }
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F5F1E8',
   },
   content: {
     flex: 1,
@@ -106,21 +128,48 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 40,
     textAlign: 'center',
+    color: '#2C2C2C',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
+    borderColor: '#D4C5B9',
+    backgroundColor: '#fff',
+    borderRadius: 12,
     padding: 15,
     marginBottom: 15,
     fontSize: 16,
+    color: '#2C2C2C',
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#D4C5B9',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginBottom: 15,
+    paddingRight: 10,
+  },
+  passwordInput: {
+    flex: 1,
+    padding: 15,
+    fontSize: 16,
+    color: '#2C2C2C',
+  },
+  eyeButton: {
+    padding: 5,
   },
   button: {
-    backgroundColor: '#007AFF',
-    padding: 15,
-    borderRadius: 8,
+    backgroundColor: '#E07A5F',
+    padding: 16,
+    borderRadius: 12,
     alignItems: 'center',
     marginTop: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   buttonDisabled: {
     opacity: 0.6,
@@ -135,7 +184,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   linkText: {
-    color: '#007AFF',
+    color: '#E07A5F',
     fontSize: 14,
+    fontWeight: '500',
   },
 })

@@ -5,6 +5,7 @@
   "submit": "Sign in",
   "noAccount": "No account? Create one",
   "errors": {
-    "title": "Login error"
+    "title": "Login error",
+    "invalidEmail": "Email address is not valid"
   }
 }

@@ -5,6 +5,7 @@
   "submit": "Se connecter",
   "noAccount": "Pas de compte ? Créer un compte",
   "errors": {
-    "title": "Erreur de connexion"
+    "title": "Erreur de connexion",
+    "invalidEmail": "L'adresse email n'est pas valide"
   }
 }

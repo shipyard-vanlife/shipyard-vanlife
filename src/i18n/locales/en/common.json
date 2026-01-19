@@ -37,5 +37,22 @@
     "vanNameLabel": "Your van's name",
     "vanNamePlaceholder": "e.g. Marcel, Fernand...",
     "mainSpecialtyLabel": "Your main specialty"
+  },
+  "terms": {
+    "title": "Terms and Conditions",
+    "section1Title": "Acceptance of terms",
+    "section1Content": "By using the Nomli application, you agree to be bound by these terms and conditions. If you do not accept these terms, please do not use the application.",
+    "section2Title": "Service description",
+    "section2Content": "Nomli is a networking platform dedicated to vanlife enthusiasts. The application allows users to share their skills, geolocate themselves and exchange services between community members.",
+    "section3Title": "Personal data usage",
+    "section3Content": "Your personal data (email, username, location) is collected solely to provide you with the service. We do not share your data with third parties without your consent. You have the right to access, modify and delete your data in accordance with GDPR.",
+    "section4Title": "User responsibilities",
+    "section4Content": "You agree to use the application responsibly and respectfully. Any offensive, fraudulent or illegal content is strictly prohibited. You are responsible for the confidentiality of your account.",
+    "section5Title": "Limitation of liability",
+    "section5Content": "Nomli acts as a networking intermediary. We are not responsible for interactions, transactions or services exchanged between users. Each user is responsible for their own actions.",
+    "section6Title": "Terms modification",
+    "section6Content": "We reserve the right to modify these terms at any time. Users will be informed of significant changes via in-app notification.",
+    "lastUpdate": "Last updated: January 2026",
+    "acceptButton": "I accept the terms"
   }
 }
