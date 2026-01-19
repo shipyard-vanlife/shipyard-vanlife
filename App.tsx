@@ -5,10 +5,11 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native'
 import { AuthProvider, useAuth } from './src/contexts/AuthContext'
 import { useMyProfile } from './src/hooks/useProfiles'
 import './src/i18n'
-import { HomeScreen } from './src/screens/HomeScreen'
+import { MainNavigator } from './src/navigation/MainNavigator'
 import { LoginScreen } from './src/screens/LoginScreen'
 import { ProfileSetupScreen } from './src/screens/ProfileSetupScreen'
 import { RegisterScreen } from './src/screens/RegisterScreen'
+import { colors } from './src/styles/theme'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,7 +29,7 @@ function AuthenticatedApp() {
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#E07A5F" />
+        <ActivityIndicator size="large" color={colors.secondary.main} />
       </View>
     )
   }
@@ -38,8 +39,8 @@ function AuthenticatedApp() {
     return <ProfileSetupScreen />
   }
 
-  // Profil existe → home
-  return <HomeScreen />
+  // Profil existe → navigation principale
+  return <MainNavigator />
 }
 
 function Navigation() {
@@ -49,7 +50,7 @@ function Navigation() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color={colors.secondary.main} />
       </View>
     )
   }
@@ -79,7 +80,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.primary.main,
     alignItems: 'center',
     justifyContent: 'center',
   },

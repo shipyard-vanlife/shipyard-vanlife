@@ -1,40 +1,26 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
   Alert,
-  Animated,
-  Dimensions,
   Image,
-  PanResponder,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
 import { useAuth } from '../contexts/AuthContext'
-import { useDeleteProfile } from '../hooks/useProfiles'
-import { UserProfile } from '../types/user'
-import { SkillBadge } from './SkillBadge'
+import { useDeleteProfile, useMyProfile } from '../hooks/useProfiles'
 import { colors } from '../styles/theme'
+import { SkillBadge } from '../components/SkillBadge'
 
-const SCREEN_HEIGHT = Dimensions.get('window').height
-const MIN_HEIGHT = 280
-const MAX_HEIGHT = SCREEN_HEIGHT * 0.9
-
-interface BottomSheetProps {
-  profile: UserProfile
-  onClose?: () => void
-}
-
-export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) => {
+export const ProfileScreen: React.FC = () => {
   const { t } = useTranslation(['home', 'common'])
   const { signOut } = useAuth()
+  const { data: profile, isLoading } = useMyProfile()
   const { mutate: deleteProfile, isPending: isDeleting } = useDeleteProfile()
   const scrollViewRef = useRef<ScrollView>(null)
-  const [sheetHeight] = useState(new Animated.Value(MIN_HEIGHT))
 
   const handleSignOut = async () => {
     try {
@@ -61,59 +47,29 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
     ])
   }
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderMove: (_, gesture) => {
-        const newHeight = MIN_HEIGHT - gesture.dy
-        if (newHeight >= MIN_HEIGHT && newHeight <= MAX_HEIGHT) {
-          sheetHeight.setValue(newHeight)
-        }
-      },
-      onPanResponderRelease: (_, gesture) => {
-        if (gesture.dy < -100) {
-          // Swipe up - expand
-          Animated.spring(sheetHeight, {
-            toValue: MAX_HEIGHT,
-            useNativeDriver: false,
-          }).start()
-        } else if (gesture.dy > 100) {
-          // Swipe down - minimize
-          Animated.spring(sheetHeight, {
-            toValue: MIN_HEIGHT,
-            useNativeDriver: false,
-          }).start()
-        } else {
-          // Return to closest state
-          const currentHeight = MIN_HEIGHT - gesture.dy
-          const target = currentHeight > (MIN_HEIGHT + MAX_HEIGHT) / 2 ? MAX_HEIGHT : MIN_HEIGHT
-          Animated.spring(sheetHeight, {
-            toValue: target,
-            useNativeDriver: false,
-          }).start()
-        }
-      },
-    })
-  ).current
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.secondary.main} />
+      </View>
+    )
+  }
+
+  if (!profile) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.errorText}>{t('common:errors.profileNotFound')}</Text>
+      </View>
+    )
+  }
 
   return (
-    <Animated.View style={[styles.container, { height: sheetHeight }]}>
-      <View style={styles.handleContainer} {...panResponder.panHandlers}>
-        <View style={styles.handle} />
-        {onClose && (
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Ionicons name="close" size={24} color={colors.text.primary} />
-          </TouchableOpacity>
-        )}
-      </View>
-
+    <View style={styles.container}>
       <ScrollView
         ref={scrollViewRef}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        bounces={false}
       >
         <View style={styles.contentContainer}>
           {/* Photo du van */}
@@ -179,62 +135,41 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
             disabled={isDeleting}
           >
             {isDeleting ? (
-              <ActivityIndicator color="#E07A5F" size="small" />
+              <ActivityIndicator color={colors.secondary.main} size="small" />
             ) : (
               <Text style={styles.deleteButtonText}>{t('common:buttons.deleteProfile')}</Text>
             )}
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </Animated.View>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+    flex: 1,
     backgroundColor: colors.white,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
   },
-  handleContainer: {
-    width: '100%',
-    paddingVertical: 12,
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: colors.primary.main,
+    justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.white,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    position: 'relative',
   },
-  handle: {
-    width: 40,
-    height: 5,
-    backgroundColor: colors.tertiary.main,
-    borderRadius: 3,
-  },
-  closeButton: {
-    position: 'absolute',
-    right: 16,
-    top: 12,
-    padding: 4,
-    zIndex: 10,
+  errorText: {
+    fontSize: 16,
+    color: colors.text.secondary,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 5,
+    paddingBottom: 100,
   },
   contentContainer: {
     paddingHorizontal: 20,
+    paddingTop: 60,
   },
   vanPhotoContainer: {
     width: '100%',
@@ -245,16 +180,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 16,
-  },
-  placeholderPhoto: {
-    backgroundColor: colors.primary.main,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  placeholderText: {
-    fontSize: 16,
-    color: colors.text.tertiary,
-    fontWeight: '600',
   },
   header: {
     marginBottom: 16,

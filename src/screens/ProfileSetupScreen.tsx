@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -11,17 +12,20 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
-import { useCreateProfile } from '../hooks/useProfiles'
+import { Ionicons } from '@expo/vector-icons'
+import { useCreateProfile, useUpdateLocation } from '../hooks/useProfiles'
+import { useLocation } from '../hooks/useLocation'
 import { ALL_SKILLS, SKILL_COLORS, SkillType } from '../types/user'
 import { createProfileSchema, getFieldErrors, parseSupabaseError } from '../utils/validation'
+import { colors } from '../styles/theme'
 
 type ProfileFields = { username?: string; van_name?: string }
-
-// TODO: ajouter l'histoire de la localissation GPS, avec long, lat, ...
 
 export const ProfileSetupScreen: React.FC = () => {
   const { t } = useTranslation(['common', 'skills'])
   const { mutate: createProfile, isPending } = useCreateProfile()
+  const { mutate: updateLocation } = useUpdateLocation()
+  const { location, loading: locationLoading, error: locationError, requestLocation } = useLocation()
 
   const [username, setUsername] = useState('')
   const [vanName, setVanName] = useState('')
@@ -64,11 +68,29 @@ export const ProfileSetupScreen: React.FC = () => {
         van_name: result.data.van_name,
         main_specialty: result.data.main_specialty ?? null,
         skills: result.data.skills,
+        city: location?.city,
       },
       {
+        onSuccess: () => {
+          // Après création du profil, mettre à jour la localisation si elle existe
+          if (location) {
+            updateLocation({
+              latitude: location.latitude,
+              longitude: location.longitude,
+              city: location.city,
+            })
+          }
+        },
         onError: (err: Error) => setGlobalError(parseSupabaseError(err)),
       }
     )
+  }
+
+  const handleRequestLocation = async () => {
+    const loc = await requestLocation()
+    if (!loc && locationError) {
+      Alert.alert('Erreur', locationError)
+    }
   }
 
   return (
@@ -140,6 +162,30 @@ export const ProfileSetupScreen: React.FC = () => {
               )
             })}
           </View>
+
+          {/* Localisation */}
+          <Text style={styles.label}>Localisation (optionnel)</Text>
+          <TouchableOpacity
+            style={[styles.locationButton, location && styles.locationButtonSuccess]}
+            onPress={handleRequestLocation}
+            disabled={isPending || locationLoading}
+          >
+            {locationLoading ? (
+              <ActivityIndicator color={colors.white} />
+            ) : (
+              <>
+                <Ionicons
+                  name={location ? 'checkmark-circle' : 'location'}
+                  size={20}
+                  color={colors.white}
+                />
+                <Text style={styles.locationButtonText}>
+                  {location ? `${location.city}` : 'Activer la localisation'}
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+          {locationError ? <Text style={styles.fieldError}>{locationError}</Text> : null}
 
           <TouchableOpacity
             style={[styles.button, (!isFormValid || isPending) && styles.buttonDisabled]}
@@ -230,8 +276,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
+  locationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.secondary.main,
+    padding: 14,
+    borderRadius: 8,
+    marginTop: 8,
+    gap: 8,
+  },
+  locationButtonSuccess: {
+    backgroundColor: colors.success,
+  },
+  locationButtonText: {
+    color: colors.white,
+    fontSize: 15,
+    fontWeight: '500',
+  },
   button: {
-    backgroundColor: '#E07A5F',
+    backgroundColor: colors.secondary.main,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
@@ -241,7 +305,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   buttonText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
