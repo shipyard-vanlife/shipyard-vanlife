@@ -65,7 +65,6 @@
     "fromGallery": "Choisir dans la galerie",
     "errors": {
       "permissionDenied": "Tu as refusé l'accès. Active-le dans les paramètres.",
-      "cancelled": "Sélection annulée",
       "uploadFailed": "Échec de l'upload de la photo",
       "unknown": "Une erreur est survenue"
     }
