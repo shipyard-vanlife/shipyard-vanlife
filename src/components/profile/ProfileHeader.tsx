@@ -18,6 +18,7 @@ interface ProfileHeaderProps {
   username: string
   vanName: string | null
   city: string | null
+  daysOnRoad: number
   isOwnProfile: boolean
   // Own profile actions
   onAvatarPress?: () => void
@@ -36,6 +37,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   username,
   vanName,
   city,
+  daysOnRoad,
   isOwnProfile,
   onAvatarPress,
   onEditPress,
@@ -49,11 +51,31 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   const displayName =
     firstname || lastname ? `${firstname ?? ''} ${lastname ?? ''}`.trim() : username
 
-  // Build subtitle: 📍 City · Van Name
+  // Build subtitle: City · Van Name
   const subtitleParts: string[] = []
   if (city) subtitleParts.push(city)
   if (vanName) subtitleParts.push(vanName)
   const subtitle = subtitleParts.join(' · ')
+
+  // Format days on road tagline
+  const getTagline = () => {
+    if (daysOnRoad === 0) return null
+
+    let timeText = ''
+    if (daysOnRoad >= 365) {
+      const years = Math.floor(daysOnRoad / 365)
+      timeText = t('tagline.year', { count: years })
+    } else if (daysOnRoad >= 30) {
+      const months = Math.floor(daysOnRoad / 30)
+      timeText = t('tagline.month', { count: months })
+    } else {
+      timeText = t('tagline.day', { count: daysOnRoad })
+    }
+
+    return `${t('tagline.onRoadFor')} ${timeText}`
+  }
+
+  const tagline = getTagline()
 
   const avatarContent = isUploadingAvatar ? (
     <View style={styles.avatarPlaceholder}>
@@ -69,9 +91,9 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
   return (
     <View style={styles.container}>
-      {/* Top bar for other profile (back + favorite) */}
-      {!isOwnProfile ? (
-        <View style={styles.topBar}>
+      {/* Top bar */}
+      <View style={styles.topBar}>
+        {!isOwnProfile ? (
           <TouchableOpacity
             style={styles.topBarButton}
             onPress={onBackPress}
@@ -79,19 +101,35 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           >
             <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.topBarButton}
-            onPress={onFavoritePress}
-            activeOpacity={0.7}
-          >
-            <Ionicons
-              name={isFavorite ? 'heart' : 'heart-outline'}
-              size={24}
-              color={isFavorite ? colors.error : colors.text.primary}
-            />
-          </TouchableOpacity>
+        ) : (
+          <View style={styles.topBarSpacer} />
+        )}
+
+        <View style={styles.topBarRight}>
+          {!isOwnProfile && onFavoritePress ? (
+            <TouchableOpacity
+              style={styles.topBarButton}
+              onPress={onFavoritePress}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name={isFavorite ? 'heart' : 'heart-outline'}
+                size={24}
+                color={isFavorite ? colors.error : colors.text.primary}
+              />
+            </TouchableOpacity>
+          ) : null}
+          {isOwnProfile && onEditPress ? (
+            <TouchableOpacity
+              style={styles.editChip}
+              onPress={onEditPress}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.editChipText}>{t('header.edit')}</Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
-      ) : null}
+      </View>
 
       {/* Avatar */}
       {isOwnProfile && onAvatarPress ? (
@@ -102,7 +140,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           activeOpacity={0.7}
         >
           {avatarContent}
-          <View style={styles.editBadge}>
+          <View style={styles.cameraBadge}>
             <Ionicons name="camera" size={14} color={colors.white} />
           </View>
         </TouchableOpacity>
@@ -113,28 +151,28 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       {/* Name */}
       <Text style={styles.name}>{displayName}</Text>
 
+      {/* Username */}
+      <Text style={styles.username}>@{username}</Text>
+
       {/* Subtitle: location + van */}
       {subtitle ? (
         <View style={styles.subtitleContainer}>
           <Ionicons
-            name="location-outline"
+            name="location"
             size={14}
-            color={colors.text.tertiary}
+            color={colors.tertiary.main}
             style={styles.locationIcon}
           />
           <Text style={styles.subtitle}>{subtitle}</Text>
         </View>
       ) : null}
 
-      {/* Edit button for own profile */}
-      {isOwnProfile && onEditPress ? (
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={onEditPress}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.editButtonText}>{t('header.edit')}</Text>
-        </TouchableOpacity>
+      {/* Tagline */}
+      {tagline ? (
+        <View style={styles.taglineContainer}>
+          <Text style={styles.tagline}>{tagline}</Text>
+          <Text style={styles.taglineIcon}> 🚐</Text>
+        </View>
       ) : null}
     </View>
   )
@@ -145,33 +183,56 @@ const AVATAR_SIZE = 100
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    paddingVertical: spacing.xl,
+    paddingBottom: spacing.lg,
   },
   topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     width: '100%',
     paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
     marginBottom: spacing.md,
   },
   topBarButton: {
     padding: spacing.sm,
   },
+  topBarSpacer: {
+    width: 40,
+  },
+  topBarRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  editChip: {
+    backgroundColor: colors.white,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+  },
+  editChipText: {
+    color: colors.text.primary,
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.medium,
+  },
   avatarContainer: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
     position: 'relative',
   },
-  editBadge: {
+  cameraBadge: {
     position: 'absolute',
     bottom: 0,
     right: 0,
     backgroundColor: colors.secondary.main,
-    borderRadius: 12,
-    width: 24,
-    height: 24,
+    borderRadius: 14,
+    width: 28,
+    height: 28,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: colors.primary.main,
   },
   avatar: {
@@ -179,7 +240,7 @@ const styles = StyleSheet.create({
     height: AVATAR_SIZE,
     borderRadius: AVATAR_SIZE / 2,
     borderWidth: 3,
-    borderColor: colors.tertiary.main,
+    borderColor: colors.tertiary.light,
   },
   avatarPlaceholder: {
     width: AVATAR_SIZE,
@@ -187,7 +248,7 @@ const styles = StyleSheet.create({
     borderRadius: AVATAR_SIZE / 2,
     backgroundColor: colors.primary.dark,
     borderWidth: 3,
-    borderColor: colors.tertiary.main,
+    borderColor: colors.tertiary.light,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -197,27 +258,34 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     marginBottom: spacing.xs,
   },
+  username: {
+    fontSize: fontSize.base,
+    color: colors.text.tertiary,
+    marginBottom: spacing.sm,
+  },
   subtitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xs,
   },
   locationIcon: {
     marginRight: spacing.xs,
   },
   subtitle: {
     fontSize: fontSize.base,
+    color: colors.text.secondary,
+  },
+  taglineContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.xs,
+  },
+  tagline: {
+    fontSize: fontSize.sm,
     color: colors.text.tertiary,
+    fontStyle: 'italic',
   },
-  editButton: {
-    backgroundColor: colors.text.primary,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.xl,
-    borderRadius: 20,
-  },
-  editButtonText: {
-    color: colors.white,
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
+  taglineIcon: {
+    fontSize: fontSize.sm,
   },
 })
