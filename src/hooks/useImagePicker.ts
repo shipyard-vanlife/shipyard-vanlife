@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import * as ImagePicker from 'expo-image-picker'
 import { supabase } from '../services/supabase'
 
@@ -26,9 +26,22 @@ export function useImagePicker(): UseImagePickerResult {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<ImagePickerError | null>(null)
 
+  // Use ref to track picking state to avoid closure issues
+  const isPickingRef = useRef(false)
+
   const pickImage = useCallback(async () => {
+    if (isPickingRef.current) return
+
+    isPickingRef.current = true
     setError(null)
     setIsLoading(true)
+
+    const safetyTimeout = setTimeout(() => {
+      if (isPickingRef.current) {
+        isPickingRef.current = false
+        setIsLoading(false)
+      }
+    }, 60000)
 
     try {
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync()
@@ -55,16 +68,29 @@ export function useImagePicker(): UseImagePickerResult {
         message: err instanceof Error ? err.message : 'Unknown error',
       })
     } finally {
+      clearTimeout(safetyTimeout)
+      isPickingRef.current = false
       setIsLoading(false)
     }
   }, [])
 
   const takePhoto = useCallback(async () => {
+    if (isPickingRef.current) return
+
+    isPickingRef.current = true
     setError(null)
     setIsLoading(true)
 
+    const safetyTimeout = setTimeout(() => {
+      if (isPickingRef.current) {
+        isPickingRef.current = false
+        setIsLoading(false)
+      }
+    }, 60000)
+
     try {
       const { granted } = await ImagePicker.requestCameraPermissionsAsync()
+
       if (!granted) {
         setError({ code: 'PERMISSION_DENIED', message: 'Camera permission denied' })
         return
@@ -86,6 +112,8 @@ export function useImagePicker(): UseImagePickerResult {
         message: err instanceof Error ? err.message : 'Unknown error',
       })
     } finally {
+      clearTimeout(safetyTimeout)
+      isPickingRef.current = false
       setIsLoading(false)
     }
   }, [])
