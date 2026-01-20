@@ -9,6 +9,7 @@ interface MapViewProps {
   latitude: number | null
   longitude: number | null
   city: string | null
+  myAvatarUrl: string | null
   otherProfiles: UserProfile[]
   onProfileSelect: (profile: UserProfile) => void
 }
@@ -16,12 +17,13 @@ interface MapViewProps {
 export const MapView: React.FC<MapViewProps> = ({
   latitude,
   longitude,
+  myAvatarUrl,
   otherProfiles,
   onProfileSelect,
 }) => {
   const { t } = useTranslation('home')
 
-  // Si pas de localisation, afficher un état vide
+
   if (latitude === null || longitude === null) {
     return (
       <View style={[styles.container, styles.noLocation]}>
@@ -30,7 +32,7 @@ export const MapView: React.FC<MapViewProps> = ({
     )
   }
 
-  // Préparer les données des autres profils pour le JS
+
   const profilesData = otherProfiles
     .filter(p => p.location?.latitude && p.location?.longitude)
     .map(p => ({
@@ -38,6 +40,7 @@ export const MapView: React.FC<MapViewProps> = ({
       username: p.username,
       lat: p.location!.latitude,
       lng: p.location!.longitude,
+      avatarUrl: p.avatar_url,
     }))
 
   // Debug
@@ -47,7 +50,7 @@ export const MapView: React.FC<MapViewProps> = ({
     console.log('🗺️ MapView - Exemple profil:', profilesData[0])
   }
 
-  // HTML pour une map interactive Leaflet avec les couleurs du design
+  
   const mapHTML = `
     <!DOCTYPE html>
     <html>
@@ -79,6 +82,12 @@ export const MapView: React.FC<MapViewProps> = ({
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: hidden;
+          }
+          .custom-marker img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
           }
           .custom-marker::after {
             content: '';
@@ -86,6 +95,9 @@ export const MapView: React.FC<MapViewProps> = ({
             height: 12px;
             border-radius: 50%;
             background-color: #fff;
+          }
+          .custom-marker.has-avatar::after {
+            display: none;
           }
           .other-marker {
             width: 40px;
@@ -98,6 +110,12 @@ export const MapView: React.FC<MapViewProps> = ({
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            overflow: hidden;
+          }
+          .other-marker img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
           }
           .other-marker::after {
             content: '';
@@ -105,6 +123,9 @@ export const MapView: React.FC<MapViewProps> = ({
             height: 10px;
             border-radius: 50%;
             background-color: #fff;
+          }
+          .other-marker.has-avatar::after {
+            display: none;
           }
         </style>
       </head>
@@ -128,8 +149,14 @@ export const MapView: React.FC<MapViewProps> = ({
           }).addTo(map);
 
           // Créer un marqueur personnalisé pour ma position
+          const myAvatarUrl = ${JSON.stringify(myAvatarUrl)};
+          const myMarkerHTML = myAvatarUrl
+            ? '<div class="custom-marker has-avatar"><img src="' + myAvatarUrl + '" /></div>'
+            : '<div class="custom-marker"></div>';
+
           const customIcon = L.divIcon({
-            className: 'custom-marker',
+            html: myMarkerHTML,
+            className: '',
             iconSize: [50, 50],
             iconAnchor: [25, 25]
           });
@@ -152,13 +179,18 @@ export const MapView: React.FC<MapViewProps> = ({
           const otherProfiles = ${JSON.stringify(profilesData)};
 
           // Ajouter les marqueurs des autres profils
-          const otherIcon = L.divIcon({
-            className: 'other-marker',
-            iconSize: [40, 40],
-            iconAnchor: [20, 20]
-          });
-
           otherProfiles.forEach(profile => {
+            const otherMarkerHTML = profile.avatarUrl
+              ? '<div class="other-marker has-avatar"><img src="' + profile.avatarUrl + '" /></div>'
+              : '<div class="other-marker"></div>';
+
+            const otherIcon = L.divIcon({
+              html: otherMarkerHTML,
+              className: '',
+              iconSize: [40, 40],
+              iconAnchor: [20, 20]
+            });
+
             const marker = L.marker([profile.lat, profile.lng], {
               icon: otherIcon
             }).addTo(map);

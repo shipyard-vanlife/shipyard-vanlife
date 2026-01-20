@@ -66,6 +66,7 @@ export const HomeScreen: React.FC = () => {
             latitude={profile.location!.latitude}
             longitude={profile.location!.longitude}
             city={profile.city}
+            myAvatarUrl={profile.avatar_url}
             otherProfiles={otherProfiles ?? []}
             onProfileSelect={setSelectedProfile}
           />
