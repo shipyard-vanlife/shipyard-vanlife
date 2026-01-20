@@ -1,36 +1,53 @@
-import React, { useRef } from 'react'
+import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
   Alert,
-  Image,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { PhotoSourceModal } from '../components/PhotoSourceModal'
+import {
+  ProfileAboutSection,
+  ProfileActionButton,
+  ProfileHeader,
+  ProfilePhotoGallery,
+  ProfileSkillBadges,
+  ProfileStats,
+} from '../components/profile'
 import { useAuth } from '../contexts/AuthContext'
+import { useAvatarUpload } from '../hooks/useAvatarUpload'
 import { useDeleteProfile, useMyProfile } from '../hooks/useProfiles'
-import { colors } from '../styles/theme'
-import { SkillBadge } from '../components/SkillBadge'
+import { borderRadius, colors, fontSize, fontWeight, spacing } from '../styles/theme'
 
 export const ProfileScreen: React.FC = () => {
-  const { t } = useTranslation(['home', 'common'])
-  const { signOut } = useAuth()
+  const { t } = useTranslation(['profile', 'common'])
+  const { signOut, user } = useAuth()
   const { data: profile, isLoading } = useMyProfile()
   const { mutate: deleteProfile, isPending: isDeleting } = useDeleteProfile()
-  const scrollViewRef = useRef<ScrollView>(null)
 
-  const handleSignOut = async () => {
+  const {
+    isUploading: isUploadingAvatar,
+    showModal: showAvatarModal,
+    openModal: handleAvatarPress,
+    closeModal: closeAvatarModal,
+    handlePickImage,
+    handleTakePhoto,
+  } = useAvatarUpload({ userId: user?.id })
+
+  const handleSignOut = useCallback(async () => {
     try {
       await signOut()
-    } catch (error) {
-      console.error('Erreur lors de la déconnexion:', error)
+    } catch {
+      // Error during sign out is handled silently
     }
-  }
+  }, [signOut])
 
-  const handleDeleteProfile = () => {
+  const handleDeleteProfile = useCallback(() => {
     Alert.alert(t('common:profile.deleteTitle'), t('common:profile.deleteConfirmation'), [
       { text: t('common:buttons.cancel'), style: 'cancel' },
       {
@@ -45,111 +62,99 @@ export const ProfileScreen: React.FC = () => {
         },
       },
     ])
-  }
+  }, [deleteProfile, t])
+
+  const handleViewTrip = useCallback(() => {
+    // TODO: Navigate to trip screen when implemented
+  }, [])
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
+      <SafeAreaView style={styles.loadingContainer} edges={['top']}>
         <ActivityIndicator size="large" color={colors.secondary.main} />
-      </View>
+        <Text style={styles.loadingText}>{t('loading')}</Text>
+      </SafeAreaView>
     )
   }
 
   if (!profile) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.errorText}>{t('common:errors.profileNotFound')}</Text>
-      </View>
+      <SafeAreaView style={styles.loadingContainer} edges={['top']}>
+        <Text style={styles.errorText}>{t('error.notFound')}</Text>
+      </SafeAreaView>
     )
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView
-        ref={scrollViewRef}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.contentContainer}>
-          {/* Photo du van */}
-          <View style={styles.vanPhotoContainer}>
-            <Image
-              source={require('../../assets/van-life.jpg')}
-              style={styles.vanPhoto}
-              resizeMode="cover"
-            />
-          </View>
+        <ProfileHeader
+          avatarUrl={profile.avatar_url}
+          firstname={profile.firstname}
+          lastname={profile.lastname}
+          username={profile.username}
+          vanName={profile.van_name}
+          daysOnRoad={profile.days_on_road}
+          onAvatarPress={handleAvatarPress}
+          isUploadingAvatar={isUploadingAvatar}
+        />
 
-          {/* Nom utilisateur + van */}
-          <View style={styles.header}>
-            <Text style={styles.username}>{profile.username}</Text>
-            {profile.van_name ? <Text style={styles.vanName}>{profile.van_name}</Text> : null}
-          </View>
+        <ProfileStats
+          distanceKm={profile.total_distance_km}
+          connectionsCount={profile.connections_count}
+          city={profile.city}
+        />
 
-          {/* Badge principal */}
-          {profile.main_specialty ? (
-            <View style={styles.mainBadgeContainer}>
-              <SkillBadge skill={profile.main_specialty} isMain />
-            </View>
-          ) : null}
+        <ProfileSkillBadges skills={profile.skills} mainSpecialty={profile.main_specialty} />
 
-          {/* Autres badges */}
-          <View style={styles.skillsContainer}>
-            {profile.skills
-              .filter(skill => skill !== profile.main_specialty)
-              .map(skill => (
-                <SkillBadge key={skill} skill={skill} />
-              ))}
-          </View>
+        <ProfileActionButton onPress={handleViewTrip} />
 
-          {/* Stats */}
-          <View style={styles.statsContainer}>
-            <View style={styles.stat}>
-              <Text style={styles.statLabel}>{t('profile.currentCity')}</Text>
-              <Text style={styles.statValue}>{profile.city ?? '-'}</Text>
-            </View>
-            <View style={styles.stat}>
-              <Text style={styles.statLabel}>{t('profile.daysOnRoad')}</Text>
-              <Text style={styles.statValue}>{profile.days_on_road}</Text>
-            </View>
-            <View style={styles.stat}>
-              <Text style={styles.statLabel}>{t('profile.connections')}</Text>
-              <Text style={styles.statValue}>{profile.connections_count}</Text>
-            </View>
-          </View>
+        <ProfilePhotoGallery photos={profile.photos ?? []} />
 
-          {/* Bouton déconnexion */}
+        <ProfileAboutSection bio={profile.bio} />
+
+        {/* Admin actions */}
+        <View style={styles.adminActions}>
           <TouchableOpacity
             style={styles.signOutButton}
             onPress={handleSignOut}
             disabled={isDeleting}
           >
-            <Text style={styles.signOutText}>{t('common:buttons.logout')}</Text>
+            <Text style={styles.signOutText}>{t('actions.signOut')}</Text>
           </TouchableOpacity>
 
-          {/* Bouton supprimer profil (dev/test) */}
           <TouchableOpacity
             style={[styles.deleteButton, isDeleting && styles.buttonDisabled]}
             onPress={handleDeleteProfile}
             disabled={isDeleting}
           >
             {isDeleting ? (
-              <ActivityIndicator color={colors.secondary.main} size="small" />
+              <ActivityIndicator color={colors.error} size="small" />
             ) : (
-              <Text style={styles.deleteButtonText}>{t('common:buttons.deleteProfile')}</Text>
+              <Text style={styles.deleteButtonText}>{t('actions.deleteAccount')}</Text>
             )}
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </View>
+
+      <PhotoSourceModal
+        visible={showAvatarModal}
+        onClose={closeAvatarModal}
+        onTakePhoto={handleTakePhoto}
+        onPickImage={handlePickImage}
+      />
+    </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.primary.main,
   },
   loadingContainer: {
     flex: 1,
@@ -157,97 +162,49 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  loadingText: {
+    marginTop: spacing.md,
+    fontSize: fontSize.base,
+    color: colors.text.tertiary,
+  },
   errorText: {
-    fontSize: 16,
+    fontSize: fontSize.lg,
     color: colors.text.secondary,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 100,
+    paddingBottom: spacing.huge + spacing.xxxl,
   },
-  contentContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 60,
-  },
-  vanPhotoContainer: {
-    width: '100%',
-    height: 280,
-    marginBottom: 20,
-  },
-  vanPhoto: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 16,
-  },
-  header: {
-    marginBottom: 16,
-  },
-  username: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: colors.text.primary,
-  },
-  vanName: {
-    fontSize: 17,
-    color: colors.text.tertiary,
-    marginTop: 4,
-  },
-  mainBadgeContainer: {
-    flexDirection: 'row',
-    marginBottom: 14,
-  },
-  skillsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 20,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: colors.primary.main,
-    borderRadius: 12,
-    padding: 18,
-    marginBottom: 20,
-  },
-  stat: {
-    alignItems: 'center',
-  },
-  statLabel: {
-    fontSize: 12,
-    color: colors.text.tertiary,
-    marginBottom: 4,
-  },
-  statValue: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.text.primary,
+  adminActions: {
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xxl,
+    gap: spacing.md,
   },
   signOutButton: {
     backgroundColor: colors.secondary.main,
-    padding: 16,
-    borderRadius: 12,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
     alignItems: 'center',
   },
   signOutText: {
     color: colors.white,
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
   },
   deleteButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: colors.secondary.main,
-    padding: 16,
-    borderRadius: 12,
+    borderColor: colors.error,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
     alignItems: 'center',
-    marginTop: 12,
   },
   deleteButtonText: {
-    color: colors.secondary.main,
-    fontSize: 16,
-    fontWeight: '600',
+    color: colors.error,
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
   },
   buttonDisabled: {
     opacity: 0.6,
