@@ -1,5 +1,12 @@
 import React from 'react'
-import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native'
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import { colors, spacing, fontSize, fontWeight } from '../../styles/theme'
@@ -10,10 +17,16 @@ interface ProfileHeaderProps {
   lastname: string | null
   username: string
   vanName: string | null
-  daysOnRoad: number
-  // Avatar editing props (optional)
+  city: string | null
+  isOwnProfile: boolean
+  // Own profile actions
   onAvatarPress?: () => void
+  onEditPress?: () => void
   isUploadingAvatar?: boolean
+  // Other profile actions
+  onBackPress?: () => void
+  onFavoritePress?: () => void
+  isFavorite?: boolean
 }
 
 export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
@@ -22,26 +35,25 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   lastname,
   username,
   vanName,
-  daysOnRoad,
+  city,
+  isOwnProfile,
   onAvatarPress,
+  onEditPress,
   isUploadingAvatar = false,
+  onBackPress,
+  onFavoritePress,
+  isFavorite = false,
 }) => {
   const { t } = useTranslation('profile')
 
   const displayName =
     firstname || lastname ? `${firstname ?? ''} ${lastname ?? ''}`.trim() : username
 
-  const formatDuration = (days: number): string => {
-    if (days >= 365) {
-      const years = Math.floor(days / 365)
-      return t('tagline.year', { count: years })
-    }
-    if (days >= 30) {
-      const months = Math.floor(days / 30)
-      return t('tagline.month', { count: months })
-    }
-    return t('tagline.day', { count: days })
-  }
+  // Build subtitle: 📍 City · Van Name
+  const subtitleParts: string[] = []
+  if (city) subtitleParts.push(city)
+  if (vanName) subtitleParts.push(vanName)
+  const subtitle = subtitleParts.join(' · ')
 
   const avatarContent = isUploadingAvatar ? (
     <View style={styles.avatarPlaceholder}>
@@ -57,7 +69,32 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
   return (
     <View style={styles.container}>
-      {onAvatarPress ? (
+      {/* Top bar for other profile (back + favorite) */}
+      {!isOwnProfile ? (
+        <View style={styles.topBar}>
+          <TouchableOpacity
+            style={styles.topBarButton}
+            onPress={onBackPress}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.topBarButton}
+            onPress={onFavoritePress}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={isFavorite ? 'heart' : 'heart-outline'}
+              size={24}
+              color={isFavorite ? colors.error : colors.text.primary}
+            />
+          </TouchableOpacity>
+        </View>
+      ) : null}
+
+      {/* Avatar */}
+      {isOwnProfile && onAvatarPress ? (
         <TouchableOpacity
           style={styles.avatarContainer}
           onPress={onAvatarPress}
@@ -73,24 +110,32 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         <View style={styles.avatarContainer}>{avatarContent}</View>
       )}
 
+      {/* Name */}
       <Text style={styles.name}>{displayName}</Text>
-      <Text style={styles.username}>@{username}</Text>
 
-      {vanName ? (
-        <View style={styles.taglineContainer}>
-          <Text style={styles.tagline}>{vanName}</Text>
+      {/* Subtitle: location + van */}
+      {subtitle ? (
+        <View style={styles.subtitleContainer}>
           <Ionicons
-            name="car-outline"
-            size={16}
+            name="location-outline"
+            size={14}
             color={colors.text.tertiary}
-            style={styles.vanIcon}
+            style={styles.locationIcon}
           />
+          <Text style={styles.subtitle}>{subtitle}</Text>
         </View>
       ) : null}
 
-      <Text style={styles.duration}>
-        {t('tagline.onRoadFor')} {formatDuration(daysOnRoad)}
-      </Text>
+      {/* Edit button for own profile */}
+      {isOwnProfile && onEditPress ? (
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={onEditPress}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.editButtonText}>{t('header.edit')}</Text>
+        </TouchableOpacity>
+      ) : null}
     </View>
   )
 }
@@ -100,7 +145,17 @@ const AVATAR_SIZE = 100
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    paddingVertical: spacing.xxl,
+    paddingVertical: spacing.xl,
+  },
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  topBarButton: {
+    padding: spacing.sm,
   },
   avatarContainer: {
     marginBottom: spacing.lg,
@@ -142,25 +197,27 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     marginBottom: spacing.xs,
   },
-  username: {
-    fontSize: fontSize.base,
-    color: colors.text.tertiary,
-    marginBottom: spacing.md,
-  },
-  taglineContainer: {
+  subtitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.sm,
+    marginBottom: spacing.lg,
   },
-  tagline: {
+  locationIcon: {
+    marginRight: spacing.xs,
+  },
+  subtitle: {
     fontSize: fontSize.base,
-    color: colors.text.secondary,
-  },
-  vanIcon: {
-    marginLeft: spacing.xs,
-  },
-  duration: {
-    fontSize: fontSize.sm,
     color: colors.text.tertiary,
+  },
+  editButton: {
+    backgroundColor: colors.text.primary,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xl,
+    borderRadius: 20,
+  },
+  editButtonText: {
+    color: colors.white,
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.semibold,
   },
 })

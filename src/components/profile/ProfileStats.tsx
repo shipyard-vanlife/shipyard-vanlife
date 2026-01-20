@@ -1,15 +1,40 @@
 import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import { colors, spacing, fontSize, fontWeight, borderRadius, shadows } from '../../styles/theme'
+import {
+  colors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  shadows,
+} from '../../styles/theme'
 
 interface ProfileStatsProps {
+  daysOnRoad: number
   distanceKm: number
   connectionsCount: number
   city: string | null
 }
 
+interface StatItemProps {
+  value: string | number
+  label: string
+  unit?: string
+}
+
+const StatItem: React.FC<StatItemProps> = ({ value, label, unit }) => (
+  <View style={styles.statItem}>
+    <Text style={styles.statValue}>
+      {value}
+      {unit ? <Text style={styles.statUnit}> {unit}</Text> : null}
+    </Text>
+    <Text style={styles.statLabel}>{label}</Text>
+  </View>
+)
+
 export const ProfileStats: React.FC<ProfileStatsProps> = ({
+  daysOnRoad,
   distanceKm,
   connectionsCount,
   city,
@@ -23,30 +48,45 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({
     return km.toString()
   }
 
+  const formatDays = (days: number): string => {
+    return days.toLocaleString('fr-FR')
+  }
+
   return (
     <View style={styles.container}>
-      <View style={styles.statItem}>
-        <Text style={styles.statValue}>
-          {formatDistance(distanceKm)}
-          <Text style={styles.statUnit}> km</Text>
-        </Text>
-        <Text style={styles.statLabel}>{t('stats.distance')}</Text>
+      {/* Row 1 */}
+      <View style={styles.row}>
+        <View style={[styles.cell, styles.cellTopLeft]}>
+          <StatItem
+            value={formatDays(daysOnRoad)}
+            label={t('stats.daysOnRoad')}
+            unit={t('stats.daysUnit')}
+          />
+        </View>
+        <View style={styles.verticalDivider} />
+        <View style={[styles.cell, styles.cellTopRight]}>
+          <StatItem value={connectionsCount} label={t('stats.connections')} />
+        </View>
       </View>
 
-      <View style={styles.divider} />
+      <View style={styles.horizontalDivider} />
 
-      <View style={styles.statItem}>
-        <Text style={styles.statValue}>{connectionsCount}</Text>
-        <Text style={styles.statLabel}>{t('stats.connections')}</Text>
-      </View>
-
-      <View style={styles.divider} />
-
-      <View style={styles.statItem}>
-        <Text style={styles.statValue} numberOfLines={1}>
-          {city ?? t('stats.notDefined')}
-        </Text>
-        <Text style={styles.statLabel}>{t('stats.currentLocation')}</Text>
+      {/* Row 2 */}
+      <View style={styles.row}>
+        <View style={[styles.cell, styles.cellBottomLeft]}>
+          <StatItem
+            value={formatDistance(distanceKm)}
+            label={t('stats.distance')}
+            unit="km"
+          />
+        </View>
+        <View style={styles.verticalDivider} />
+        <View style={[styles.cell, styles.cellBottomRight]}>
+          <StatItem
+            value={city ?? t('stats.notDefined')}
+            label={t('stats.location')}
+          />
+        </View>
       </View>
     </View>
   )
@@ -54,18 +94,27 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
     backgroundColor: colors.white,
     borderRadius: borderRadius.lg,
     marginHorizontal: spacing.xl,
     marginVertical: spacing.lg,
-    paddingVertical: spacing.lg,
+    overflow: 'hidden',
     ...shadows.small,
   },
-  statItem: {
+  row: {
+    flexDirection: 'row',
+  },
+  cell: {
     flex: 1,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.md,
+  },
+  cellTopLeft: {},
+  cellTopRight: {},
+  cellBottomLeft: {},
+  cellBottomRight: {},
+  statItem: {
     alignItems: 'center',
-    paddingHorizontal: spacing.sm,
   },
   statValue: {
     fontSize: fontSize.xl,
@@ -83,9 +132,12 @@ const styles = StyleSheet.create({
     color: colors.text.tertiary,
     textAlign: 'center',
   },
-  divider: {
+  verticalDivider: {
     width: 1,
     backgroundColor: colors.border.light,
-    marginVertical: spacing.xs,
+  },
+  horizontalDivider: {
+    height: 1,
+    backgroundColor: colors.border.light,
   },
 })
