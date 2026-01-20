@@ -1,8 +1,13 @@
 {
+  "header": {
+    "edit": "Edit"
+  },
   "stats": {
-    "distance": "Distance traveled",
+    "daysOnRoad": "On road",
+    "daysUnit": "days",
+    "distance": "Distance",
     "connections": "Connections",
-    "currentLocation": "Current location",
+    "location": "Location",
     "notDefined": "Not defined"
   },
   "sections": {
@@ -11,6 +16,8 @@
   },
   "actions": {
     "viewTrip": "View trip",
+    "sendMessage": "Send message",
+    "addPhoto": "Add",
     "editProfile": "Edit profile",
     "signOut": "Sign out",
     "deleteAccount": "Delete account"
@@ -27,6 +34,13 @@
   "placeholders": {
     "noPhotos": "No photos yet",
     "noBio": "No description"
+  },
+  "photos": {
+    "add": "Add",
+    "delete": "Delete",
+    "maxReached": "5 photos limit reached",
+    "uploadFailed": "Upload failed",
+    "deleteFailed": "Delete failed"
   },
   "loading": "Loading profile...",
   "error": {

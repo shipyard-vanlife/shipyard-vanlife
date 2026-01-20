@@ -1,8 +1,13 @@
 {
+  "header": {
+    "edit": "Modifier"
+  },
   "stats": {
-    "distance": "Distance parcourue",
+    "daysOnRoad": "En van",
+    "daysUnit": "jours",
+    "distance": "Distance",
     "connections": "Connexions",
-    "currentLocation": "Lieu actuel",
+    "location": "Lieu",
     "notDefined": "Non défini"
   },
   "sections": {
@@ -11,6 +16,8 @@
   },
   "actions": {
     "viewTrip": "Voir le parcours",
+    "sendMessage": "Envoyer un message",
+    "addPhoto": "Ajouter",
     "editProfile": "Modifier le profil",
     "signOut": "Se déconnecter",
     "deleteAccount": "Supprimer mon compte"
@@ -27,6 +34,13 @@
   "placeholders": {
     "noPhotos": "Aucune photo pour le moment",
     "noBio": "Aucune description"
+  },
+  "photos": {
+    "add": "Ajouter",
+    "delete": "Supprimer",
+    "maxReached": "Limite de 5 photos atteinte",
+    "uploadFailed": "Échec de l'upload",
+    "deleteFailed": "Échec de la suppression"
   },
   "loading": "Chargement du profil...",
   "error": {
