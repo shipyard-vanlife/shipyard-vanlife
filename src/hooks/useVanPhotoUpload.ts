@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react'
 import * as ImagePicker from 'expo-image-picker'
 import { supabase } from '../services/supabase'
+import { compressImageWithPreset } from '../utils/imageCompression'
 
 export type VanPhotoErrorCode = 'PERMISSION_DENIED' | 'UPLOAD_FAILED' | 'UNKNOWN'
 
@@ -136,11 +137,14 @@ export function useVanPhotoUpload(): UseVanPhotoUploadReturn {
       setIsLoading(true)
 
       try {
-        const ext = imageUri.split('.').pop()?.toLowerCase() || 'jpg'
-        const fileName = `${userId}/van.${ext}`
+        // Compress image before upload (target ~150 KB for van photos)
+        const compressed = await compressImageWithPreset(imageUri, 'vanPhoto')
 
-        // Fetch the image as blob
-        const response = await fetch(imageUri)
+        // Always use jpg for compressed images
+        const fileName = `${userId}/van.jpg`
+
+        // Fetch the compressed image as blob
+        const response = await fetch(compressed.uri)
         const blob = await response.blob()
 
         // Convert blob to base64 using FileReader (React Native compatible)
@@ -167,7 +171,7 @@ export function useVanPhotoUpload(): UseVanPhotoUploadReturn {
 
         // Upload to Supabase Storage
         const { error: uploadError } = await supabase.storage.from(BUCKET_NAME).upload(fileName, bytes, {
-          contentType: `image/${ext === 'jpg' ? 'jpeg' : ext}`,
+          contentType: 'image/jpeg',
           upsert: true, // Replace existing van photo
         })
 

@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react'
 import * as ImagePicker from 'expo-image-picker'
 import { supabase } from '../services/supabase'
+import { compressImageWithPreset } from '../utils/imageCompression'
 
 export type ImagePickerErrorCode = 'PERMISSION_DENIED' | 'UPLOAD_FAILED' | 'UNKNOWN'
 
@@ -128,11 +129,14 @@ export function useImagePicker(): UseImagePickerResult {
       setIsLoading(true)
 
       try {
-        const ext = imageUri.split('.').pop()?.toLowerCase() || 'jpg'
-        const fileName = `${userId}/avatar.${ext}`
+        // Compress image before upload (target ~100 KB for avatars)
+        const compressed = await compressImageWithPreset(imageUri, 'avatar')
 
-        // Fetch the image as blob
-        const response = await fetch(imageUri)
+        // Always use jpg for compressed images
+        const fileName = `${userId}/avatar.jpg`
+
+        // Fetch the compressed image as blob
+        const response = await fetch(compressed.uri)
         const blob = await response.blob()
 
         // Convert blob to base64 using FileReader (React Native compatible)
@@ -161,7 +165,7 @@ export function useImagePicker(): UseImagePickerResult {
         const { error: uploadError } = await supabase.storage
           .from('avatars')
           .upload(fileName, bytes, {
-            contentType: `image/${ext === 'jpg' ? 'jpeg' : ext}`,
+            contentType: 'image/jpeg',
             upsert: true,
           })
 
