@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
@@ -15,29 +15,100 @@ import {
   ProfileAboutSection,
   ProfileActionButton,
   ProfileHeader,
-  ProfilePhotoGallery,
+  ProfilePhotoGrid,
   ProfileSkillBadges,
   ProfileStats,
 } from '../components/profile'
 import { useAuth } from '../contexts/AuthContext'
-import { useAvatarUpload } from '../hooks/useAvatarUpload'
-import { useDeleteProfile, useMyProfile } from '../hooks/useProfiles'
+import { useImagePicker } from '../hooks/useImagePicker'
+import { useDeleteProfile, useMyProfile, useUpdateProfile } from '../hooks/useProfiles'
+import { useProfilePhotosUpload } from '../hooks/useProfilePhotos'
 import { borderRadius, colors, fontSize, fontWeight, spacing } from '../styles/theme'
+
+type PickerMode = 'avatar' | 'profile-photo' | null
 
 export const ProfileScreen: React.FC = () => {
   const { t } = useTranslation(['profile', 'common'])
   const { signOut, user } = useAuth()
   const { data: profile, isLoading } = useMyProfile()
   const { mutate: deleteProfile, isPending: isDeleting } = useDeleteProfile()
+  const { mutate: updateProfile } = useUpdateProfile()
 
+  // Single image picker instance for both avatar and profile photos
+  const { pickImage, takePhoto, uploadImage, imageUri, error: imageError, clearImage } =
+    useImagePicker()
+
+  // Track what we're uploading
+  const [pickerMode, setPickerMode] = useState<PickerMode>(null)
+  const [showModal, setShowModal] = useState(false)
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
+  const isProcessingRef = useRef(false)
+
+  // Profile photos upload utilities
   const {
-    isUploading: isUploadingAvatar,
-    showModal: showAvatarModal,
-    openModal: handleAvatarPress,
-    closeModal: closeAvatarModal,
-    handlePickImage,
-    handleTakePhoto,
-  } = useAvatarUpload({ userId: user?.id })
+    uploadPhoto: uploadProfilePhoto,
+    deletePhoto,
+    isUploading: isUploadingPhoto,
+    isDeleting: isDeletingPhoto,
+  } = useProfilePhotosUpload()
+
+  // Handle image picker errors
+  useEffect(() => {
+    if (imageError) {
+      Alert.alert(t('common:errors.generic'), imageError.message)
+    }
+  }, [imageError, t])
+
+  // Handle image upload after picker returns
+  useEffect(() => {
+    // Guard against race conditions - don't process if already processing
+    if (!imageUri || !pickerMode || !user || isProcessingRef.current) {
+      return
+    }
+
+    isProcessingRef.current = true
+
+    const handleUpload = async () => {
+      try {
+        if (pickerMode === 'avatar') {
+          setIsUploadingAvatar(true)
+          try {
+            const uploadedUrl = await uploadImage(user.id)
+            if (uploadedUrl) {
+              updateProfile(
+                { avatar_url: uploadedUrl },
+                {
+                  onError: (error: Error) => {
+                    Alert.alert(t('common:errors.generic'), error.message)
+                  },
+                }
+              )
+            }
+          } finally {
+            setIsUploadingAvatar(false)
+          }
+        } else if (pickerMode === 'profile-photo') {
+          await uploadProfilePhoto(imageUri, profile?.photos ?? [])
+        }
+      } finally {
+        clearImage()
+        setPickerMode(null)
+        isProcessingRef.current = false
+      }
+    }
+
+    handleUpload()
+  }, [
+    imageUri,
+    pickerMode,
+    user,
+    uploadImage,
+    updateProfile,
+    uploadProfilePhoto,
+    profile?.photos,
+    clearImage,
+    t,
+  ])
 
   const handleSignOut = useCallback(async () => {
     try {
@@ -67,6 +138,51 @@ export const ProfileScreen: React.FC = () => {
   const handleViewTrip = useCallback(() => {
     // TODO: Navigate to trip screen when implemented
   }, [])
+
+  // Open modal for avatar
+  const handleAvatarPress = useCallback(() => {
+    setPickerMode('avatar')
+    setShowModal(true)
+  }, [])
+
+  // Open modal for profile photos
+  const handleAddPhoto = useCallback(() => {
+    if (isProcessingRef.current) return
+    setPickerMode('profile-photo')
+    setShowModal(true)
+  }, [])
+
+  // Close modal
+  const handleCloseModal = useCallback(() => {
+    setShowModal(false)
+    setPickerMode(null)
+  }, [])
+
+  // Handle gallery pick
+  const handlePickImage = useCallback(() => {
+    setShowModal(false)
+    setTimeout(() => {
+      if (isProcessingRef.current) return
+      pickImage()
+    }, 600)
+  }, [pickImage])
+
+  // Handle camera
+  const handleTakePhoto = useCallback(() => {
+    setShowModal(false)
+    setTimeout(() => {
+      if (isProcessingRef.current) return
+      takePhoto()
+    }, 600)
+  }, [takePhoto])
+
+  // Handle photo deletion
+  const handleDeletePhoto = useCallback(
+    async (photoUrl: string) => {
+      await deletePhoto(photoUrl, profile?.photos ?? [])
+    },
+    [deletePhoto, profile?.photos]
+  )
 
   if (isLoading) {
     return (
@@ -98,12 +214,14 @@ export const ProfileScreen: React.FC = () => {
           lastname={profile.lastname}
           username={profile.username}
           vanName={profile.van_name}
-          daysOnRoad={profile.days_on_road}
+          city={profile.city}
+          isOwnProfile={true}
           onAvatarPress={handleAvatarPress}
           isUploadingAvatar={isUploadingAvatar}
         />
 
         <ProfileStats
+          daysOnRoad={profile.days_on_road}
           distanceKm={profile.total_distance_km}
           connectionsCount={profile.connections_count}
           city={profile.city}
@@ -111,9 +229,16 @@ export const ProfileScreen: React.FC = () => {
 
         <ProfileSkillBadges skills={profile.skills} mainSpecialty={profile.main_specialty} />
 
-        <ProfileActionButton onPress={handleViewTrip} />
+        <ProfileActionButton isOwnProfile={true} onPress={handleViewTrip} />
 
-        <ProfilePhotoGallery photos={profile.photos ?? []} />
+        <ProfilePhotoGrid
+          photos={profile.photos ?? []}
+          isOwnProfile={true}
+          onAddPhoto={handleAddPhoto}
+          onDeletePhoto={handleDeletePhoto}
+          isUploading={isUploadingPhoto}
+          isDeleting={isDeletingPhoto}
+        />
 
         <ProfileAboutSection bio={profile.bio} />
 
@@ -141,9 +266,10 @@ export const ProfileScreen: React.FC = () => {
         </View>
       </ScrollView>
 
+      {/* Single modal for both avatar and profile photos */}
       <PhotoSourceModal
-        visible={showAvatarModal}
-        onClose={closeAvatarModal}
+        visible={showModal}
+        onClose={handleCloseModal}
         onTakePhoto={handleTakePhoto}
         onPickImage={handlePickImage}
       />
