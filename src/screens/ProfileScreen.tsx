@@ -14,10 +14,12 @@ import { PhotoSourceModal } from '../components/PhotoSourceModal'
 import {
   ProfileAboutSection,
   ProfileActionButton,
+  ProfileEditModal,
   ProfileHeader,
   ProfilePhotoGrid,
   ProfileSkillBadges,
   ProfileStats,
+  ProfileVanSection,
 } from '../components/profile'
 import { useAuth } from '../contexts/AuthContext'
 import { useImagePicker } from '../hooks/useImagePicker'
@@ -41,6 +43,7 @@ export const ProfileScreen: React.FC = () => {
   // Track what we're uploading
   const [pickerMode, setPickerMode] = useState<PickerMode>(null)
   const [showModal, setShowModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
   const isProcessingRef = useRef(false)
 
@@ -139,6 +142,16 @@ export const ProfileScreen: React.FC = () => {
     // TODO: Navigate to trip screen when implemented
   }, [])
 
+  // Open edit modal
+  const handleEditPress = useCallback(() => {
+    setShowEditModal(true)
+  }, [])
+
+  // Close edit modal
+  const handleCloseEditModal = useCallback(() => {
+    setShowEditModal(false)
+  }, [])
+
   // Open modal for avatar
   const handleAvatarPress = useCallback(() => {
     setPickerMode('avatar')
@@ -186,7 +199,7 @@ export const ProfileScreen: React.FC = () => {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.loadingContainer} edges={['top']}>
+      <SafeAreaView style={styles.loadingContainer} edges={['top', 'bottom']}>
         <ActivityIndicator size="large" color={colors.secondary.main} />
         <Text style={styles.loadingText}>{t('loading')}</Text>
       </SafeAreaView>
@@ -195,19 +208,20 @@ export const ProfileScreen: React.FC = () => {
 
   if (!profile) {
     return (
-      <SafeAreaView style={styles.loadingContainer} edges={['top']}>
+      <SafeAreaView style={styles.loadingContainer} edges={['top', 'bottom']}>
         <Text style={styles.errorText}>{t('error.notFound')}</Text>
       </SafeAreaView>
     )
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* Header with avatar, name, location, van */}
         <ProfileHeader
           avatarUrl={profile.avatar_url}
           firstname={profile.firstname}
@@ -215,11 +229,14 @@ export const ProfileScreen: React.FC = () => {
           username={profile.username}
           vanName={profile.van_name}
           city={profile.city}
+          daysOnRoad={profile.days_on_road}
           isOwnProfile={true}
           onAvatarPress={handleAvatarPress}
+          onEditPress={handleEditPress}
           isUploadingAvatar={isUploadingAvatar}
         />
 
+        {/* Stats grid */}
         <ProfileStats
           daysOnRoad={profile.days_on_road}
           distanceKm={profile.total_distance_km}
@@ -227,10 +244,21 @@ export const ProfileScreen: React.FC = () => {
           city={profile.city}
         />
 
+        {/* Skill badges */}
         <ProfileSkillBadges skills={profile.skills} mainSpecialty={profile.main_specialty} />
 
-        <ProfileActionButton isOwnProfile={true} onPress={handleViewTrip} />
+        {/* Van section */}
+        <ProfileVanSection
+          vanName={profile.van_name}
+          vanPhotoUrl={profile.van_photo_url}
+          isOwnProfile={true}
+          onEditPress={handleEditPress}
+        />
 
+        {/* About section */}
+        <ProfileAboutSection bio={profile.bio} />
+
+        {/* Photos gallery */}
         <ProfilePhotoGrid
           photos={profile.photos ?? []}
           isOwnProfile={true}
@@ -240,7 +268,8 @@ export const ProfileScreen: React.FC = () => {
           isDeleting={isDeletingPhoto}
         />
 
-        <ProfileAboutSection bio={profile.bio} />
+        {/* Main action button */}
+        <ProfileActionButton isOwnProfile={true} onPress={handleViewTrip} />
 
         {/* Admin actions */}
         <View style={styles.adminActions}>
@@ -272,6 +301,19 @@ export const ProfileScreen: React.FC = () => {
         onClose={handleCloseModal}
         onTakePhoto={handleTakePhoto}
         onPickImage={handlePickImage}
+      />
+
+      {/* Profile edit modal */}
+      <ProfileEditModal
+        visible={showEditModal}
+        onClose={handleCloseEditModal}
+        initialData={{
+          van_name: profile.van_name,
+          van_photo_url: profile.van_photo_url,
+          bio: profile.bio,
+          main_specialty: profile.main_specialty,
+          is_visible: profile.is_visible,
+        }}
       />
     </SafeAreaView>
   )
@@ -305,7 +347,7 @@ const styles = StyleSheet.create({
   },
   adminActions: {
     paddingHorizontal: spacing.xl,
-    paddingTop: spacing.xxl,
+    paddingTop: spacing.lg,
     gap: spacing.md,
   },
   signOutButton: {
