@@ -32,6 +32,11 @@ export interface UserProfile {
   last_location_update: string | null
   created_at: string
   updated_at: string
+  // Profile enhancements
+  firstname: string | null
+  lastname: string | null
+  bio: string | null
+  photos: string[]
 }
 
 // Profile creation/update payload
@@ -48,6 +53,11 @@ export interface ProfileInput {
   days_on_road?: number
   is_visible?: boolean
   tripName?: string
+  // Profile enhancements
+  firstname?: string | null
+  lastname?: string | null
+  bio?: string | null
+  photos?: string[]
 }
 
 // Database row type (matches Supabase table exactly)
@@ -68,6 +78,11 @@ export interface ProfileRow {
   last_location_update: string | null
   created_at: string
   updated_at: string
+  // Profile enhancements
+  firstname: string | null
+  lastname: string | null
+  bio: string | null
+  photos: string[] | null
 }
 
 // Skill colors for UI
