@@ -130,6 +130,10 @@ export function useCreateProfile() {
         skills: input.skills ?? [],
         days_on_road: input.days_on_road ?? 0,
         is_visible: input.is_visible ?? true,
+        firstname: input.firstname ?? null,
+        lastname: input.lastname ?? null,
+        bio: input.bio ?? null,
+        photos: input.photos ?? [],
       })
 
       if (profileError) throw profileError

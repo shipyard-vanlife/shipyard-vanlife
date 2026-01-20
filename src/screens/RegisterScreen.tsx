@@ -21,7 +21,7 @@ import {
   validatePasswordStrength,
   passwordsMatch,
   isValidEmail,
-  containsSuspiciousCharacters
+  containsSuspiciousCharacters,
 } from '../utils/security/validation'
 
 interface RegisterScreenProps {
@@ -75,10 +75,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
     // Validation de la force du mot de passe
     const passwordValidation = validatePasswordStrength(password)
     if (!passwordValidation.isValid) {
-      Alert.alert(
-        t('errors.passwordRequirements'),
-        passwordValidation.errors.join('\n')
-      )
+      Alert.alert(t('errors.passwordRequirements'), passwordValidation.errors.join('\n'))
       return
     }
 
@@ -127,11 +124,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
               style={styles.eyeButton}
               onPress={() => setShowPassword(!showPassword)}
             >
-              <Ionicons
-                name={showPassword ? 'eye-off' : 'eye'}
-                size={24}
-                color="#666"
-              />
+              <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color="#666" />
             </TouchableOpacity>
           </View>
 
@@ -148,11 +141,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
               style={styles.eyeButton}
               onPress={() => setShowConfirmPassword(!showConfirmPassword)}
             >
-              <Ionicons
-                name={showConfirmPassword ? 'eye-off' : 'eye'}
-                size={24}
-                color="#666"
-              />
+              <Ionicons name={showConfirmPassword ? 'eye-off' : 'eye'} size={24} color="#666" />
             </TouchableOpacity>
           </View>
 
@@ -165,17 +154,12 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
               disabled={loading}
             >
               <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}>
-                {acceptedTerms && (
-                  <Ionicons name="checkmark" size={18} color="#fff" />
-                )}
+                {acceptedTerms && <Ionicons name="checkmark" size={18} color="#fff" />}
               </View>
             </TouchableOpacity>
             <Text style={styles.termsText}>
               {t('termsPrefix')}{' '}
-              <Text
-                style={styles.termsLink}
-                onPress={() => setShowTermsModal(true)}
-              >
+              <Text style={styles.termsLink} onPress={() => setShowTermsModal(true)}>
                 {t('termsLink')}
               </Text>
             </Text>

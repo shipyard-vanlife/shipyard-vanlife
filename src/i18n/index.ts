@@ -7,12 +7,14 @@ import frLogin from './locales/fr/login.json'
 import frRegister from './locales/fr/register.json'
 import frHome from './locales/fr/home.json'
 import frSkills from './locales/fr/skills.json'
+import frProfile from './locales/fr/profile.json'
 
 import enCommon from './locales/en/common.json'
 import enLogin from './locales/en/login.json'
 import enRegister from './locales/en/register.json'
 import enHome from './locales/en/home.json'
 import enSkills from './locales/en/skills.json'
+import enProfile from './locales/en/profile.json'
 
 export const defaultNS = 'common'
 
@@ -23,6 +25,7 @@ export const resources = {
     register: frRegister,
     home: frHome,
     skills: frSkills,
+    profile: frProfile,
   },
   en: {
     common: enCommon,
@@ -30,6 +33,7 @@ export const resources = {
     register: enRegister,
     home: enHome,
     skills: enSkills,
+    profile: enProfile,
   },
 } as const
 
@@ -43,7 +47,7 @@ i18n.use(initReactI18next).init({
   lng: initialLanguage,
   fallbackLng: 'fr',
   defaultNS,
-  ns: ['common', 'login', 'register', 'home', 'skills'],
+  ns: ['common', 'login', 'register', 'home', 'skills', 'profile'],
   interpolation: {
     escapeValue: false,
   },

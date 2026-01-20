@@ -1,0 +1,50 @@
+{
+  "header": {
+    "edit": "Edit"
+  },
+  "stats": {
+    "daysOnRoad": "On road",
+    "daysUnit": "days",
+    "distance": "Distance",
+    "connections": "Connections",
+    "location": "Location",
+    "notDefined": "Not defined"
+  },
+  "sections": {
+    "photos": "Photos",
+    "about": "About"
+  },
+  "actions": {
+    "viewTrip": "View trip",
+    "sendMessage": "Send message",
+    "addPhoto": "Add",
+    "editProfile": "Edit profile",
+    "signOut": "Sign out",
+    "deleteAccount": "Delete account"
+  },
+  "tagline": {
+    "onRoadFor": "On the road for",
+    "day_one": "{{count}} day",
+    "day_other": "{{count}} days",
+    "month_one": "{{count}} month",
+    "month_other": "{{count}} months",
+    "year_one": "{{count}} year",
+    "year_other": "{{count}} years"
+  },
+  "placeholders": {
+    "noPhotos": "No photos yet",
+    "noBio": "No description"
+  },
+  "photos": {
+    "add": "Add",
+    "delete": "Delete",
+    "maxReached": "5 photos limit reached",
+    "uploadFailed": "Upload failed",
+    "deleteFailed": "Delete failed"
+  },
+  "loading": "Loading profile...",
+  "error": {
+    "notFound": "Profile not found",
+    "loadFailed": "Failed to load profile"
+  }
+}

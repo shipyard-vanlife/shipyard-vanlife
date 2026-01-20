@@ -1,15 +1,8 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  ActivityIndicator,
-  Image,
-  Modal,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native'
+import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { ImagePickerError } from '../hooks/useImagePicker'
+import { PhotoSourceModal } from './PhotoSourceModal'
 
 interface ProfilePhotoInputProps {
   imageUri: string | null
@@ -20,8 +13,7 @@ interface ProfilePhotoInputProps {
   disabled?: boolean
 }
 
-// Map error codes to i18n keys
-const errorKeys: Record<string, string> = {
+const ERROR_KEYS: Record<string, string> = {
   PERMISSION_DENIED: 'photo.errors.permissionDenied',
   UPLOAD_FAILED: 'photo.errors.uploadFailed',
   UNKNOWN: 'photo.errors.unknown',
@@ -38,20 +30,26 @@ export const ProfilePhotoInput: React.FC<ProfilePhotoInputProps> = ({
   const { t } = useTranslation('common')
   const [showModal, setShowModal] = useState(false)
 
-  const errorMessage = error ? errorKeys[error.code] : null
+  const errorMessage = error ? ERROR_KEYS[error.code] : null
 
   const handlePress = () => {
     setShowModal(true)
   }
 
   const handlePickImage = async () => {
-    await onPickImage()
     setShowModal(false)
+    // Wait for modal to close before launching picker (iOS timing issue)
+    setTimeout(() => {
+      onPickImage()
+    }, 500)
   }
 
   const handleTakePhoto = async () => {
-    await onTakePhoto()
     setShowModal(false)
+    // Wait for modal to close before launching camera (iOS timing issue)
+    setTimeout(() => {
+      onTakePhoto()
+    }, 500)
   }
 
   return (
@@ -78,28 +76,12 @@ export const ProfilePhotoInput: React.FC<ProfilePhotoInputProps> = ({
 
       {errorMessage ? <Text style={styles.error}>{t(errorMessage)}</Text> : null}
 
-      {/* Photo Source Selection Modal */}
-      <Modal visible={showModal} transparent animationType="fade" onRequestClose={() => setShowModal(false)}>
-        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowModal(false)}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{t('photo.chooseSource')}</Text>
-
-            <TouchableOpacity style={styles.modalOption} onPress={handleTakePhoto}>
-              <Text style={styles.modalOptionIcon}>📷</Text>
-              <Text style={styles.modalOptionText}>{t('photo.takePhoto')}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.modalOption} onPress={handlePickImage}>
-              <Text style={styles.modalOptionIcon}>🖼️</Text>
-              <Text style={styles.modalOptionText}>{t('photo.fromGallery')}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.modalCancel} onPress={() => setShowModal(false)}>
-              <Text style={styles.modalCancelText}>{t('buttons.cancel')}</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </Modal>
+      <PhotoSourceModal
+        visible={showModal}
+        onClose={() => setShowModal(false)}
+        onTakePhoto={handleTakePhoto}
+        onPickImage={handlePickImage}
+      />
     </View>
   )
 }
@@ -152,51 +134,5 @@ const styles = StyleSheet.create({
     color: '#DC2626',
     marginTop: 4,
     textAlign: 'center',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    paddingBottom: 40,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginBottom: 20,
-    color: '#333',
-  },
-  modalOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  modalOptionIcon: {
-    fontSize: 24,
-    marginRight: 16,
-  },
-  modalOptionText: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '500',
-  },
-  modalCancel: {
-    padding: 16,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  modalCancelText: {
-    fontSize: 16,
-    color: '#666',
-    fontWeight: '500',
   },
 })

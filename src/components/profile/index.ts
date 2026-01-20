@@ -1,0 +1,6 @@
+export { ProfileHeader } from './ProfileHeader'
+export { ProfileStats } from './ProfileStats'
+export { ProfileSkillBadges } from './ProfileSkillBadges'
+export { ProfilePhotoGrid } from './ProfilePhotoGrid'
+export { ProfileAboutSection } from './ProfileAboutSection'
+export { ProfileActionButton } from './ProfileActionButton'

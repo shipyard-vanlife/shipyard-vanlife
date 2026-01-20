@@ -13,7 +13,12 @@ interface MapViewProps {
   onProfileSelect: (profile: UserProfile) => void
 }
 
-export const MapView: React.FC<MapViewProps> = ({ latitude, longitude, otherProfiles, onProfileSelect }) => {
+export const MapView: React.FC<MapViewProps> = ({
+  latitude,
+  longitude,
+  otherProfiles,
+  onProfileSelect,
+}) => {
   const { t } = useTranslation('home')
 
   // Si pas de localisation, afficher un état vide

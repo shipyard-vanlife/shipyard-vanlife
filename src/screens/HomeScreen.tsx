@@ -20,7 +20,10 @@ export const HomeScreen: React.FC = () => {
   // Debug : afficher le nombre d'autres profils
   console.log('👥 Autres profils chargés:', otherProfiles?.length || 0)
   if (otherProfiles && otherProfiles.length > 0) {
-    console.log('📍 Profils avec localisation:', otherProfiles.filter(p => p.location?.latitude).length)
+    console.log(
+      '📍 Profils avec localisation:',
+      otherProfiles.filter(p => p.location?.latitude).length
+    )
   }
 
   const handleEnableLocation = async () => {
@@ -75,7 +78,9 @@ export const HomeScreen: React.FC = () => {
           ) : null}
 
           {/* BottomSheet : s'affiche seulement si un profil est sélectionné */}
-          {selectedProfile && <BottomSheet profile={selectedProfile} onClose={() => setSelectedProfile(null)} />}
+          {selectedProfile && (
+            <BottomSheet profile={selectedProfile} onClose={() => setSelectedProfile(null)} />
+          )}
         </>
       ) : (
         // Pas de localisation : afficher le bouton

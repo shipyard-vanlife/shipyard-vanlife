@@ -6,39 +6,39 @@
 export const colors = {
   // Couleurs primaires
   primary: {
-    main: '#F5F1E8',        // Beige clair - Background principal de l'app
-    light: '#FEFCF9',       // Beige très clair - Pour les cartes/zones claires
-    dark: '#E8DFD0',        // Beige moyen - Pour les bordures subtiles
+    main: '#F5F1E8', // Beige clair - Background principal de l'app
+    light: '#FEFCF9', // Beige très clair - Pour les cartes/zones claires
+    dark: '#E8DFD0', // Beige moyen - Pour les bordures subtiles
   },
 
   // Couleurs secondaires
   secondary: {
-    main: '#E07A5F',        // Coral/Saumon - Boutons principaux
-    light: '#E89582',       // Coral clair - Hover/états actifs
-    dark: '#C86B52',        // Coral foncé - Pressed states
+    main: '#E07A5F', // Coral/Saumon - Boutons principaux
+    light: '#E89582', // Coral clair - Hover/états actifs
+    dark: '#C86B52', // Coral foncé - Pressed states
   },
 
   // Couleurs tertiaires
   tertiary: {
-    main: '#D4A373',        // Beige foncé - Barre BottomSheet, accents
-    light: '#DEB68A',       // Beige doré clair
-    dark: '#B88E5F',        // Beige doré foncé
+    main: '#D4A373', // Beige foncé - Barre BottomSheet, accents
+    light: '#DEB68A', // Beige doré clair
+    dark: '#B88E5F', // Beige doré foncé
   },
 
   // Bordures
   border: {
-    light: '#E8DFD0',       // Bordure très claire
-    main: '#D4C5B9',        // Bordure standard - Inputs, cartes
-    dark: '#B8A895',        // Bordure accentuée
+    light: '#E8DFD0', // Bordure très claire
+    main: '#D4C5B9', // Bordure standard - Inputs, cartes
+    dark: '#B8A895', // Bordure accentuée
   },
 
   // Textes
   text: {
-    primary: '#2C2C2C',     // Texte principal - Titres, texte important
-    secondary: '#4A4A4A',   // Texte secondaire - Descriptions
-    tertiary: '#666666',    // Texte tertiaire - Labels, infos
-    muted: '#8B7355',       // Texte atténué - Hints, placeholders
-    disabled: '#999999',    // Texte désactivé
+    primary: '#2C2C2C', // Texte principal - Titres, texte important
+    secondary: '#4A4A4A', // Texte secondaire - Descriptions
+    tertiary: '#666666', // Texte tertiaire - Labels, infos
+    muted: '#8B7355', // Texte atténué - Hints, placeholders
+    disabled: '#999999', // Texte désactivé
   },
 
   // Couleurs utilitaires
@@ -46,16 +46,16 @@ export const colors = {
   black: '#000000',
 
   // États
-  success: '#4CAF50',       // Vert - Succès
-  error: '#DC2626',         // Rouge - Erreurs
-  warning: '#F59E0B',       // Orange - Avertissements
-  info: '#3B82F6',          // Bleu - Informations
+  success: '#4CAF50', // Vert - Succès
+  error: '#DC2626', // Rouge - Erreurs
+  warning: '#F59E0B', // Orange - Avertissements
+  info: '#3B82F6', // Bleu - Informations
 
   // Backgrounds spéciaux
   background: {
-    main: '#F5F1E8',        // Background principal (alias de primary.main)
-    card: '#FFFFFF',        // Background des cartes
-    overlay: 'rgba(0, 0, 0, 0.5)',  // Overlay pour modaux
+    main: '#F5F1E8', // Background principal (alias de primary.main)
+    card: '#FFFFFF', // Background des cartes
+    overlay: 'rgba(0, 0, 0, 0.5)', // Overlay pour modaux
   },
 
   // Ombres

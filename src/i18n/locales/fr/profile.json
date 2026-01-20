@@ -1,0 +1,50 @@
+{
+  "header": {
+    "edit": "Modifier"
+  },
+  "stats": {
+    "daysOnRoad": "En van",
+    "daysUnit": "jours",
+    "distance": "Distance",
+    "connections": "Connexions",
+    "location": "Lieu",
+    "notDefined": "Non défini"
+  },
+  "sections": {
+    "photos": "Photos",
+    "about": "À propos"
+  },
+  "actions": {
+    "viewTrip": "Voir le parcours",
+    "sendMessage": "Envoyer un message",
+    "addPhoto": "Ajouter",
+    "editProfile": "Modifier le profil",
+    "signOut": "Se déconnecter",
+    "deleteAccount": "Supprimer mon compte"
+  },
+  "tagline": {
+    "onRoadFor": "Sur la route depuis",
+    "day_one": "{{count}} jour",
+    "day_other": "{{count}} jours",
+    "month_one": "{{count}} mois",
+    "month_other": "{{count}} mois",
+    "year_one": "{{count}} an",
+    "year_other": "{{count}} ans"
+  },
+  "placeholders": {
+    "noPhotos": "Aucune photo pour le moment",
+    "noBio": "Aucune description"
+  },
+  "photos": {
+    "add": "Ajouter",
+    "delete": "Supprimer",
+    "maxReached": "Limite de 5 photos atteinte",
+    "uploadFailed": "Échec de l'upload",
+    "deleteFailed": "Échec de la suppression"
+  },
+  "loading": "Chargement du profil...",
+  "error": {
+    "notFound": "Profil introuvable",
+    "loadFailed": "Impossible de charger le profil"
+  }
+}
