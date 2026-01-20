@@ -65,7 +65,6 @@
     "fromGallery": "Choose from gallery",
     "errors": {
       "permissionDenied": "You denied access. Enable it in settings.",
-      "cancelled": "Selection cancelled",
       "uploadFailed": "Failed to upload photo",
       "unknown": "An error occurred"
     }
