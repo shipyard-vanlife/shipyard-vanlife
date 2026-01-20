@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 import * as ImagePicker from 'expo-image-picker'
 import { supabase } from '../services/supabase'
 
-export type ImagePickerErrorCode = 'PERMISSION_DENIED' | 'CANCELLED' | 'UPLOAD_FAILED' | 'UNKNOWN'
+export type ImagePickerErrorCode = 'PERMISSION_DENIED' | 'UPLOAD_FAILED' | 'UNKNOWN'
 
 export interface ImagePickerError {
   code: ImagePickerErrorCode
@@ -35,11 +35,7 @@ export function useImagePicker(): UseImagePickerResult {
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync()
 
       if (!permissionResult.granted) {
-        setError({
-          code: 'PERMISSION_DENIED',
-          message: 'Permission to access media library was denied',
-        })
-        setIsLoading(false)
+        setError({ code: 'PERMISSION_DENIED', message: 'Media library permission denied' })
         return
       }
 
@@ -51,24 +47,15 @@ export function useImagePicker(): UseImagePickerResult {
         quality: 0.8,
       })
 
-      if (result.canceled) {
-        setError({
-          code: 'CANCELLED',
-          message: 'Image selection was cancelled',
-        })
-        setIsLoading(false)
-        return
-      }
-
-      const selectedAsset = result.assets[0]
-      if (selectedAsset?.uri) {
-        setImageUri(selectedAsset.uri)
-        setUploadedUrl(null) // Reset uploaded URL when new image is selected
+      // Annulation = ne rien faire (pas une erreur)
+      if (!result.canceled && result.assets[0]?.uri) {
+        setImageUri(result.assets[0].uri)
+        setUploadedUrl(null)
       }
     } catch (err) {
       setError({
         code: 'UNKNOWN',
-        message: err instanceof Error ? err.message : 'Unknown error occurred',
+        message: err instanceof Error ? err.message : 'Unknown error',
       })
     } finally {
       setIsLoading(false)
@@ -80,43 +67,28 @@ export function useImagePicker(): UseImagePickerResult {
     setIsLoading(true)
 
     try {
-      // Request camera permission
-      const permissionResult = await ImagePicker.requestCameraPermissionsAsync()
-
-      if (!permissionResult.granted) {
-        setError({
-          code: 'PERMISSION_DENIED',
-          message: 'Permission to access camera was denied',
-        })
-        setIsLoading(false)
+      // Request camera permission explicitly
+      const { granted } = await ImagePicker.requestCameraPermissionsAsync()
+      if (!granted) {
+        setError({ code: 'PERMISSION_DENIED', message: 'Camera permission denied' })
         return
       }
 
-      // Launch camera
       const result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
       })
 
-      if (result.canceled) {
-        setError({
-          code: 'CANCELLED',
-          message: 'Photo capture was cancelled',
-        })
-        setIsLoading(false)
-        return
-      }
-
-      const capturedAsset = result.assets[0]
-      if (capturedAsset?.uri) {
-        setImageUri(capturedAsset.uri)
-        setUploadedUrl(null) // Reset uploaded URL when new image is captured
+      // Annulation = ne rien faire (pas une erreur)
+      if (!result.canceled && result.assets[0]?.uri) {
+        setImageUri(result.assets[0].uri)
+        setUploadedUrl(null)
       }
     } catch (err) {
       setError({
         code: 'UNKNOWN',
-        message: err instanceof Error ? err.message : 'Unknown error occurred',
+        message: err instanceof Error ? err.message : 'Unknown error',
       })
     } finally {
       setIsLoading(false)
