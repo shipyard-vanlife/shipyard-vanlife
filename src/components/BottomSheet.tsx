@@ -131,10 +131,19 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
             />
           </View>
 
-          {/* Nom utilisateur + van */}
-          <View style={styles.header}>
-            <Text style={styles.username}>{profile.username}</Text>
-            {profile.van_name ? <Text style={styles.vanName}>{profile.van_name}</Text> : null}
+          {/* Avatar + Nom utilisateur + van */}
+          <View style={styles.headerContainer}>
+            {profile.avatar_url && (
+              <Image
+                source={{ uri: profile.avatar_url }}
+                style={styles.avatar}
+                resizeMode="cover"
+              />
+            )}
+            <View style={styles.header}>
+              <Text style={styles.username}>{profile.username}</Text>
+              {profile.van_name ? <Text style={styles.vanName}>{profile.van_name}</Text> : null}
+            </View>
           </View>
 
           {/* Badge principal */}
@@ -259,8 +268,21 @@ const styles = StyleSheet.create({
     color: colors.text.tertiary,
     fontWeight: '600',
   },
-  header: {
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 16,
+    gap: 12,
+  },
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 3,
+    borderColor: colors.secondary.main,
+  },
+  header: {
+    flex: 1,
   },
   username: {
     fontSize: 26,
