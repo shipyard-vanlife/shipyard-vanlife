@@ -1,7 +1,6 @@
 import React, { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  ActivityIndicator,
   Alert,
   Animated,
   Dimensions,
@@ -14,15 +13,13 @@ import {
   View,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { useAuth } from '../contexts/AuthContext'
-import { useDeleteProfile } from '../hooks/useProfiles'
 import { UserProfile } from '../types/user'
 import { SkillBadge } from './SkillBadge'
 import { colors } from '../styles/theme'
 
 const SCREEN_HEIGHT = Dimensions.get('window').height
-const MIN_HEIGHT = 280
-const MAX_HEIGHT = SCREEN_HEIGHT * 0.9
+const MIN_HEIGHT = 120
+const MAX_HEIGHT = SCREEN_HEIGHT * 0.85
 
 interface BottomSheetProps {
   profile: UserProfile
@@ -31,66 +28,70 @@ interface BottomSheetProps {
 
 export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) => {
   const { t } = useTranslation(['home', 'common'])
-  const { signOut } = useAuth()
-  const { mutate: deleteProfile, isPending: isDeleting } = useDeleteProfile()
   const scrollViewRef = useRef<ScrollView>(null)
   const [sheetHeight] = useState(new Animated.Value(MIN_HEIGHT))
+  const [isClosing, setIsClosing] = useState(false)
 
-  const handleSignOut = async () => {
-    try {
-      await signOut()
-    } catch (error) {
-      console.error('Erreur lors de la déconnexion:', error)
-    }
+  const handleConnect = () => {
+    // TODO: Implémenter la logique de connexion
+    Alert.alert('Connexion', `Demande de connexion envoyée à ${profile.username}`)
   }
 
-  const handleDeleteProfile = () => {
-    Alert.alert(t('common:profile.deleteTitle'), t('common:profile.deleteConfirmation'), [
-      { text: t('common:buttons.cancel'), style: 'cancel' },
-      {
-        text: t('common:buttons.delete'),
-        style: 'destructive',
-        onPress: () => {
-          deleteProfile(undefined, {
-            onError: (error: Error) => {
-              Alert.alert(t('common:errors.generic'), error.message)
-            },
-          })
-        },
-      },
-    ])
+  const handleMessage = () => {
+    // TODO: Implémenter la messagerie
+    Alert.alert('Message', `Ouvrir la conversation avec ${profile.username}`)
+  }
+
+  const handleClose = () => {
+    if (isClosing || !onClose) return
+    setIsClosing(true)
+
+    Animated.spring(sheetHeight, {
+      toValue: 0,
+      useNativeDriver: false,
+      tension: 50,
+      friction: 8,
+    }).start(() => {
+      setTimeout(() => {
+        onClose()
+      }, 50)
+    })
   }
 
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dy) > 5,
       onPanResponderMove: (_, gesture) => {
+        if (isClosing) return
         const newHeight = MIN_HEIGHT - gesture.dy
-        if (newHeight >= MIN_HEIGHT && newHeight <= MAX_HEIGHT) {
+        if (newHeight >= 0 && newHeight <= MAX_HEIGHT) {
           sheetHeight.setValue(newHeight)
         }
       },
       onPanResponderRelease: (_, gesture) => {
-        if (gesture.dy < -100) {
+        if (isClosing) return
+
+        if (gesture.dy < -50) {
           // Swipe up - expand
           Animated.spring(sheetHeight, {
             toValue: MAX_HEIGHT,
             useNativeDriver: false,
+            tension: 50,
+            friction: 8,
           }).start()
-        } else if (gesture.dy > 100) {
-          // Swipe down - minimize
-          Animated.spring(sheetHeight, {
-            toValue: MIN_HEIGHT,
-            useNativeDriver: false,
-          }).start()
+        } else if (gesture.dy > 50) {
+          // Swipe down - close
+          handleClose()
         } else {
-          // Return to closest state
+          // Small movement - snap to closest position
           const currentHeight = MIN_HEIGHT - gesture.dy
           const target = currentHeight > (MIN_HEIGHT + MAX_HEIGHT) / 2 ? MAX_HEIGHT : MIN_HEIGHT
           Animated.spring(sheetHeight, {
             toValue: target,
             useNativeDriver: false,
+            tension: 50,
+            friction: 8,
           }).start()
         }
       },
@@ -102,7 +103,12 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
       <View style={styles.handleContainer} {...panResponder.panHandlers}>
         <View style={styles.handle} />
         {onClose && (
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={handleClose}
+            activeOpacity={0.7}
+            disabled={isClosing}
+          >
             <Ionicons name="close" size={24} color={colors.text.primary} />
           </TouchableOpacity>
         )}
@@ -137,7 +143,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
               <SkillBadge skill={profile.main_specialty} isMain />
             </View>
           ) : null}
-
+          
           {/* Autres badges */}
           <View style={styles.skillsContainer}>
             {profile.skills
@@ -163,26 +169,15 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
             </View>
           </View>
 
-          {/* Bouton déconnexion */}
-          <TouchableOpacity
-            style={styles.signOutButton}
-            onPress={handleSignOut}
-            disabled={isDeleting}
-          >
-            <Text style={styles.signOutText}>{t('common:buttons.logout')}</Text>
+          {/* Actions pour interagir avec ce vanlifer */}
+          <TouchableOpacity style={styles.connectButton} onPress={handleConnect}>
+            <Ionicons name="person-add" size={20} color={colors.white} />
+            <Text style={styles.connectText}>Se connecter</Text>
           </TouchableOpacity>
 
-          {/* Bouton supprimer profil (dev/test) */}
-          <TouchableOpacity
-            style={[styles.deleteButton, isDeleting && styles.buttonDisabled]}
-            onPress={handleDeleteProfile}
-            disabled={isDeleting}
-          >
-            {isDeleting ? (
-              <ActivityIndicator color="#E07A5F" size="small" />
-            ) : (
-              <Text style={styles.deleteButtonText}>{t('common:buttons.deleteProfile')}</Text>
-            )}
+          <TouchableOpacity style={styles.messageButton} onPress={handleMessage}>
+            <Ionicons name="chatbubble-outline" size={20} color={colors.secondary.main} />
+            <Text style={styles.messageText}>Envoyer un message</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -223,9 +218,16 @@ const styles = StyleSheet.create({
   closeButton: {
     position: 'absolute',
     right: 16,
-    top: 12,
-    padding: 4,
+    top: 8,
+    padding: 8,
+    backgroundColor: colors.primary.main,
+    borderRadius: 20,
     zIndex: 10,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   scrollView: {
     flex: 1,
@@ -238,8 +240,9 @@ const styles = StyleSheet.create({
   },
   vanPhotoContainer: {
     width: '100%',
-    height: 280,
+    height: 200,
     marginBottom: 20,
+    marginTop: 28,
   },
   vanPhoto: {
     width: '100%',
@@ -299,18 +302,21 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.text.primary,
   },
-  signOutButton: {
+  connectButton: {
     backgroundColor: colors.secondary.main,
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
   },
-  signOutText: {
+  connectText: {
     color: colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
-  deleteButton: {
+  messageButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: colors.secondary.main,
@@ -318,13 +324,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 12,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
   },
-  deleteButtonText: {
+  messageText: {
     color: colors.secondary.main,
     fontSize: 16,
     fontWeight: '600',
-  },
-  buttonDisabled: {
-    opacity: 0.6,
   },
 })

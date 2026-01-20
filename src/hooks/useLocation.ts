@@ -24,6 +24,26 @@ export interface UseLocationReturn {
   isLoading: boolean
 }
 
+
+function randomizeCoordinates(lat: number, lng: number): { latitude: number; longitude: number } {
+  const minRadiusInDegrees = 0.009 // ~1km
+  const maxRadiusInDegrees = 0.027 // ~3km
+
+  const angle = Math.random() * 2 * Math.PI
+  const distance = minRadiusInDegrees + Math.random() * (maxRadiusInDegrees - minRadiusInDegrees)
+
+  const randomLat = lat + distance * Math.cos(angle)
+  const randomLng = lng + distance * Math.sin(angle) / Math.cos((lat * Math.PI) / 180)
+
+  // Debug logs
+  const distanceKm = distance * 111 // Rough conversion to km
+  console.log(`🎲 Randomisation: ${distanceKm.toFixed(2)}km de distance`)
+  console.log(`📍 Vraie position: ${lat.toFixed(4)}, ${lng.toFixed(4)}`)
+  console.log(`🔀 Position randomisée: ${randomLat.toFixed(4)}, ${randomLng.toFixed(4)}`)
+
+  return { latitude: randomLat, longitude: randomLng }
+}
+
 export function useLocation(): UseLocationReturn {
   const [status, setStatus] = useState<LocationStatus>('idle')
   const [location, setLocation] = useState<LocationData | null>(null)
@@ -34,7 +54,7 @@ export function useLocation(): UseLocationReturn {
     setError(null)
 
     try {
-      // Request permission
+      
       const { status: permissionStatus } = await Location.requestForegroundPermissionsAsync()
 
       if (permissionStatus !== 'granted') {
@@ -46,28 +66,32 @@ export function useLocation(): UseLocationReturn {
         return null
       }
 
-      // Get current position
+
       const position = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       })
 
       const { latitude, longitude } = position.coords
 
-      // Reverse geocode to get city name
       let city: string | null = null
       try {
         const [geocode] = await Location.reverseGeocodeAsync({ latitude, longitude })
         if (geocode) {
-          // Build city string: "City, Country" or just "City" or "Country"
-          const parts = [geocode.city, geocode.country].filter(Boolean)
-          city = parts.join(', ') || null
+          // Only use city name, no country
+          city = geocode.city || null
         }
       } catch {
-        // Reverse geocoding failed, continue without city
         console.warn('Reverse geocoding failed')
       }
 
-      const locationData: LocationData = { latitude, longitude, city }
+ 
+      const randomizedCoords = randomizeCoordinates(latitude, longitude)
+
+      const locationData: LocationData = {
+        latitude: randomizedCoords.latitude,
+        longitude: randomizedCoords.longitude,
+        city,
+      }
       setLocation(locationData)
       setStatus('granted')
       return locationData

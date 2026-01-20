@@ -326,11 +326,66 @@ AS $$
 $$;
 
 -- ============================================
+-- FUNCTION TO GET ALL VISIBLE PROFILES
+-- ============================================
+-- Returns all visible profiles (except current user) with location as JSON
+-- Location is already randomized on client side (2-10km) for privacy
+
+CREATE OR REPLACE FUNCTION get_all_visible_profiles()
+RETURNS TABLE (
+  id UUID,
+  username TEXT,
+  van_name TEXT,
+  van_photo_url TEXT,
+  location JSONB,
+  city TEXT,
+  main_specialty skill_type,
+  skills skill_type[],
+  days_on_road INTEGER,
+  connections_count INTEGER,
+  is_visible BOOLEAN,
+  last_location_update TIMESTAMPTZ,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ
+)
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+AS $$
+  SELECT
+    p.id,
+    p.username,
+    p.van_name,
+    p.van_photo_url,
+    CASE
+      WHEN p.location IS NULL THEN NULL
+      ELSE jsonb_build_object(
+        'latitude', ST_Y(p.location::geometry),
+        'longitude', ST_X(p.location::geometry)
+      )
+    END as location,
+    p.city,
+    p.main_specialty,
+    p.skills,
+    p.days_on_road,
+    p.connections_count,
+    p.is_visible,
+    p.last_location_update,
+    p.created_at,
+    p.updated_at
+  FROM profiles p
+  WHERE p.is_visible = true
+    AND p.id != auth.uid()
+    AND p.location IS NOT NULL;
+$$;
+
+-- ============================================
 -- GRANT PERMISSIONS
 -- ============================================
 
 -- Grant execute on functions to authenticated users
 GRANT EXECUTE ON FUNCTION get_my_profile TO authenticated;
+GRANT EXECUTE ON FUNCTION get_all_visible_profiles TO authenticated;
 GRANT EXECUTE ON FUNCTION get_nearby_profiles TO authenticated;
 GRANT EXECUTE ON FUNCTION get_profiles_in_zone TO authenticated;
 GRANT EXECUTE ON FUNCTION update_my_location TO authenticated;
