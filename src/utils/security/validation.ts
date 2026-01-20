@@ -74,7 +74,7 @@ export const validatePasswordStrength = (password: string): PasswordValidationRe
 
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   }
 }
 
