@@ -1,6 +1,7 @@
 import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { useTranslation } from 'react-i18next'
+import { Ionicons } from '@expo/vector-icons'
 import {
   colors,
   spacing,
@@ -17,22 +18,6 @@ interface ProfileStatsProps {
   city: string | null
 }
 
-interface StatItemProps {
-  value: string | number
-  label: string
-  unit?: string
-}
-
-const StatItem: React.FC<StatItemProps> = ({ value, label, unit }) => (
-  <View style={styles.statItem}>
-    <Text style={styles.statValue}>
-      {value}
-      {unit ? <Text style={styles.statUnit}> {unit}</Text> : null}
-    </Text>
-    <Text style={styles.statLabel}>{label}</Text>
-  </View>
-)
-
 export const ProfileStats: React.FC<ProfileStatsProps> = ({
   daysOnRoad,
   distanceKm,
@@ -41,51 +26,50 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({
 }) => {
   const { t } = useTranslation('profile')
 
-  const formatDistance = (km: number): string => {
-    if (km >= 1000) {
-      return km.toLocaleString('fr-FR')
+  const formatNumber = (num: number): string => {
+    if (num >= 1000) {
+      return num.toLocaleString('fr-FR')
     }
-    return km.toString()
-  }
-
-  const formatDays = (days: number): string => {
-    return days.toLocaleString('fr-FR')
+    return num.toString()
   }
 
   return (
     <View style={styles.container}>
       {/* Row 1 */}
       <View style={styles.row}>
-        <View style={[styles.cell, styles.cellTopLeft]}>
-          <StatItem
-            value={formatDays(daysOnRoad)}
-            label={t('stats.daysOnRoad')}
-            unit={t('stats.daysUnit')}
-          />
+        <View style={[styles.card, styles.cardLeft]}>
+          <Text style={styles.value}>
+            {formatNumber(daysOnRoad)}
+            <Text style={styles.unit}> {t('stats.daysUnit')}</Text>
+          </Text>
+          <Text style={styles.label}>{t('stats.daysOnRoad')}</Text>
         </View>
-        <View style={styles.verticalDivider} />
-        <View style={[styles.cell, styles.cellTopRight]}>
-          <StatItem value={connectionsCount} label={t('stats.connections')} />
+
+        <View style={[styles.card, styles.cardRight]}>
+          <Text style={styles.value}>{formatNumber(connectionsCount)}</Text>
+          <Text style={styles.label}>{t('stats.connections')}</Text>
         </View>
       </View>
 
-      <View style={styles.horizontalDivider} />
-
       {/* Row 2 */}
       <View style={styles.row}>
-        <View style={[styles.cell, styles.cellBottomLeft]}>
-          <StatItem
-            value={formatDistance(distanceKm)}
-            label={t('stats.distance')}
-            unit="km"
-          />
+        <View style={[styles.card, styles.cardLeft]}>
+          <Text style={styles.value}>
+            {formatNumber(distanceKm)}
+            <Text style={styles.unit}> km</Text>
+          </Text>
+          <Text style={styles.label}>{t('stats.distance')}</Text>
         </View>
-        <View style={styles.verticalDivider} />
-        <View style={[styles.cell, styles.cellBottomRight]}>
-          <StatItem
-            value={city ?? t('stats.notDefined')}
-            label={t('stats.location')}
-          />
+
+        <View style={[styles.card, styles.cardRight, styles.locationCard]}>
+          <View style={styles.locationContent}>
+            <View style={styles.locationIconWrapper}>
+              <Ionicons name="location" size={18} color={colors.tertiary.main} />
+            </View>
+            <Text style={styles.locationValue} numberOfLines={1}>
+              {city ?? t('stats.notDefined')}
+            </Text>
+          </View>
         </View>
       </View>
     </View>
@@ -94,50 +78,61 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.lg,
-    marginHorizontal: spacing.xl,
-    marginVertical: spacing.lg,
-    overflow: 'hidden',
-    ...shadows.small,
+    paddingHorizontal: spacing.xl,
+    marginBottom: spacing.lg,
+    gap: spacing.md,
   },
   row: {
     flexDirection: 'row',
+    gap: spacing.md,
   },
-  cell: {
+  card: {
     flex: 1,
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.lg,
     paddingVertical: spacing.lg,
     paddingHorizontal: spacing.md,
-  },
-  cellTopLeft: {},
-  cellTopRight: {},
-  cellBottomLeft: {},
-  cellBottomRight: {},
-  statItem: {
     alignItems: 'center',
+    ...shadows.small,
   },
-  statValue: {
+  cardLeft: {},
+  cardRight: {},
+  value: {
     fontSize: fontSize.xl,
     fontWeight: fontWeight.bold,
     color: colors.text.primary,
     marginBottom: spacing.xs,
   },
-  statUnit: {
+  unit: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.regular,
     color: colors.text.tertiary,
   },
-  statLabel: {
+  label: {
     fontSize: fontSize.xs,
     color: colors.text.tertiary,
     textAlign: 'center',
   },
-  verticalDivider: {
-    width: 1,
-    backgroundColor: colors.border.light,
+  locationCard: {
+    justifyContent: 'center',
   },
-  horizontalDivider: {
-    height: 1,
-    backgroundColor: colors.border.light,
+  locationContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  locationIconWrapper: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.tertiary.light,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  locationValue: {
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.semibold,
+    color: colors.text.primary,
+    flex: 1,
   },
 })

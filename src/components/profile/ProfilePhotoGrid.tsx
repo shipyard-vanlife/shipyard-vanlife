@@ -4,8 +4,7 @@ import {
   Text,
   Image,
   StyleSheet,
-  FlatList,
-  Dimensions,
+  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native'
@@ -14,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { colors, spacing, fontSize, fontWeight, borderRadius } from '../../styles/theme'
 
 const MAX_PHOTOS = 5
+const PHOTO_SIZE = 110
 
 interface ProfilePhotoGridProps {
   photos: string[]
@@ -23,13 +23,6 @@ interface ProfilePhotoGridProps {
   isUploading?: boolean
   isDeleting?: boolean
 }
-
-const NUM_COLUMNS = 2
-const SCREEN_WIDTH = Dimensions.get('window').width
-const GAP = spacing.md
-const HORIZONTAL_PADDING = spacing.xl
-const PHOTO_SIZE =
-  (SCREEN_WIDTH - HORIZONTAL_PADDING * 2 - GAP * (NUM_COLUMNS - 1)) / NUM_COLUMNS
 
 export const ProfilePhotoGrid: React.FC<ProfilePhotoGridProps> = ({
   photos,
@@ -43,92 +36,64 @@ export const ProfilePhotoGrid: React.FC<ProfilePhotoGridProps> = ({
 
   const canAddMore = photos.length < MAX_PHOTOS
 
-  const renderPhoto = ({ item, index }: { item: string; index: number }) => (
-    <View
-      style={[
-        styles.photoContainer,
-        index % NUM_COLUMNS === 0 ? styles.photoLeft : styles.photoRight,
-      ]}
-    >
-      <Image source={{ uri: item }} style={styles.photo} />
-      {isOwnProfile && onDeletePhoto ? (
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={() => onDeletePhoto(item)}
-          activeOpacity={0.7}
-          disabled={isDeleting}
-        >
-          <Ionicons name="close" size={16} color={colors.white} />
-        </TouchableOpacity>
-      ) : null}
-    </View>
-  )
-
-  const renderAddButton = () => {
-    if (!isOwnProfile || !onAddPhoto || !canAddMore) return null
-
-    return (
-      <TouchableOpacity
-        style={[styles.photoContainer, styles.addButton]}
-        onPress={onAddPhoto}
-        activeOpacity={0.7}
-        disabled={isUploading}
-      >
-        {isUploading ? (
-          <ActivityIndicator size="small" color={colors.secondary.main} />
-        ) : (
-          <Ionicons name="add" size={32} color={colors.text.tertiary} />
-        )}
-      </TouchableOpacity>
-    )
-  }
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{t('sections.photos')}</Text>
 
-      {photos.length > 0 ? (
-        <View style={styles.gridContainer}>
-          <FlatList
-            data={photos}
-            renderItem={renderPhoto}
-            keyExtractor={(item, index) => `photo-${index}`}
-            numColumns={NUM_COLUMNS}
-            scrollEnabled={false}
-            columnWrapperStyle={styles.row}
-            ListFooterComponent={renderAddButton}
-          />
-        </View>
-      ) : (
-        <View style={styles.placeholder}>
-          <Ionicons name="images-outline" size={32} color={colors.text.muted} />
-          <Text style={styles.placeholderText}>{t('placeholders.noPhotos')}</Text>
-          {isOwnProfile && onAddPhoto ? (
-            <TouchableOpacity
-              style={styles.addPhotoButton}
-              onPress={onAddPhoto}
-              activeOpacity={0.7}
-              disabled={isUploading}
-            >
-              {isUploading ? (
-                <ActivityIndicator size="small" color={colors.white} />
-              ) : (
-                <>
-                  <Ionicons name="add" size={16} color={colors.white} />
-                  <Text style={styles.addPhotoButtonText}>{t('photos.add')}</Text>
-                </>
-              )}
-            </TouchableOpacity>
-          ) : null}
-        </View>
-      )}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {photos.map((photoUrl, index) => (
+          <View key={`photo-${index}`} style={styles.photoWrapper}>
+            <Image source={{ uri: photoUrl }} style={styles.photo} />
+            {isOwnProfile && onDeletePhoto ? (
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => onDeletePhoto(photoUrl)}
+                activeOpacity={0.7}
+                disabled={isDeleting}
+              >
+                <Ionicons name="close" size={14} color={colors.white} />
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        ))}
+
+        {/* Add button */}
+        {isOwnProfile && onAddPhoto && canAddMore ? (
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={onAddPhoto}
+            activeOpacity={0.7}
+            disabled={isUploading}
+          >
+            {isUploading ? (
+              <ActivityIndicator size="small" color={colors.secondary.main} />
+            ) : (
+              <>
+                <Ionicons name="add" size={24} color={colors.text.tertiary} />
+                <Text style={styles.addText}>{t('actions.addPhoto')}</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        ) : null}
+
+        {/* Empty state */}
+        {photos.length === 0 && !isOwnProfile ? (
+          <View style={styles.emptyState}>
+            <Ionicons name="images-outline" size={24} color={colors.text.muted} />
+            <Text style={styles.emptyText}>{t('placeholders.noPhotos')}</Text>
+          </View>
+        ) : null}
+      </ScrollView>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: spacing.lg,
     paddingBottom: spacing.lg,
   },
   title: {
@@ -138,25 +103,16 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     paddingHorizontal: spacing.xl,
   },
-  gridContainer: {
+  scrollContent: {
     paddingHorizontal: spacing.xl,
+    gap: spacing.md,
   },
-  row: {
-    marginBottom: GAP,
-  },
-  photoContainer: {
-    width: PHOTO_SIZE,
-    height: PHOTO_SIZE,
-  },
-  photoLeft: {
-    marginRight: GAP / 2,
-  },
-  photoRight: {
-    marginLeft: GAP / 2,
+  photoWrapper: {
+    position: 'relative',
   },
   photo: {
-    width: '100%',
-    height: '100%',
+    width: PHOTO_SIZE,
+    height: PHOTO_SIZE,
     borderRadius: borderRadius.lg,
     backgroundColor: colors.primary.dark,
   },
@@ -164,51 +120,40 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: spacing.xs,
     right: spacing.xs,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   addButton: {
+    width: PHOTO_SIZE,
+    height: PHOTO_SIZE,
     borderRadius: borderRadius.lg,
     backgroundColor: colors.primary.light,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.border.light,
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  placeholder: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.xxl,
-    marginHorizontal: spacing.xl,
-    backgroundColor: colors.primary.light,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: colors.border.light,
-    borderStyle: 'dashed',
+  addText: {
+    fontSize: fontSize.xs,
+    color: colors.text.tertiary,
+    marginTop: spacing.xs,
   },
-  placeholderText: {
-    marginTop: spacing.sm,
-    fontSize: fontSize.sm,
+  emptyState: {
+    width: PHOTO_SIZE * 2,
+    height: PHOTO_SIZE,
+    borderRadius: borderRadius.lg,
+    backgroundColor: colors.primary.light,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: fontSize.xs,
     color: colors.text.muted,
-  },
-  addPhotoButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: spacing.lg,
-    backgroundColor: colors.secondary.main,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    borderRadius: borderRadius.lg,
-    gap: spacing.xs,
-  },
-  addPhotoButtonText: {
-    color: colors.white,
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
+    marginTop: spacing.xs,
   },
 })

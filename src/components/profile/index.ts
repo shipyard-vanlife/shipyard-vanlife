@@ -1,6 +1,8 @@
 export { ProfileHeader } from './ProfileHeader'
 export { ProfileStats } from './ProfileStats'
 export { ProfileSkillBadges } from './ProfileSkillBadges'
+export { ProfileVanSection } from './ProfileVanSection'
 export { ProfilePhotoGrid } from './ProfilePhotoGrid'
 export { ProfileAboutSection } from './ProfileAboutSection'
 export { ProfileActionButton } from './ProfileActionButton'
+export { ProfileEditModal } from './ProfileEditModal'

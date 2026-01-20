@@ -2,6 +2,24 @@
   "header": {
     "edit": "Modifier"
   },
+  "edit": {
+    "title": "Modifier mon profil",
+    "vanNameLabel": "Nom de ton van",
+    "vanNamePlaceholder": "Ex: Marcel, Fernand...",
+    "vanPhotoLabel": "Photo du van",
+    "vanPhotoHint": "Appuie pour changer la photo",
+    "bioLabel": "À propos de toi",
+    "bioPlaceholder": "Raconte ton histoire, ton voyage, tes passions...",
+    "bioCharCount": "{{count}}/500",
+    "mainSpecialtyLabel": "Ta spécialité principale",
+    "mainSpecialtyHint": "Sélectionne ta compétence principale",
+    "visibilityLabel": "Profil visible",
+    "visibilityDescription": "Les autres vanlifers peuvent te voir sur la carte",
+    "saveButton": "Enregistrer",
+    "saving": "Enregistrement...",
+    "success": "Profil mis à jour",
+    "error": "Impossible de sauvegarder les modifications"
+  },
   "stats": {
     "daysOnRoad": "En van",
     "daysUnit": "jours",
@@ -11,6 +29,7 @@
     "notDefined": "Non défini"
   },
   "sections": {
+    "van": "Mon van",
     "photos": "Photos",
     "about": "À propos"
   },
@@ -18,6 +37,7 @@
     "viewTrip": "Voir le parcours",
     "sendMessage": "Envoyer un message",
     "addPhoto": "Ajouter",
+    "addVan": "Ajouter mon van",
     "editProfile": "Modifier le profil",
     "signOut": "Se déconnecter",
     "deleteAccount": "Supprimer mon compte"
@@ -32,6 +52,7 @@
     "year_other": "{{count}} ans"
   },
   "placeholders": {
+    "noVan": "Aucune info sur le van",
     "noPhotos": "Aucune photo pour le moment",
     "noBio": "Aucune description"
   },
