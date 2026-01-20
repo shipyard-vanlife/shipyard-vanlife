@@ -77,15 +77,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister }
             secureTextEntry={!showPassword}
             editable={!loading}
           />
-          <TouchableOpacity
-            style={styles.eyeButton}
-            onPress={() => setShowPassword(!showPassword)}
-          >
-            <Ionicons
-              name={showPassword ? 'eye-off' : 'eye'}
-              size={24}
-              color="#666"
-            />
+          <TouchableOpacity style={styles.eyeButton} onPress={() => setShowPassword(!showPassword)}>
+            <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color="#666" />
           </TouchableOpacity>
         </View>
 

@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native'
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 
@@ -43,38 +36,24 @@ export const TermsModal: React.FC<TermsModalProps> = ({ visible, onClose, onAcce
 
         <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
           <Text style={styles.sectionTitle}>1. {t('terms.section1Title')}</Text>
-          <Text style={styles.paragraph}>
-            {t('terms.section1Content')}
-          </Text>
+          <Text style={styles.paragraph}>{t('terms.section1Content')}</Text>
 
           <Text style={styles.sectionTitle}>2. {t('terms.section2Title')}</Text>
-          <Text style={styles.paragraph}>
-            {t('terms.section2Content')}
-          </Text>
+          <Text style={styles.paragraph}>{t('terms.section2Content')}</Text>
 
           <Text style={styles.sectionTitle}>3. {t('terms.section3Title')}</Text>
-          <Text style={styles.paragraph}>
-            {t('terms.section3Content')}
-          </Text>
+          <Text style={styles.paragraph}>{t('terms.section3Content')}</Text>
 
           <Text style={styles.sectionTitle}>4. {t('terms.section4Title')}</Text>
-          <Text style={styles.paragraph}>
-            {t('terms.section4Content')}
-          </Text>
+          <Text style={styles.paragraph}>{t('terms.section4Content')}</Text>
 
           <Text style={styles.sectionTitle}>5. {t('terms.section5Title')}</Text>
-          <Text style={styles.paragraph}>
-            {t('terms.section5Content')}
-          </Text>
+          <Text style={styles.paragraph}>{t('terms.section5Content')}</Text>
 
           <Text style={styles.sectionTitle}>6. {t('terms.section6Title')}</Text>
-          <Text style={styles.paragraph}>
-            {t('terms.section6Content')}
-          </Text>
+          <Text style={styles.paragraph}>{t('terms.section6Content')}</Text>
 
-          <Text style={styles.lastUpdate}>
-            {t('terms.lastUpdate')}
-          </Text>
+          <Text style={styles.lastUpdate}>{t('terms.lastUpdate')}</Text>
         </ScrollView>
 
         {onAccept && (
