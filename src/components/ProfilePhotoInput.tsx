@@ -15,15 +15,14 @@ interface ProfilePhotoInputProps {
   imageUri: string | null
   isLoading: boolean
   error: ImagePickerError | null
-  onPickImage: () => void
-  onTakePhoto: () => void
+  onPickImage: () => Promise<void>
+  onTakePhoto: () => Promise<void>
   disabled?: boolean
 }
 
 // Map error codes to i18n keys
 const errorKeys: Record<string, string> = {
   PERMISSION_DENIED: 'photo.errors.permissionDenied',
-  CANCELLED: 'photo.errors.cancelled',
   UPLOAD_FAILED: 'photo.errors.uploadFailed',
   UNKNOWN: 'photo.errors.unknown',
 }
@@ -45,14 +44,14 @@ export const ProfilePhotoInput: React.FC<ProfilePhotoInputProps> = ({
     setShowModal(true)
   }
 
-  const handlePickImage = () => {
+  const handlePickImage = async () => {
+    await onPickImage()
     setShowModal(false)
-    onPickImage()
   }
 
-  const handleTakePhoto = () => {
+  const handleTakePhoto = async () => {
+    await onTakePhoto()
     setShowModal(false)
-    onTakePhoto()
   }
 
   return (
@@ -77,9 +76,7 @@ export const ProfilePhotoInput: React.FC<ProfilePhotoInputProps> = ({
 
       <Text style={styles.hint}>{t('photo.optional')}</Text>
 
-      {errorMessage && error?.code !== 'CANCELLED' ? (
-        <Text style={styles.error}>{t(errorMessage)}</Text>
-      ) : null}
+      {errorMessage ? <Text style={styles.error}>{t(errorMessage)}</Text> : null}
 
       {/* Photo Source Selection Modal */}
       <Modal visible={showModal} transparent animationType="fade" onRequestClose={() => setShowModal(false)}>
