@@ -38,6 +38,36 @@ export const createProfileSchema = z.object({
 
 export type CreateProfileInput = z.infer<typeof createProfileSchema>
 
+// Optional van name (for updates where it can be empty)
+export const vanNameOptionalSchema = z
+  .string()
+  .trim()
+  .max(50, 'validation.vanNameMax')
+  .regex(vanNameRegex, 'validation.vanNameChars')
+  .optional()
+  .or(z.literal(''))
+  .transform((v) => (v && v.length > 0 ? v : null))
+
+// Bio field
+export const bioSchema = z
+  .string()
+  .trim()
+  .max(500, 'validation.bioMax')
+  .optional()
+  .or(z.literal(''))
+  .transform((v) => (v && v.length > 0 ? v : null))
+
+// Update profile schema (for edit modal - all fields optional)
+export const updateProfileSchema = z.object({
+  van_name: vanNameOptionalSchema,
+  van_photo_url: z.string().url().nullable().optional(),
+  bio: bioSchema,
+  main_specialty: skillSchema.nullable().optional(),
+  is_visible: z.boolean().optional(),
+})
+
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>
+
 // ============================================
 // LOCATION SCHEMAS (pour plus tard)
 // ============================================
