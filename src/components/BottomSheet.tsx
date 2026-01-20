@@ -5,6 +5,7 @@ import {
   Animated,
   Dimensions,
   Image,
+  Modal,
   PanResponder,
   ScrollView,
   StyleSheet,
@@ -15,11 +16,12 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import { UserProfile } from '../types/user'
 import { SkillBadge } from './SkillBadge'
+import { ProfilePhotoGrid } from './profile/ProfilePhotoGrid'
 import { colors } from '../styles/theme'
 
 const SCREEN_HEIGHT = Dimensions.get('window').height
 const MIN_HEIGHT = 120
-const MAX_HEIGHT = SCREEN_HEIGHT * 0.85
+const MAX_HEIGHT = SCREEN_HEIGHT * 0.95
 
 interface BottomSheetProps {
   profile: UserProfile
@@ -31,6 +33,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
   const scrollViewRef = useRef<ScrollView>(null)
   const [sheetHeight] = useState(new Animated.Value(MIN_HEIGHT))
   const [isClosing, setIsClosing] = useState(false)
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null)
 
   const handleConnect = () => {
     // TODO: Implémenter la logique de connexion
@@ -45,50 +48,35 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
   const handleClose = () => {
     if (isClosing || !onClose) return
     setIsClosing(true)
-
-    Animated.spring(sheetHeight, {
-      toValue: 0,
-      useNativeDriver: false,
-      tension: 50,
-      friction: 8,
-    }).start(() => {
-      setTimeout(() => {
-        onClose()
-      }, 50)
-    })
+    onClose()
   }
 
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dy) > 5,
+      onMoveShouldSetPanResponder: (_, gesture) => gesture.dy < 0 && Math.abs(gesture.dy) > 5,
       onPanResponderMove: (_, gesture) => {
-        if (isClosing) return
+        if (isClosing || gesture.dy > 0) return // Only allow swipe UP
         const newHeight = MIN_HEIGHT - gesture.dy
-        if (newHeight >= 0 && newHeight <= MAX_HEIGHT) {
+        if (newHeight >= MIN_HEIGHT && newHeight <= MAX_HEIGHT) {
           sheetHeight.setValue(newHeight)
         }
       },
       onPanResponderRelease: (_, gesture) => {
-        if (isClosing) return
+        if (isClosing || gesture.dy > 0) return // Only handle swipe UP
 
         if (gesture.dy < -50) {
-          // Swipe up - expand
+          // Swipe up - expand to max
           Animated.spring(sheetHeight, {
             toValue: MAX_HEIGHT,
             useNativeDriver: false,
             tension: 50,
             friction: 8,
           }).start()
-        } else if (gesture.dy > 50) {
-          // Swipe down - close
-          handleClose()
         } else {
-          // Small movement - snap to closest position
-          const currentHeight = MIN_HEIGHT - gesture.dy
-          const target = currentHeight > (MIN_HEIGHT + MAX_HEIGHT) / 2 ? MAX_HEIGHT : MIN_HEIGHT
+          // Small movement - return to MIN
           Animated.spring(sheetHeight, {
-            toValue: target,
+            toValue: MIN_HEIGHT,
             useNativeDriver: false,
             tension: 50,
             friction: 8,
@@ -102,16 +90,6 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
     <Animated.View style={[styles.container, { height: sheetHeight }]}>
       <View style={styles.handleContainer} {...panResponder.panHandlers}>
         <View style={styles.handle} />
-        {onClose && (
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={handleClose}
-            activeOpacity={0.7}
-            disabled={isClosing}
-          >
-            <Ionicons name="close" size={24} color={colors.text.primary} />
-          </TouchableOpacity>
-        )}
       </View>
 
       <ScrollView
@@ -119,17 +97,23 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        bounces={false}
+        bounces={true}
       >
         <View style={styles.contentContainer}>
           {/* Photo du van */}
-          <View style={styles.vanPhotoContainer}>
-            <Image
-              source={require('../../assets/van-life.jpg')}
-              style={styles.vanPhoto}
-              resizeMode="cover"
-            />
-          </View>
+          {profile.van_photo_url && (
+            <TouchableOpacity
+              style={styles.vanPhotoContainer}
+              onPress={() => setZoomedImage(profile.van_photo_url)}
+              activeOpacity={0.9}
+            >
+              <Image
+                source={{ uri: profile.van_photo_url }}
+                style={styles.vanPhoto}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
+          )}
 
           {/* Avatar + Nom utilisateur + van */}
           <View style={styles.headerContainer}>
@@ -178,6 +162,15 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
             </View>
           </View>
 
+          {/* Photos gallery */}
+          {profile.photos && profile.photos.length > 0 && (
+            <ProfilePhotoGrid
+              photos={profile.photos}
+              isOwnProfile={false}
+              onPhotoPress={setZoomedImage}
+            />
+          )}
+
           {/* Actions pour interagir avec ce vanlifer */}
           <TouchableOpacity style={styles.connectButton} onPress={handleConnect}>
             <Ionicons name="person-add" size={20} color={colors.white} />
@@ -190,6 +183,32 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Close button - fixed position on top */}
+      {onClose && (
+        <TouchableOpacity
+          style={styles.closeButton}
+          onPress={handleClose}
+          activeOpacity={0.7}
+          disabled={isClosing}
+        >
+          <Ionicons name="close" size={24} color={colors.text.primary} />
+        </TouchableOpacity>
+      )}
+
+      {/* Image Zoom Modal */}
+      <Modal visible={!!zoomedImage} transparent animationType="fade" onRequestClose={() => setZoomedImage(null)}>
+        <View style={styles.zoomModalContainer}>
+          <TouchableOpacity style={styles.zoomModalOverlay} activeOpacity={1} onPress={() => setZoomedImage(null)}>
+            <TouchableOpacity activeOpacity={1} onPress={e => e.stopPropagation()}>
+              {zoomedImage && <Image source={{ uri: zoomedImage }} style={styles.zoomedImage} resizeMode="contain" />}
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.zoomCloseButton} onPress={() => setZoomedImage(null)}>
+              <Ionicons name="close" size={30} color={colors.white} />
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </Animated.View>
   )
 }
@@ -227,22 +246,22 @@ const styles = StyleSheet.create({
   closeButton: {
     position: 'absolute',
     right: 16,
-    top: 8,
+    top: 16,
     padding: 8,
     backgroundColor: colors.primary.main,
     borderRadius: 20,
-    zIndex: 10,
+    zIndex: 9999,
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 10,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 5,
+    paddingBottom: 100,
   },
   contentContainer: {
     paddingHorizontal: 20,
@@ -354,5 +373,26 @@ const styles = StyleSheet.create({
     color: colors.secondary.main,
     fontSize: 16,
     fontWeight: '600',
+  },
+  zoomModalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+  },
+  zoomModalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  zoomedImage: {
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height,
+  },
+  zoomCloseButton: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    padding: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 25,
   },
 })

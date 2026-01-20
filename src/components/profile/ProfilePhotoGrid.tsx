@@ -20,6 +20,7 @@ interface ProfilePhotoGridProps {
   isOwnProfile?: boolean
   onAddPhoto?: () => void
   onDeletePhoto?: (photoUrl: string) => void
+  onPhotoPress?: (photoUrl: string) => void
   isUploading?: boolean
   isDeleting?: boolean
 }
@@ -29,6 +30,7 @@ export const ProfilePhotoGrid: React.FC<ProfilePhotoGridProps> = ({
   isOwnProfile = false,
   onAddPhoto,
   onDeletePhoto,
+  onPhotoPress,
   isUploading = false,
   isDeleting = false,
 }) => {
@@ -46,7 +48,13 @@ export const ProfilePhotoGrid: React.FC<ProfilePhotoGridProps> = ({
         contentContainerStyle={styles.scrollContent}
       >
         {photos.map((photoUrl, index) => (
-          <View key={`photo-${index}`} style={styles.photoWrapper}>
+          <TouchableOpacity
+            key={`photo-${index}`}
+            style={styles.photoWrapper}
+            onPress={() => onPhotoPress?.(photoUrl)}
+            activeOpacity={0.9}
+            disabled={!onPhotoPress}
+          >
             <Image source={{ uri: photoUrl }} style={styles.photo} />
             {isOwnProfile && onDeletePhoto ? (
               <TouchableOpacity
@@ -58,7 +66,7 @@ export const ProfilePhotoGrid: React.FC<ProfilePhotoGridProps> = ({
                 <Ionicons name="close" size={14} color={colors.white} />
               </TouchableOpacity>
             ) : null}
-          </View>
+          </TouchableOpacity>
         ))}
 
         {/* Add button */}
