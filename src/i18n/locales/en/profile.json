@@ -1,0 +1,36 @@
+{
+  "stats": {
+    "distance": "Distance traveled",
+    "connections": "Connections",
+    "currentLocation": "Current location",
+    "notDefined": "Not defined"
+  },
+  "sections": {
+    "photos": "Photos",
+    "about": "About"
+  },
+  "actions": {
+    "viewTrip": "View trip",
+    "editProfile": "Edit profile",
+    "signOut": "Sign out",
+    "deleteAccount": "Delete account"
+  },
+  "tagline": {
+    "onRoadFor": "On the road for",
+    "day_one": "{{count}} day",
+    "day_other": "{{count}} days",
+    "month_one": "{{count}} month",
+    "month_other": "{{count}} months",
+    "year_one": "{{count}} year",
+    "year_other": "{{count}} years"
+  },
+  "placeholders": {
+    "noPhotos": "No photos yet",
+    "noBio": "No description"
+  },
+  "loading": "Loading profile...",
+  "error": {
+    "notFound": "Profile not found",
+    "loadFailed": "Failed to load profile"
+  }
+}

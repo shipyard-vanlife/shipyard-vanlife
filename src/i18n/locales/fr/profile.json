@@ -1,0 +1,36 @@
+{
+  "stats": {
+    "distance": "Distance parcourue",
+    "connections": "Connexions",
+    "currentLocation": "Lieu actuel",
+    "notDefined": "Non défini"
+  },
+  "sections": {
+    "photos": "Photos",
+    "about": "À propos"
+  },
+  "actions": {
+    "viewTrip": "Voir le parcours",
+    "editProfile": "Modifier le profil",
+    "signOut": "Se déconnecter",
+    "deleteAccount": "Supprimer mon compte"
+  },
+  "tagline": {
+    "onRoadFor": "Sur la route depuis",
+    "day_one": "{{count}} jour",
+    "day_other": "{{count}} jours",
+    "month_one": "{{count}} mois",
+    "month_other": "{{count}} mois",
+    "year_one": "{{count}} an",
+    "year_other": "{{count}} ans"
+  },
+  "placeholders": {
+    "noPhotos": "Aucune photo pour le moment",
+    "noBio": "Aucune description"
+  },
+  "loading": "Chargement du profil...",
+  "error": {
+    "notFound": "Profil introuvable",
+    "loadFailed": "Impossible de charger le profil"
+  }
+}
