@@ -31,7 +31,6 @@ export function useImagePicker(): UseImagePickerResult {
     setIsLoading(true)
 
     try {
-      // Request permission
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync()
 
       if (!permissionResult.granted) {
@@ -39,7 +38,6 @@ export function useImagePicker(): UseImagePickerResult {
         return
       }
 
-      // Launch image picker
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
         allowsEditing: true,
@@ -47,7 +45,6 @@ export function useImagePicker(): UseImagePickerResult {
         quality: 0.8,
       })
 
-      // Annulation = ne rien faire (pas une erreur)
       if (!result.canceled && result.assets[0]?.uri) {
         setImageUri(result.assets[0].uri)
         setUploadedUrl(null)
@@ -67,7 +64,6 @@ export function useImagePicker(): UseImagePickerResult {
     setIsLoading(true)
 
     try {
-      // Request camera permission explicitly
       const { granted } = await ImagePicker.requestCameraPermissionsAsync()
       if (!granted) {
         setError({ code: 'PERMISSION_DENIED', message: 'Camera permission denied' })
@@ -80,7 +76,6 @@ export function useImagePicker(): UseImagePickerResult {
         quality: 0.8,
       })
 
-      // Annulation = ne rien faire (pas une erreur)
       if (!result.canceled && result.assets[0]?.uri) {
         setImageUri(result.assets[0].uri)
         setUploadedUrl(null)
@@ -97,13 +92,14 @@ export function useImagePicker(): UseImagePickerResult {
 
   const uploadImage = useCallback(
     async (userId: string): Promise<string | null> => {
-      if (!imageUri) return null
+      if (!imageUri) {
+        return null
+      }
 
       setError(null)
       setIsLoading(true)
 
       try {
-        // Get file extension from URI
         const ext = imageUri.split('.').pop()?.toLowerCase() || 'jpg'
         const fileName = `${userId}/avatar.${ext}`
 
@@ -111,13 +107,32 @@ export function useImagePicker(): UseImagePickerResult {
         const response = await fetch(imageUri)
         const blob = await response.blob()
 
-        // Convert blob to array buffer for Supabase
-        const arrayBuffer = await blob.arrayBuffer()
+        // Convert blob to base64 using FileReader (React Native compatible)
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onloadend = () => {
+            if (typeof reader.result === 'string') {
+              const base64Data = reader.result.split(',')[1]
+              resolve(base64Data)
+            } else {
+              reject(new Error('Failed to read file as base64'))
+            }
+          }
+          reader.onerror = reject
+          reader.readAsDataURL(blob)
+        })
+
+        // Decode base64 to Uint8Array for Supabase
+        const binaryString = atob(base64)
+        const bytes = new Uint8Array(binaryString.length)
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i)
+        }
 
         // Upload to Supabase Storage
         const { error: uploadError } = await supabase.storage
           .from('avatars')
-          .upload(fileName, arrayBuffer, {
+          .upload(fileName, bytes, {
             contentType: `image/${ext === 'jpg' ? 'jpeg' : ext}`,
             upsert: true,
           })
@@ -126,12 +141,11 @@ export function useImagePicker(): UseImagePickerResult {
           throw uploadError
         }
 
-        // Get public URL
+        // Get public URL with cache buster
         const {
           data: { publicUrl },
         } = supabase.storage.from('avatars').getPublicUrl(fileName)
 
-        // Add cache buster to URL
         const urlWithCacheBuster = `${publicUrl}?t=${Date.now()}`
         setUploadedUrl(urlWithCacheBuster)
 
