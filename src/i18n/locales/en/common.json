@@ -25,7 +25,8 @@
     "usernameChars": "Allowed characters: letters, numbers, spaces, - _ &",
     "vanNameRequired": "Van name is required",
     "vanNameMax": "Maximum 50 characters",
-    "vanNameChars": "Allowed characters: letters, numbers, spaces, - _ '"
+    "vanNameChars": "Allowed characters: letters, numbers, spaces, - _ '",
+    "bioMax": "Maximum 500 characters"
   },
   "profile": {
     "deleteTitle": "Delete profile",

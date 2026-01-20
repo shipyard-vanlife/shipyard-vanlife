@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { StatusBar } from 'expo-status-bar'
 import { useState } from 'react'
 import { ActivityIndicator, StyleSheet, View } from 'react-native'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { AuthProvider, useAuth } from './src/contexts/AuthContext'
 import { useMyProfile } from './src/hooks/useProfiles'
 import './src/i18n'
@@ -68,12 +69,14 @@ function Navigation() {
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Navigation />
-        <StatusBar style="auto" />
-      </AuthProvider>
-    </QueryClientProvider>
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <Navigation />
+          <StatusBar style="auto" />
+        </AuthProvider>
+      </QueryClientProvider>
+    </SafeAreaProvider>
   )
 }
 

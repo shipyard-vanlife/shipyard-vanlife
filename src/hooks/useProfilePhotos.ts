@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { supabase } from '../services/supabase'
 import { useUpdateProfile } from './useProfiles'
 import { useAuth } from '../contexts/AuthContext'
+import { compressImageWithPreset } from '../utils/imageCompression'
 
 const MAX_PHOTOS = 5
 const BUCKET_NAME = 'profile-photos'
@@ -50,12 +51,15 @@ export function useProfilePhotosUpload(): UseProfilePhotosUploadReturn {
 
       setIsUploading(true)
       try {
-        const ext = imageUri.split('.').pop()?.toLowerCase() || 'jpg'
-        const uniqueId = generateUniqueId()
-        const fileName = `${user.id}/${uniqueId}.${ext}`
+        // Compress image before upload (target ~150 KB for gallery photos)
+        const compressed = await compressImageWithPreset(imageUri, 'gallery')
 
-        // Fetch the image as blob
-        const response = await fetch(imageUri)
+        const uniqueId = generateUniqueId()
+        // Always use jpg for compressed images
+        const fileName = `${user.id}/${uniqueId}.jpg`
+
+        // Fetch the compressed image as blob
+        const response = await fetch(compressed.uri)
         const blob = await response.blob()
 
         // Convert blob to base64 using FileReader (React Native compatible)
@@ -84,7 +88,7 @@ export function useProfilePhotosUpload(): UseProfilePhotosUploadReturn {
         const { error: uploadError } = await supabase.storage
           .from(BUCKET_NAME)
           .upload(fileName, bytes, {
-            contentType: `image/${ext === 'jpg' ? 'jpeg' : ext}`,
+            contentType: 'image/jpeg',
             upsert: false,
           })
 

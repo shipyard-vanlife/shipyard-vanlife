@@ -3,31 +3,36 @@ import * as ImagePicker from 'expo-image-picker'
 import { supabase } from '../services/supabase'
 import { compressImageWithPreset } from '../utils/imageCompression'
 
-export type ImagePickerErrorCode = 'PERMISSION_DENIED' | 'UPLOAD_FAILED' | 'UNKNOWN'
+export type VanPhotoErrorCode = 'PERMISSION_DENIED' | 'UPLOAD_FAILED' | 'UNKNOWN'
 
-export interface ImagePickerError {
-  code: ImagePickerErrorCode
+export interface VanPhotoError {
+  code: VanPhotoErrorCode
   message: string
 }
 
-export interface UseImagePickerResult {
+export interface UseVanPhotoUploadReturn {
   imageUri: string | null
-  uploadedUrl: string | null
   isLoading: boolean
-  error: ImagePickerError | null
+  error: VanPhotoError | null
   pickImage: () => Promise<void>
   takePhoto: () => Promise<void>
-  uploadImage: (userId: string) => Promise<string | null>
+  uploadVanPhoto: (userId: string) => Promise<string | null>
   clearImage: () => void
+  setImageFromUrl: (url: string | null) => void
 }
 
-export function useImagePicker(): UseImagePickerResult {
-  const [imageUri, setImageUri] = useState<string | null>(null)
-  const [uploadedUrl, setUploadedUrl] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<ImagePickerError | null>(null)
+const BUCKET_NAME = 'van-photos'
 
-  // Use ref to track picking state to avoid closure issues
+/**
+ * Hook for uploading van photo.
+ * Similar to useImagePicker but dedicated to van photos.
+ * Uploads to van-photos bucket with filename: {userId}/van.{ext}
+ */
+export function useVanPhotoUpload(): UseVanPhotoUploadReturn {
+  const [imageUri, setImageUri] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<VanPhotoError | null>(null)
+
   const isPickingRef = useRef(false)
 
   const pickImage = useCallback(async () => {
@@ -55,13 +60,12 @@ export function useImagePicker(): UseImagePickerResult {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
         allowsEditing: true,
-        aspect: [1, 1],
+        aspect: [16, 9], // Van photos are typically landscape
         quality: 0.8,
       })
 
       if (!result.canceled && result.assets[0]?.uri) {
         setImageUri(result.assets[0].uri)
-        setUploadedUrl(null)
       }
     } catch (err) {
       setError({
@@ -99,13 +103,12 @@ export function useImagePicker(): UseImagePickerResult {
 
       const result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
-        aspect: [1, 1],
+        aspect: [16, 9], // Van photos are typically landscape
         quality: 0.8,
       })
 
       if (!result.canceled && result.assets[0]?.uri) {
         setImageUri(result.assets[0].uri)
-        setUploadedUrl(null)
       }
     } catch (err) {
       setError({
@@ -119,21 +122,26 @@ export function useImagePicker(): UseImagePickerResult {
     }
   }, [])
 
-  const uploadImage = useCallback(
+  const uploadVanPhoto = useCallback(
     async (userId: string): Promise<string | null> => {
       if (!imageUri) {
         return null
+      }
+
+      // If it's already a URL (not a local file), just return it
+      if (imageUri.startsWith('http')) {
+        return imageUri
       }
 
       setError(null)
       setIsLoading(true)
 
       try {
-        // Compress image before upload (target ~100 KB for avatars)
-        const compressed = await compressImageWithPreset(imageUri, 'avatar')
+        // Compress image before upload (target ~150 KB for van photos)
+        const compressed = await compressImageWithPreset(imageUri, 'vanPhoto')
 
         // Always use jpg for compressed images
-        const fileName = `${userId}/avatar.jpg`
+        const fileName = `${userId}/van.jpg`
 
         // Fetch the compressed image as blob
         const response = await fetch(compressed.uri)
@@ -162,12 +170,10 @@ export function useImagePicker(): UseImagePickerResult {
         }
 
         // Upload to Supabase Storage
-        const { error: uploadError } = await supabase.storage
-          .from('avatars')
-          .upload(fileName, bytes, {
-            contentType: 'image/jpeg',
-            upsert: true,
-          })
+        const { error: uploadError } = await supabase.storage.from(BUCKET_NAME).upload(fileName, bytes, {
+          contentType: 'image/jpeg',
+          upsert: true, // Replace existing van photo
+        })
 
         if (uploadError) {
           throw uploadError
@@ -176,16 +182,15 @@ export function useImagePicker(): UseImagePickerResult {
         // Get public URL with cache buster
         const {
           data: { publicUrl },
-        } = supabase.storage.from('avatars').getPublicUrl(fileName)
+        } = supabase.storage.from(BUCKET_NAME).getPublicUrl(fileName)
 
         const urlWithCacheBuster = `${publicUrl}?t=${Date.now()}`
-        setUploadedUrl(urlWithCacheBuster)
 
         return urlWithCacheBuster
       } catch (err) {
         setError({
           code: 'UPLOAD_FAILED',
-          message: err instanceof Error ? err.message : 'Failed to upload image',
+          message: err instanceof Error ? err.message : 'Failed to upload van photo',
         })
         return null
       } finally {
@@ -197,18 +202,23 @@ export function useImagePicker(): UseImagePickerResult {
 
   const clearImage = useCallback(() => {
     setImageUri(null)
-    setUploadedUrl(null)
+    setError(null)
+  }, [])
+
+  // Allow setting image from existing URL (for edit mode)
+  const setImageFromUrl = useCallback((url: string | null) => {
+    setImageUri(url)
     setError(null)
   }, [])
 
   return {
     imageUri,
-    uploadedUrl,
     isLoading,
     error,
     pickImage,
     takePhoto,
-    uploadImage,
+    uploadVanPhoto,
     clearImage,
+    setImageFromUrl,
   }
 }
