@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { useMyFriends, useConnectionRequests, useAcceptConnection, useRejectConnection } from '../hooks/useConnections'
+import { useMyFriends, useConnectionRequests, useAcceptConnection, useRejectConnection, useDeleteConnection } from '../hooks/useConnections'
 import { Friend, ConnectionRequest } from '../types/chat'
 import { colors } from '../styles/theme'
 
@@ -24,6 +24,7 @@ export const ChatScreen: React.FC = () => {
   const { data: requests, isLoading: loadingRequests } = useConnectionRequests()
   const { mutate: acceptConnection } = useAcceptConnection()
   const { mutate: rejectConnection } = useRejectConnection()
+  const { mutate: deleteConnection } = useDeleteConnection()
 
   const renderFriendItem = ({ item }: { item: Friend }) => (
     <TouchableOpacity style={styles.friendCard}>
@@ -36,21 +37,37 @@ export const ChatScreen: React.FC = () => {
           </View>
         )}
         <View style={styles.friendText}>
-          <Text style={styles.friendName}>{item.friend_username}</Text>
+          <View style={styles.friendNameRow}>
+            <Text style={styles.friendName}>{item.friend_username}</Text>
+            {item.status === 'pending' && (
+              <View style={styles.pendingBadge}>
+                <Text style={styles.pendingText}>En cours</Text>
+              </View>
+            )}
+          </View>
           {item.last_message ? (
             <Text style={styles.lastMessage} numberOfLines={1}>
               {item.last_message}
             </Text>
           ) : (
-            <Text style={styles.noMessage}>Aucun message</Text>
+            <Text style={styles.noMessage}>
+              {item.status === 'pending' ? 'Demande envoyée' : 'Aucun message'}
+            </Text>
           )}
         </View>
       </View>
-      {item.unread_count > 0 && (
+      {item.status === 'pending' ? (
+        <TouchableOpacity
+          style={styles.cancelButton}
+          onPress={() => deleteConnection(item.connection_id)}
+        >
+          <Ionicons name="close" size={18} color={colors.text.tertiary} />
+        </TouchableOpacity>
+      ) : item.unread_count > 0 ? (
         <View style={styles.unreadBadge}>
           <Text style={styles.unreadText}>{item.unread_count}</Text>
         </View>
-      )}
+      ) : null}
     </TouchableOpacity>
   )
 
@@ -275,11 +292,27 @@ const styles = StyleSheet.create({
   friendText: {
     flex: 1,
   },
+  friendNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
   friendName: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.text.primary,
-    marginBottom: 4,
+  },
+  pendingBadge: {
+    backgroundColor: colors.primary.main,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  pendingText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.secondary.main,
   },
   lastMessage: {
     fontSize: 14,
@@ -352,5 +385,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  cancelButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.primary.main,
   },
 })

@@ -45,6 +45,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
         Alert.alert('Demande en attente', 'Une demande de connexion est déjà en attente')
       } else if (connectionStatus.status === 'accepted') {
         Alert.alert('Déjà connecté', `Tu es déjà connecté avec ${profile.username}`)
+      } else if (connectionStatus.status === 'rejected') {
+        Alert.alert('Demande refusée', 'Cette personne a refusé ta demande de connexion')
       }
       return
     }
@@ -53,8 +55,13 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
       onSuccess: () => {
         Alert.alert('Demande envoyée', `Demande de connexion envoyée à ${profile.username} !`)
       },
-      onError: (error) => {
-        Alert.alert('Erreur', 'Impossible d\'envoyer la demande de connexion')
+      onError: (error: any) => {
+        // Check if connection already exists
+        if (error?.message?.includes('Connection already exists')) {
+          Alert.alert('Connexion existante', 'Une connexion existe déjà avec cet utilisateur')
+        } else {
+          Alert.alert('Erreur', 'Impossible d\'envoyer la demande de connexion')
+        }
         console.error('Connection request error:', error)
       },
     })

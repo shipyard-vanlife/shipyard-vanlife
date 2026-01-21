@@ -103,3 +103,21 @@ export function useCheckConnection(userId: string) {
     enabled: !!userId,
   })
 }
+
+// Delete a connection (cancel request or remove friend)
+export function useDeleteConnection() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (connectionId: string): Promise<void> => {
+      const { error } = await supabase.rpc('delete_connection', {
+        p_connection_id: connectionId,
+      })
+      if (error) throw error
+    },
+    onSuccess: () => {
+      // Refresh all connection-related queries
+      queryClient.invalidateQueries({ queryKey: connectionKeys.all })
+    },
+  })
+}
