@@ -1,5 +1,6 @@
 import * as Location from 'expo-location'
 import { useCallback, useState } from 'react'
+import { Linking } from 'react-native'
 
 export type LocationStatus = 'idle' | 'requesting' | 'granted' | 'denied' | 'error'
 
@@ -55,7 +56,20 @@ export function useLocation(): UseLocationReturn {
     setError(null)
 
     try {
-      
+      // First check current permission status
+      const { status: currentStatus } = await Location.getForegroundPermissionsAsync()
+
+      // If already denied, open settings instead of re-requesting
+      if (currentStatus === 'denied') {
+        await Linking.openSettings()
+        setStatus('denied')
+        setError({
+          code: 'PERMISSION_DENIED',
+          message: 'Location permission was denied',
+        })
+        return null
+      }
+
       const { status: permissionStatus } = await Location.requestForegroundPermissionsAsync()
 
       if (permissionStatus !== 'granted') {
