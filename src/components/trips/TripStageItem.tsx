@@ -6,7 +6,8 @@ import CountryFlag from 'react-native-country-flag'
 import { colors, fontSize, fontWeight, spacing, borderRadius } from '../../styles/theme'
 import type { TripStage } from '../../types/trip'
 
-const FLAG_SIZE = 18
+const FLAG_CONTAINER_SIZE = 22
+const FLAG_IMAGE_SIZE = 20
 
 interface TripStageItemProps {
   stage: TripStage
@@ -30,7 +31,9 @@ export function TripStageItem({ stage, isFirst, isLast, showCountryFlag = false 
       <View style={styles.timeline}>
         {!isFirst && <View style={styles.lineTop} />}
         {showCountryFlag && stage.country ? (
-          <CountryFlag isoCode={stage.country} size={FLAG_SIZE} />
+          <View style={styles.flagContainer}>
+            <CountryFlag isoCode={stage.country} size={FLAG_IMAGE_SIZE} />
+          </View>
         ) : (
           <View style={[styles.dot, isFirst && styles.dotFirst]} />
         )}
@@ -82,6 +85,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary.main,
     width: 14,
     height: 14,
+  },
+  flagContainer: {
+    width: FLAG_CONTAINER_SIZE,
+    height: FLAG_CONTAINER_SIZE,
+    borderRadius: FLAG_CONTAINER_SIZE / 2,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   content: {
     flex: 1,

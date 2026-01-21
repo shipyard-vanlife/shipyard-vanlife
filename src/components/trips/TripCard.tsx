@@ -8,7 +8,8 @@ import { TripStatusBadge } from './TripStatusBadge'
 import { TripStats } from './TripStats'
 
 const MAX_FLAGS_DISPLAY = 4
-const FLAG_SIZE = 18
+const FLAG_CONTAINER_SIZE = 22
+const FLAG_IMAGE_SIZE = 20
 
 interface TripCardProps {
   trip: Trip
@@ -94,7 +95,9 @@ export function TripCard({ trip, onPress }: TripCardProps) {
       {countryData.codes.length > 0 ? (
         <View style={styles.flagsRow}>
           {countryData.codes.map((code) => (
-            <CountryFlag key={code} isoCode={code} size={FLAG_SIZE} />
+            <View key={code} style={styles.flagContainer}>
+              <CountryFlag isoCode={code} size={FLAG_IMAGE_SIZE} />
+            </View>
           ))}
           {countryData.overflow > 0 ? (
             <Text style={styles.flagOverflow}>+{countryData.overflow}</Text>
@@ -171,6 +174,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     marginBottom: spacing.md,
+  },
+  flagContainer: {
+    width: FLAG_CONTAINER_SIZE,
+    height: FLAG_CONTAINER_SIZE,
+    borderRadius: FLAG_CONTAINER_SIZE / 2,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   flagOverflow: {
     fontSize: fontSize.sm,
