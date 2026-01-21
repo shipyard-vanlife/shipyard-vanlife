@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -77,22 +78,7 @@ export const ProfileSetupScreen: React.FC = () => {
     await requestLocation()
   }
 
-  const handleSubmit = async () => {
-    setFieldErrors({})
-    setGlobalError(null)
-
-    const result = createProfileSchema.safeParse({
-      username: username.trim(),
-      van_name: vanName.trim(),
-      main_specialty: mainSpecialty,
-      skills: mainSpecialty ? [mainSpecialty] : [],
-    })
-
-    if (!result.success) {
-      setFieldErrors(getFieldErrors<ProfileFields>(result.error))
-      return
-    }
-
+  const performProfileCreation = async () => {
     // Upload avatar if selected (get user ID first)
     let avatarUrl: string | null = null
     if (imageUri) {
@@ -103,6 +89,15 @@ export const ProfileSetupScreen: React.FC = () => {
         avatarUrl = await uploadImage(user.id)
       }
     }
+
+    const result = createProfileSchema.safeParse({
+      username: username.trim(),
+      van_name: vanName.trim(),
+      main_specialty: mainSpecialty,
+      skills: mainSpecialty ? [mainSpecialty] : [],
+    })
+
+    if (!result.success) return
 
     createProfile(
       {
@@ -121,6 +116,47 @@ export const ProfileSetupScreen: React.FC = () => {
         onError: (err: Error) => setGlobalError(parseSupabaseError(err)),
       }
     )
+  }
+
+  const handleSubmit = async () => {
+    setFieldErrors({})
+    setGlobalError(null)
+
+    const result = createProfileSchema.safeParse({
+      username: username.trim(),
+      van_name: vanName.trim(),
+      main_specialty: mainSpecialty,
+      skills: mainSpecialty ? [mainSpecialty] : [],
+    })
+
+    if (!result.success) {
+      setFieldErrors(getFieldErrors<ProfileFields>(result.error))
+      return
+    }
+
+    // If no location, show confirmation alert
+    const hasLocation = location !== null
+    if (!hasLocation) {
+      Alert.alert(
+        t('location.noLocationWarning.title'),
+        t('location.noLocationWarning.message') + '\n\n' + t('location.noLocationWarning.note'),
+        [
+          {
+            text: t('location.noLocationWarning.retryButton'),
+            style: 'cancel',
+            onPress: handleRequestLocation,
+          },
+          {
+            text: t('location.noLocationWarning.continueButton'),
+            onPress: performProfileCreation,
+          },
+        ]
+      )
+      return
+    }
+
+    // If location is available, proceed directly
+    await performProfileCreation()
   }
 
   // Get location error message

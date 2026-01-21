@@ -48,6 +48,13 @@
     "cityDetected": "Tu es à {{city}}",
     "noCityDetected": "Position GPS obtenue",
     "required": "La localisation est requise pour créer ton profil",
+    "noLocationWarning": {
+      "title": "Localisation non autorisée",
+      "message": "Sans ta localisation, ton premier voyage ne pourra pas être créé automatiquement. Tu devras l'ajouter manuellement depuis l'onglet Voyages.",
+      "note": "Pour créer un voyage, la localisation sera obligatoire afin de garantir ta position réelle.",
+      "retryButton": "Autoriser ma position",
+      "continueButton": "J'ai compris"
+    },
     "errors": {
       "permissionDenied": "Tu as refusé l'accès à ta position. Active-la dans les paramètres.",
       "unavailable": "La localisation n'est pas disponible sur cet appareil",
