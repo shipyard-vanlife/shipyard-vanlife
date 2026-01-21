@@ -2,9 +2,11 @@ import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
+import CountryFlag from 'react-native-country-flag'
 import { colors, fontSize, fontWeight, spacing, borderRadius } from '../../styles/theme'
 import type { TripStage } from '../../types/trip'
-import { countryCodeToFlag } from '../../utils/countryFlag'
+
+const FLAG_SIZE = 18
 
 interface TripStageItemProps {
   stage: TripStage
@@ -22,15 +24,13 @@ export function TripStageItem({ stage, isFirst, isLast, showCountryFlag = false 
     year: 'numeric',
   })
 
-  const flag = countryCodeToFlag(stage.country)
-
   return (
     <View style={styles.container}>
       {/* Timeline connector */}
       <View style={styles.timeline}>
         {!isFirst && <View style={styles.lineTop} />}
-        {showCountryFlag && flag ? (
-          <Text style={styles.flagEmoji}>{flag}</Text>
+        {showCountryFlag && stage.country ? (
+          <CountryFlag isoCode={stage.country} size={FLAG_SIZE} />
         ) : (
           <View style={[styles.dot, isFirst && styles.dotFirst]} />
         )}
@@ -82,10 +82,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary.main,
     width: 14,
     height: 14,
-  },
-  flagEmoji: {
-    fontSize: 18,
-    lineHeight: 22,
   },
   content: {
     flex: 1,

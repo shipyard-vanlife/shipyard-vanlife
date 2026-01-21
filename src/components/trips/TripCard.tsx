@@ -1,13 +1,14 @@
 import React, { useMemo } from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
+import CountryFlag from 'react-native-country-flag'
 import { colors, fontSize, fontWeight, spacing, borderRadius, shadows } from '../../styles/theme'
 import type { Trip } from '../../types/trip'
 import { TripStatusBadge } from './TripStatusBadge'
 import { TripStats } from './TripStats'
-import { countryCodeToFlag } from '../../utils/countryFlag'
 
 const MAX_FLAGS_DISPLAY = 4
+const FLAG_SIZE = 18
 
 interface TripCardProps {
   trip: Trip
@@ -34,25 +35,24 @@ export function TripCard({ trip, onPress }: TripCardProps) {
   // Get last stage city as current/end point
   const lastCity = trip.stages?.length > 1 ? trip.stages[trip.stages.length - 1]?.city : null
 
-  // Extract unique country flags from stages (in order of first visit)
-  const countryFlags = useMemo(() => {
-    if (!trip.stages || trip.stages.length === 0) return { flags: [], overflow: 0 }
+  // Extract unique country codes from stages (in order of first visit)
+  const countryData = useMemo(() => {
+    if (!trip.stages || trip.stages.length === 0) return { codes: [], overflow: 0 }
 
     const seenCountries = new Set<string>()
-    const flags: string[] = []
+    const codes: string[] = []
 
     for (const stage of trip.stages) {
       if (stage.country && !seenCountries.has(stage.country)) {
         seenCountries.add(stage.country)
-        const flag = countryCodeToFlag(stage.country)
-        if (flag) flags.push(flag)
+        codes.push(stage.country)
       }
     }
 
-    const displayFlags = flags.slice(0, MAX_FLAGS_DISPLAY)
-    const overflow = flags.length - MAX_FLAGS_DISPLAY
+    const displayCodes = codes.slice(0, MAX_FLAGS_DISPLAY)
+    const overflow = codes.length - MAX_FLAGS_DISPLAY
 
-    return { flags: displayFlags, overflow: overflow > 0 ? overflow : 0 }
+    return { codes: displayCodes, overflow: overflow > 0 ? overflow : 0 }
   }, [trip.stages])
 
   return (
@@ -91,15 +91,13 @@ export function TripCard({ trip, onPress }: TripCardProps) {
       </View>
 
       {/* Country flags */}
-      {countryFlags.flags.length > 0 ? (
+      {countryData.codes.length > 0 ? (
         <View style={styles.flagsRow}>
-          {countryFlags.flags.map((flag, index) => (
-            <Text key={index} style={styles.flagEmoji}>
-              {flag}
-            </Text>
+          {countryData.codes.map((code) => (
+            <CountryFlag key={code} isoCode={code} size={FLAG_SIZE} />
           ))}
-          {countryFlags.overflow > 0 ? (
-            <Text style={styles.flagOverflow}>+{countryFlags.overflow}</Text>
+          {countryData.overflow > 0 ? (
+            <Text style={styles.flagOverflow}>+{countryData.overflow}</Text>
           ) : null}
         </View>
       ) : null}
@@ -171,11 +169,8 @@ const styles = StyleSheet.create({
   flagsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs,
+    gap: spacing.sm,
     marginBottom: spacing.md,
-  },
-  flagEmoji: {
-    fontSize: fontSize.lg,
   },
   flagOverflow: {
     fontSize: fontSize.sm,
