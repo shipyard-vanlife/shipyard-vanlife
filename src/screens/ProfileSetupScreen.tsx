@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -77,6 +78,46 @@ export const ProfileSetupScreen: React.FC = () => {
     await requestLocation()
   }
 
+  const performProfileCreation = async () => {
+    // Upload avatar if selected (get user ID first)
+    let avatarUrl: string | null = null
+    if (imageUri) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (user) {
+        avatarUrl = await uploadImage(user.id)
+      }
+    }
+
+    const result = createProfileSchema.safeParse({
+      username: username.trim(),
+      van_name: vanName.trim(),
+      main_specialty: mainSpecialty,
+      skills: mainSpecialty ? [mainSpecialty] : [],
+    })
+
+    if (!result.success) return
+
+    createProfile(
+      {
+        username: result.data.username,
+        van_name: result.data.van_name,
+        avatar_url: avatarUrl,
+        main_specialty: result.data.main_specialty ?? null,
+        skills: result.data.skills,
+        latitude: location?.latitude,
+        longitude: location?.longitude,
+        city: location?.city ?? undefined,
+        country: location?.country ?? undefined,
+        tripName: t('trip.defaultName'),
+      },
+      {
+        onError: (err: Error) => setGlobalError(parseSupabaseError(err)),
+      }
+    )
+  }
+
   const handleSubmit = async () => {
     setFieldErrors({})
     setGlobalError(null)
@@ -93,33 +134,29 @@ export const ProfileSetupScreen: React.FC = () => {
       return
     }
 
-    // Upload avatar if selected (get user ID first)
-    let avatarUrl: string | null = null
-    if (imageUri) {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (user) {
-        avatarUrl = await uploadImage(user.id)
-      }
+    // If no location, show confirmation alert
+    const hasLocation = location !== null
+    if (!hasLocation) {
+      Alert.alert(
+        t('location.noLocationWarning.title'),
+        t('location.noLocationWarning.message') + '\n\n' + t('location.noLocationWarning.note'),
+        [
+          {
+            text: t('location.noLocationWarning.retryButton'),
+            style: 'cancel',
+            onPress: handleRequestLocation,
+          },
+          {
+            text: t('location.noLocationWarning.continueButton'),
+            onPress: performProfileCreation,
+          },
+        ]
+      )
+      return
     }
 
-    createProfile(
-      {
-        username: result.data.username,
-        van_name: result.data.van_name,
-        avatar_url: avatarUrl,
-        main_specialty: result.data.main_specialty ?? null,
-        skills: result.data.skills,
-        latitude: location?.latitude,
-        longitude: location?.longitude,
-        city: location?.city ?? undefined,
-        tripName: t('trip.defaultName'),
-      },
-      {
-        onError: (err: Error) => setGlobalError(parseSupabaseError(err)),
-      }
-    )
+    // If location is available, proceed directly
+    await performProfileCreation()
   }
 
   // Get location error message

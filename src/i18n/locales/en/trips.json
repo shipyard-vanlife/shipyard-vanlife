@@ -1,0 +1,92 @@
+{
+  "screen": {
+    "title": "My trips"
+  },
+  "emptyState": {
+    "title": "No trips yet",
+    "description": "Create your first trip to get started",
+    "createButton": "Start a trip"
+  },
+  "card": {
+    "active": "Active",
+    "ended": "Ended",
+    "stages_one": "{{count}} stage",
+    "stages_other": "{{count}} stages",
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "noCity": "GPS position"
+  },
+  "detail": {
+    "stagesTitle": "Trip stages",
+    "addStage": "Add my location",
+    "addingStage": "Adding...",
+    "endTrip": "End trip",
+    "deleteTrip": "Delete trip"
+  },
+  "stage": {
+    "arrivedAt": "Arrived on {{date}}"
+  },
+  "createModal": {
+    "title": "New trip",
+    "nameLabel": "Trip name",
+    "namePlaceholder": "E.g. France Tour",
+    "locationNote": "Your current location will be the first stage",
+    "createButton": "Create trip",
+    "creating": "Creating..."
+  },
+  "confirmations": {
+    "endTripTitle": "End this trip?",
+    "endTripMessage": "You can then start a new trip.",
+    "endTripConfirm": "End",
+    "deleteTripTitle": "Delete this trip?",
+    "deleteTripMessage": "This action cannot be undone. All stages will also be deleted.",
+    "deleteTripConfirm": "Delete",
+    "cancel": "Cancel"
+  },
+  "errors": {
+    "activeTripExists": "You already have an active trip. End it first.",
+    "createFailed": "Failed to create trip",
+    "endFailed": "Failed to end trip",
+    "addStageFailed": "Failed to add stage",
+    "deleteFailed": "Failed to delete trip",
+    "loadFailed": "Failed to load trips",
+    "locationRequired": "Location required to create a trip"
+  },
+  "validation": {
+    "tripNameRequired": "Trip name is required",
+    "tripNameMin": "Name must be at least 2 characters",
+    "tripNameMax": "Name cannot exceed 50 characters",
+    "tripNameChars": "Name contains invalid characters"
+  },
+  "toast": {
+    "tripCreated": "Trip created",
+    "tripEnded": "Trip ended",
+    "tripDeleted": "Trip deleted",
+    "stageAdded": "Stage added"
+  },
+  "stageDetail": {
+    "title": "Stage {{number}}",
+    "arrivalDate": "Arrival date",
+    "fromPrevious": "From previous stage",
+    "distance": "{{km}} km",
+    "duration": "{{days}}d {{hours}}h",
+    "durationHoursOnly": "{{hours}}h",
+    "note": "Personal note",
+    "notePlaceholder": "Add a note about this stage...",
+    "saveNote": "Save",
+    "deleteStage": "Delete this stage",
+    "confirmDeleteTitle": "Delete stage?",
+    "confirmDeleteMessage": "This action cannot be undone.",
+    "cannotDeleteFirst": "The first stage cannot be deleted.",
+    "deleteFailed": "Failed to delete stage"
+  },
+  "photos": {
+    "title": "Photos",
+    "addPhoto": "Add a photo",
+    "fromGallery": "From gallery",
+    "takePhoto": "Take a photo",
+    "maxReached": "Maximum 4 photos",
+    "deletePhoto": "Delete this photo?",
+    "confirmDeletePhoto": "Delete this photo?"
+  }
+}
