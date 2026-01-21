@@ -6,6 +6,7 @@ export interface TripStage {
     longitude: number
   }
   city: string | null
+  country: string | null // ISO 3166-1 alpha-2 code (e.g., "FR", "ES")
   arrived_at: string
   stage_order: number
 }
@@ -30,6 +31,7 @@ export interface CreateTripInput {
   latitude: number
   longitude: number
   city?: string | null
+  country?: string | null // ISO 3166-1 alpha-2 code
 }
 
 // Add stage payload
@@ -37,6 +39,7 @@ export interface AddStageInput {
   latitude: number
   longitude: number
   city?: string | null
+  country?: string | null // ISO 3166-1 alpha-2 code
 }
 
 // Database row types (matches Supabase tables exactly)
@@ -55,6 +58,7 @@ export interface TripStageRow {
   trip_id: string
   location: string // PostGIS geography as string
   city: string | null
+  country: string | null // ISO 3166-1 alpha-2 code
   arrived_at: string
   stage_order: number
   created_at: string

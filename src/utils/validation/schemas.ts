@@ -98,11 +98,30 @@ export const tripNameSchema = z
   .max(50, 'trips:validation.tripNameMax')
   .regex(tripNameRegex, 'trips:validation.tripNameChars')
 
+// ISO 3166-1 alpha-2 country code (2 uppercase letters)
+export const countryCodeSchema = z
+  .string()
+  .trim()
+  .length(2)
+  .toUpperCase()
+  .optional()
+  .nullable()
+
 export const createTripSchema = z.object({
   name: tripNameSchema,
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
   city: z.string().trim().max(100).optional().nullable(),
+  country: countryCodeSchema,
 })
 
 export type CreateTripValidatedInput = z.infer<typeof createTripSchema>
+
+export const addStageSchema = z.object({
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+  city: z.string().trim().max(100).optional().nullable(),
+  country: countryCodeSchema,
+})
+
+export type AddStageValidatedInput = z.infer<typeof addStageSchema>
