@@ -32,6 +32,7 @@ export function AddStageButton({ onSuccess }: AddStageButtonProps) {
           latitude: location.latitude,
           longitude: location.longitude,
           city: location.city,
+          country: location.country,
         },
         {
           onSuccess: () => {

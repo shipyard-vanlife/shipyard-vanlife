@@ -86,6 +86,7 @@ export function CreateTripModal({ visible, onClose, onSuccess }: CreateTripModal
       latitude: location.latitude,
       longitude: location.longitude,
       city: location.city,
+      country: location.country,
     })
 
     if (!result.success) {

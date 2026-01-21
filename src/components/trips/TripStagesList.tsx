@@ -16,6 +16,15 @@ export function TripStagesList({ stages }: TripStagesListProps) {
     return null
   }
 
+  // Determine when to show country flag (first stage or country changed)
+  const shouldShowFlag = (index: number): boolean => {
+    const stage = stages[index]
+    if (!stage.country) return false
+    if (index === 0) return true // Always show flag for first stage
+    const prevStage = stages[index - 1]
+    return stage.country !== prevStage?.country
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{t('detail.stagesTitle')}</Text>
@@ -26,6 +35,7 @@ export function TripStagesList({ stages }: TripStagesListProps) {
             stage={stage}
             isFirst={index === 0}
             isLast={index === stages.length - 1}
+            showCountryFlag={shouldShowFlag(index)}
           />
         ))}
       </View>

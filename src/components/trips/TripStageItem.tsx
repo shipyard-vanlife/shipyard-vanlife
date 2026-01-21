@@ -4,14 +4,16 @@ import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import { colors, fontSize, fontWeight, spacing, borderRadius } from '../../styles/theme'
 import type { TripStage } from '../../types/trip'
+import { countryCodeToFlag } from '../../utils/countryFlag'
 
 interface TripStageItemProps {
   stage: TripStage
   isFirst: boolean
   isLast: boolean
+  showCountryFlag?: boolean // Show flag when country changes from previous stage
 }
 
-export function TripStageItem({ stage, isFirst, isLast }: TripStageItemProps) {
+export function TripStageItem({ stage, isFirst, isLast, showCountryFlag = false }: TripStageItemProps) {
   const { t } = useTranslation('trips')
 
   const formattedDate = new Date(stage.arrived_at).toLocaleDateString('fr-FR', {
@@ -20,12 +22,18 @@ export function TripStageItem({ stage, isFirst, isLast }: TripStageItemProps) {
     year: 'numeric',
   })
 
+  const flag = countryCodeToFlag(stage.country)
+
   return (
     <View style={styles.container}>
       {/* Timeline connector */}
       <View style={styles.timeline}>
         {!isFirst && <View style={styles.lineTop} />}
-        <View style={[styles.dot, isFirst && styles.dotFirst]} />
+        {showCountryFlag && flag ? (
+          <Text style={styles.flagEmoji}>{flag}</Text>
+        ) : (
+          <View style={[styles.dot, isFirst && styles.dotFirst]} />
+        )}
         {!isLast && <View style={styles.lineBottom} />}
       </View>
 
@@ -74,6 +82,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary.main,
     width: 14,
     height: 14,
+  },
+  flagEmoji: {
+    fontSize: 18,
+    lineHeight: 22,
   },
   content: {
     flex: 1,
