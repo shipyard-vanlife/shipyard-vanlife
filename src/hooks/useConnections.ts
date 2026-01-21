@@ -46,8 +46,9 @@ export function useSendConnectionRequest() {
       return data as string
     },
     onSuccess: () => {
-      // Invalidate requests to refresh the list
-      queryClient.invalidateQueries({ queryKey: connectionKeys.requests() })
+      // Invalidate ALL connection queries to refresh everywhere
+      queryClient.invalidateQueries({ queryKey: connectionKeys.all })
+      console.log('✅ Cache invalidé après envoi de demande')
     },
   })
 }
@@ -64,9 +65,9 @@ export function useAcceptConnection() {
       if (error) throw error
     },
     onSuccess: () => {
-      // Refresh both friends and requests
-      queryClient.invalidateQueries({ queryKey: connectionKeys.friends() })
-      queryClient.invalidateQueries({ queryKey: connectionKeys.requests() })
+      // Invalidate ALL connection queries to refresh everywhere
+      queryClient.invalidateQueries({ queryKey: connectionKeys.all })
+      console.log('✅ Cache invalidé après acceptation')
     },
   })
 }
@@ -83,8 +84,9 @@ export function useRejectConnection() {
       if (error) throw error
     },
     onSuccess: () => {
-      // Refresh requests
-      queryClient.invalidateQueries({ queryKey: connectionKeys.requests() })
+      // Invalidate ALL connection queries to refresh everywhere
+      queryClient.invalidateQueries({ queryKey: connectionKeys.all })
+      console.log('✅ Cache invalidé après rejet')
     },
   })
 }

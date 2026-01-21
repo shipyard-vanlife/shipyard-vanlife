@@ -37,34 +37,58 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
   const [zoomedImage, setZoomedImage] = useState<string | null>(null)
 
   const { mutate: sendRequest, isPending: sendingRequest } = useSendConnectionRequest()
-  const { data: connectionStatus } = useCheckConnection(profile.id)
+  const { data: connectionStatus, refetch: refetchConnectionStatus } = useCheckConnection(profile.id)
 
-  const handleConnect = () => {
-    if (connectionStatus) {
-      if (connectionStatus.status === 'pending') {
-        Alert.alert('Demande en attente', 'Une demande de connexion est déjà en attente')
-      } else if (connectionStatus.status === 'accepted') {
-        Alert.alert('Déjà connecté', `Tu es déjà connecté avec ${profile.username}`)
-      } else if (connectionStatus.status === 'rejected') {
-        Alert.alert('Demande refusée', 'Cette personne a refusé ta demande de connexion')
-      }
-      return
-    }
+  const handleConnect = async () => {
+    console.log('🔵 handleConnect appelé pour user:', profile.id)
 
-    sendRequest(profile.id, {
-      onSuccess: () => {
-        Alert.alert('Demande envoyée', `Demande de connexion envoyée à ${profile.username} !`)
-      },
-      onError: (error: any) => {
-        // Check if connection already exists
-        if (error?.message?.includes('Connection already exists')) {
-          Alert.alert('Connexion existante', 'Une connexion existe déjà avec cet utilisateur')
-        } else {
-          Alert.alert('Erreur', 'Impossible d\'envoyer la demande de connexion')
+    try {
+      // Force refresh du statut de connexion avant d'envoyer
+      console.log('🔵 Vérification du statut...')
+      const { data: freshStatus } = await refetchConnectionStatus()
+      console.log('🔵 Statut actuel:', freshStatus)
+
+      // Check if connection exists (freshStatus peut être un tableau vide, un objet, ou null)
+      const hasConnection = freshStatus && (Array.isArray(freshStatus) ? freshStatus.length > 0 : freshStatus.status)
+
+      if (hasConnection) {
+        const status = Array.isArray(freshStatus) ? freshStatus[0]?.status : freshStatus.status
+        console.log('🔵 Connexion existante avec statut:', status)
+
+        if (status === 'pending') {
+          Alert.alert('Demande en attente', 'Une demande de connexion est déjà en attente')
+        } else if (status === 'accepted') {
+          Alert.alert('Déjà connecté', `Tu es déjà connecté avec ${profile.username}`)
+        } else if (status === 'rejected') {
+          Alert.alert('Demande refusée', 'Cette personne a refusé ta demande de connexion')
         }
-        console.error('Connection request error:', error)
-      },
-    })
+        return
+      }
+
+      console.log('🔵 Aucune connexion existante, envoi de la demande...')
+      sendRequest(profile.id, {
+        onSuccess: () => {
+          console.log('✅ Demande envoyée avec succès')
+          Alert.alert('Demande envoyée', `Demande de connexion envoyée à ${profile.username} !`)
+          // Le cache est automatiquement invalidé par le hook useSendConnectionRequest
+          // On force quand même un refetch du statut pour mettre à jour l'UI immédiatement
+          setTimeout(() => refetchConnectionStatus(), 300)
+        },
+        onError: (error: any) => {
+          console.error('❌ Connection request error:', error)
+          refetchConnectionStatus()
+
+          if (error?.message?.includes('Connection already exists')) {
+            Alert.alert('Connexion existante', 'Une connexion existe déjà avec cet utilisateur. Actualise l\'app.')
+          } else {
+            Alert.alert('Erreur', 'Impossible d\'envoyer la demande de connexion')
+          }
+        },
+      })
+    } catch (error) {
+      console.error('❌ Erreur dans handleConnect:', error)
+      Alert.alert('Erreur', 'Une erreur est survenue')
+    }
   }
 
   const handleMessage = () => {
@@ -202,17 +226,29 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
           <TouchableOpacity
             style={[
               styles.connectButton,
-              (sendingRequest || connectionStatus?.status === 'accepted') && styles.connectButtonDisabled
+              (sendingRequest || connectionStatus?.status === 'accepted' || connectionStatus?.status === 'pending') && styles.connectButtonDisabled
             ]}
             onPress={handleConnect}
-            disabled={sendingRequest || connectionStatus?.status === 'accepted'}
+            disabled={sendingRequest || connectionStatus?.status === 'accepted' || connectionStatus?.status === 'pending'}
           >
-            <Ionicons name="person-add" size={20} color={colors.white} />
+            <Ionicons
+              name={
+                connectionStatus?.status === 'accepted'
+                  ? 'checkmark-circle'
+                  : connectionStatus?.status === 'pending'
+                  ? 'time'
+                  : 'person-add'
+              }
+              size={20}
+              color={colors.white}
+            />
             <Text style={styles.connectText}>
               {connectionStatus?.status === 'accepted'
-                ? 'Déjà connecté'
+                ? 'Est votre ami'
                 : connectionStatus?.status === 'pending'
-                ? 'Demande en attente'
+                ? 'Demande envoyée'
+                : sendingRequest
+                ? 'Envoi en cours...'
                 : 'Se connecter'}
             </Text>
           </TouchableOpacity>
