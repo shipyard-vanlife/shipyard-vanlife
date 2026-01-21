@@ -35,6 +35,7 @@ yarn-error.*
 .env*.local
 *.local.json
 claude.md
+docs/*
 
 # typescript
 *.tsbuildinfo
