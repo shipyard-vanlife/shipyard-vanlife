@@ -114,6 +114,7 @@ export const ProfileSetupScreen: React.FC = () => {
         latitude: location?.latitude,
         longitude: location?.longitude,
         city: location?.city ?? undefined,
+        country: location?.country ?? undefined,
         tripName: t('trip.defaultName'),
       },
       {
