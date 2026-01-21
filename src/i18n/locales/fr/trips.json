@@ -1,0 +1,67 @@
+{
+  "screen": {
+    "title": "Mes voyages"
+  },
+  "emptyState": {
+    "title": "Aucun voyage",
+    "description": "Crée ton premier voyage pour commencer",
+    "createButton": "Commencer un voyage"
+  },
+  "card": {
+    "active": "Actif",
+    "ended": "Terminé",
+    "stages_one": "{{count}} étape",
+    "stages_other": "{{count}} étapes",
+    "days_one": "{{count}} jour",
+    "days_other": "{{count}} jours",
+    "noCity": "Position GPS"
+  },
+  "detail": {
+    "stagesTitle": "Étapes du voyage",
+    "addStage": "Ajouter ma position",
+    "addingStage": "Ajout en cours...",
+    "endTrip": "Terminer le voyage",
+    "deleteTrip": "Supprimer le voyage"
+  },
+  "stage": {
+    "arrivedAt": "Arrivé le {{date}}"
+  },
+  "createModal": {
+    "title": "Nouveau voyage",
+    "nameLabel": "Nom du voyage",
+    "namePlaceholder": "Ex: Tour de France",
+    "locationNote": "Ta position actuelle sera la première étape",
+    "createButton": "Créer le voyage",
+    "creating": "Création..."
+  },
+  "confirmations": {
+    "endTripTitle": "Terminer le voyage ?",
+    "endTripMessage": "Tu pourras ensuite commencer un nouveau voyage.",
+    "endTripConfirm": "Terminer",
+    "deleteTripTitle": "Supprimer le voyage ?",
+    "deleteTripMessage": "Cette action est irréversible. Toutes les étapes seront également supprimées.",
+    "deleteTripConfirm": "Supprimer",
+    "cancel": "Annuler"
+  },
+  "errors": {
+    "activeTripExists": "Tu as déjà un voyage actif. Termine-le d'abord.",
+    "createFailed": "Impossible de créer le voyage",
+    "endFailed": "Impossible de terminer le voyage",
+    "addStageFailed": "Impossible d'ajouter l'étape",
+    "deleteFailed": "Impossible de supprimer le voyage",
+    "loadFailed": "Impossible de charger les voyages",
+    "locationRequired": "Position requise pour créer un voyage"
+  },
+  "validation": {
+    "tripNameRequired": "Le nom du voyage est requis",
+    "tripNameMin": "Le nom doit faire au moins 2 caractères",
+    "tripNameMax": "Le nom ne peut pas dépasser 50 caractères",
+    "tripNameChars": "Le nom contient des caractères non autorisés"
+  },
+  "toast": {
+    "tripCreated": "Voyage créé",
+    "tripEnded": "Voyage terminé",
+    "tripDeleted": "Voyage supprimé",
+    "stageAdded": "Étape ajoutée"
+  }
+}
