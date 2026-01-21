@@ -24,7 +24,7 @@ export const TripsScreen: React.FC = () => {
   // Modal states
   const [createModalVisible, setCreateModalVisible] = useState(false)
   const [detailModalVisible, setDetailModalVisible] = useState(false)
-  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null)
+  const [selectedTripId, setSelectedTripId] = useState<string | null>(null)
 
   // Check if user has an active trip (cannot create new one if so)
   const hasActiveTrip = !!activeTrip
@@ -38,16 +38,14 @@ export const TripsScreen: React.FC = () => {
   }, [])
 
   const handleTripPress = useCallback((trip: Trip) => {
-    setSelectedTrip(trip)
+    setSelectedTripId(trip.id)
     setDetailModalVisible(true)
   }, [])
 
   const handleDetailClose = useCallback(() => {
     setDetailModalVisible(false)
-    setSelectedTrip(null)
-    // Refetch to get updated data after any changes in detail modal
-    refetch()
-  }, [refetch])
+    setSelectedTripId(null)
+  }, [])
 
   const handleCreateClose = useCallback(() => {
     setCreateModalVisible(false)
@@ -128,7 +126,7 @@ export const TripsScreen: React.FC = () => {
       {/* Trip Detail Modal */}
       <TripDetailModal
         visible={detailModalVisible}
-        trip={selectedTrip}
+        tripId={selectedTripId}
         onClose={handleDetailClose}
       />
     </SafeAreaView>

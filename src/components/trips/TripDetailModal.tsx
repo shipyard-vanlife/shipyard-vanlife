@@ -13,8 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import { colors, spacing, fontSize, fontWeight, borderRadius } from '../../styles/theme'
-import { useEndTrip, useDeleteTrip } from '../../hooks/useTrips'
-import type { Trip } from '../../types/trip'
+import { useEndTrip, useDeleteTrip, useTripDetail } from '../../hooks/useTrips'
 import { TripStatusBadge } from './TripStatusBadge'
 import { TripStats } from './TripStats'
 import { TripStagesList } from './TripStagesList'
@@ -22,16 +21,30 @@ import { AddStageButton } from './AddStageButton'
 
 interface TripDetailModalProps {
   visible: boolean
-  trip: Trip | null
+  tripId: string | null
   onClose: () => void
 }
 
-export function TripDetailModal({ visible, trip, onClose }: TripDetailModalProps) {
+export function TripDetailModal({ visible, tripId, onClose }: TripDetailModalProps) {
   const { t } = useTranslation('trips')
+  const { data: trip, isLoading } = useTripDetail(visible ? tripId : null)
   const { mutate: endTrip, isPending: isEnding } = useEndTrip()
   const { mutate: deleteTrip, isPending: isDeleting } = useDeleteTrip()
 
-  if (!trip) return null
+  if (!trip) {
+    if (isLoading && visible) {
+      return (
+        <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+          <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={colors.secondary.main} />
+            </View>
+          </SafeAreaView>
+        </Modal>
+      )
+    }
+    return null
+  }
 
   const startDate = new Date(trip.start_date).toLocaleDateString('fr-FR', {
     day: 'numeric',
@@ -299,5 +312,10 @@ const styles = StyleSheet.create({
   },
   deleteButtonText: {
     color: colors.error,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 })
