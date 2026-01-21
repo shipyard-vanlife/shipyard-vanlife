@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../services/supabase'
-import type { AddStageInput, CreateTripInput, Trip } from '../types/trip'
+import type { AddStageInput, CreateTripInput, Trip, UpdateStageNoteInput } from '../types/trip'
 
 // Query keys
 export const tripKeys = {
@@ -167,6 +167,51 @@ export function useDeleteTrip() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tripKeys.list() })
       queryClient.invalidateQueries({ queryKey: tripKeys.active() })
+    },
+  })
+}
+
+// ============================================
+// UPDATE STAGE NOTE
+// ============================================
+
+export function useUpdateStageNote() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (input: UpdateStageNoteInput): Promise<boolean> => {
+      const { data, error } = await supabase.rpc('update_stage_note', {
+        p_stage_id: input.stageId,
+        p_note: input.note,
+      })
+
+      if (error) throw error
+      return data as boolean
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: tripKeys.all })
+    },
+  })
+}
+
+// ============================================
+// DELETE STAGE
+// ============================================
+
+export function useDeleteStage() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (stageId: string): Promise<boolean> => {
+      const { data, error } = await supabase.rpc('delete_trip_stage', {
+        p_stage_id: stageId,
+      })
+
+      if (error) throw error
+      return data as boolean
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: tripKeys.all })
     },
   })
 }
