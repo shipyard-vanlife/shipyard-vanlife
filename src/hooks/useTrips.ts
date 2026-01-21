@@ -142,8 +142,8 @@ export function useAddStage() {
       return data as string
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: tripKeys.list() })
-      queryClient.invalidateQueries({ queryKey: tripKeys.active() })
+      // Invalidate all trip-related queries to refresh list, active, and detail views
+      queryClient.invalidateQueries({ queryKey: tripKeys.all })
     },
   })
 }
