@@ -1,3 +1,11 @@
+// Stage photo
+export interface StagePhoto {
+  id: string
+  photo_url: string
+  photo_order: number
+  created_at: string
+}
+
 // Trip stage - a waypoint in a trip
 export interface TripStage {
   id: string
@@ -9,6 +17,7 @@ export interface TripStage {
   country: string | null // ISO 3166-1 alpha-2 code (e.g., "FR", "ES")
   arrived_at: string
   stage_order: number
+  note: string | null
 }
 
 // Trip - a journey with multiple stages
@@ -61,5 +70,12 @@ export interface TripStageRow {
   country: string | null // ISO 3166-1 alpha-2 code
   arrived_at: string
   stage_order: number
+  note: string | null
   created_at: string
+}
+
+// Update stage note payload
+export interface UpdateStageNoteInput {
+  stageId: string
+  note: string
 }
