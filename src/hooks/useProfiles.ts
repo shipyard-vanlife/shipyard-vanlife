@@ -7,6 +7,7 @@ import type { ProfileInput, UserProfile } from '../types/user'
 export interface CreateProfileInput extends ProfileInput {
   latitude?: number
   longitude?: number
+  country?: string | null // ISO 3166-1 alpha-2 code
   tripName: string
 }
 
@@ -156,6 +157,7 @@ export function useCreateProfile() {
           lat: input.latitude,
           lng: input.longitude,
           city_name: input.city ?? null,
+          country_code: input.country ?? null,
         })
 
         if (tripError) throw tripError
@@ -236,13 +238,22 @@ export function useDeleteProfile() {
 
       if (!user) throw new Error('Not authenticated')
 
-      const { error } = await supabase.from('profiles').delete().eq('id', user.id)
+      // 1. Delete all user's trips first (they reference auth.users, not profiles)
+      // trip_stages will be deleted via CASCADE from trips
+      const { error: tripsError } = await supabase.from('trips').delete().eq('user_id', user.id)
 
-      if (error) throw error
+      if (tripsError) throw tripsError
+
+      // 2. Delete the profile
+      const { error: profileError } = await supabase.from('profiles').delete().eq('id', user.id)
+
+      if (profileError) throw profileError
     },
     onSuccess: () => {
       // Clear all profile queries
       queryClient.invalidateQueries({ queryKey: profileKeys.all })
+      // Clear all trip queries
+      queryClient.invalidateQueries({ queryKey: ['trips'] })
       // Specifically set my profile to null to trigger ProfileSetupScreen
       queryClient.setQueryData(profileKeys.my(), null)
     },

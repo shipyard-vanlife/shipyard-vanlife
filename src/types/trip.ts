@@ -1,3 +1,11 @@
+// Stage photo
+export interface StagePhoto {
+  id: string
+  photo_url: string
+  photo_order: number
+  created_at: string
+}
+
 // Trip stage - a waypoint in a trip
 export interface TripStage {
   id: string
@@ -6,8 +14,10 @@ export interface TripStage {
     longitude: number
   }
   city: string | null
+  country: string | null // ISO 3166-1 alpha-2 code (e.g., "FR", "ES")
   arrived_at: string
   stage_order: number
+  note: string | null
 }
 
 // Trip - a journey with multiple stages
@@ -17,8 +27,9 @@ export interface Trip {
   start_date: string
   end_date: string | null
   is_active: boolean
-  total_distance_km: number
   days_count: number
+  stages_count: number
+  total_distance_km: number
   created_at: string
   stages: TripStage[]
 }
@@ -29,6 +40,7 @@ export interface CreateTripInput {
   latitude: number
   longitude: number
   city?: string | null
+  country?: string | null // ISO 3166-1 alpha-2 code
 }
 
 // Add stage payload
@@ -36,6 +48,7 @@ export interface AddStageInput {
   latitude: number
   longitude: number
   city?: string | null
+  country?: string | null // ISO 3166-1 alpha-2 code
 }
 
 // Database row types (matches Supabase tables exactly)
@@ -46,8 +59,6 @@ export interface TripRow {
   start_date: string
   end_date: string | null
   is_active: boolean
-  total_distance_km: number
-  days_count: number
   created_at: string
 }
 
@@ -56,7 +67,15 @@ export interface TripStageRow {
   trip_id: string
   location: string // PostGIS geography as string
   city: string | null
+  country: string | null // ISO 3166-1 alpha-2 code
   arrived_at: string
   stage_order: number
+  note: string | null
   created_at: string
+}
+
+// Update stage note payload
+export interface UpdateStageNoteInput {
+  stageId: string
+  note: string
 }

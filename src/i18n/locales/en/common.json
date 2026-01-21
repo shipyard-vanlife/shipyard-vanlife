@@ -48,6 +48,13 @@
     "cityDetected": "You're in {{city}}",
     "noCityDetected": "GPS position obtained",
     "required": "Location is required to create your profile",
+    "noLocationWarning": {
+      "title": "Location not authorized",
+      "message": "Without your location, your first trip cannot be created automatically. You will need to add it manually from the Trips tab.",
+      "note": "To create a trip, location will be required to ensure your actual position.",
+      "retryButton": "Allow my location",
+      "continueButton": "I understand"
+    },
     "errors": {
       "permissionDenied": "You denied location access. Enable it in settings.",
       "unavailable": "Location is not available on this device",

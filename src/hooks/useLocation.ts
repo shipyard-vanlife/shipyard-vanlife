@@ -1,5 +1,6 @@
 import * as Location from 'expo-location'
 import { useCallback, useState } from 'react'
+import { Linking } from 'react-native'
 
 export type LocationStatus = 'idle' | 'requesting' | 'granted' | 'denied' | 'error'
 
@@ -14,6 +15,7 @@ export interface LocationData {
   latitude: number
   longitude: number
   city: string | null
+  country: string | null // ISO 3166-1 alpha-2 code (e.g., "FR", "ES")
 }
 
 export interface UseLocationReturn {
@@ -54,7 +56,20 @@ export function useLocation(): UseLocationReturn {
     setError(null)
 
     try {
-      
+      // First check current permission status
+      const { status: currentStatus } = await Location.getForegroundPermissionsAsync()
+
+      // If already denied, open settings instead of re-requesting
+      if (currentStatus === 'denied') {
+        await Linking.openSettings()
+        setStatus('denied')
+        setError({
+          code: 'PERMISSION_DENIED',
+          message: 'Location permission was denied',
+        })
+        return null
+      }
+
       const { status: permissionStatus } = await Location.requestForegroundPermissionsAsync()
 
       if (permissionStatus !== 'granted') {
@@ -74,23 +89,25 @@ export function useLocation(): UseLocationReturn {
       const { latitude, longitude } = position.coords
 
       let city: string | null = null
+      let country: string | null = null
       try {
         const [geocode] = await Location.reverseGeocodeAsync({ latitude, longitude })
         if (geocode) {
-          // Only use city name, no country
           city = geocode.city || null
+          // ISO 3166-1 alpha-2 country code (e.g., "FR", "ES")
+          country = geocode.isoCountryCode || null
         }
       } catch {
         console.warn('Reverse geocoding failed')
       }
 
- 
       const randomizedCoords = randomizeCoordinates(latitude, longitude)
 
       const locationData: LocationData = {
         latitude: randomizedCoords.latitude,
         longitude: randomizedCoords.longitude,
         city,
+        country,
       }
       setLocation(locationData)
       setStatus('granted')
