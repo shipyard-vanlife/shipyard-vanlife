@@ -86,6 +86,7 @@ export function useCreateTrip() {
         p_lat: input.latitude,
         p_lng: input.longitude,
         p_city: input.city ?? null,
+        p_country: input.country ?? null,
       })
 
       if (error) throw error
@@ -134,6 +135,7 @@ export function useAddStage() {
         lat: input.latitude,
         lng: input.longitude,
         city_name: input.city ?? null,
+        country_code: input.country ?? null,
       })
 
       if (error) throw error

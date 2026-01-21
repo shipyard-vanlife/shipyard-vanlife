@@ -7,6 +7,7 @@ import type { ProfileInput, UserProfile } from '../types/user'
 export interface CreateProfileInput extends ProfileInput {
   latitude?: number
   longitude?: number
+  country?: string | null // ISO 3166-1 alpha-2 code
   tripName: string
 }
 
@@ -156,6 +157,7 @@ export function useCreateProfile() {
           lat: input.latitude,
           lng: input.longitude,
           city_name: input.city ?? null,
+          country_code: input.country ?? null,
         })
 
         if (tripError) throw tripError
