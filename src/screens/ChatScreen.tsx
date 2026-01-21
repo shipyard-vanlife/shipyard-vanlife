@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
@@ -20,11 +20,20 @@ export const ChatScreen: React.FC = () => {
   const { t } = useTranslation('common')
   const [activeTab, setActiveTab] = useState<ChatTab>('friends')
 
-  const { data: friends, isLoading: loadingFriends } = useMyFriends()
-  const { data: requests, isLoading: loadingRequests } = useConnectionRequests()
+  const { data: friends, isLoading: loadingFriends, refetch: refetchFriends } = useMyFriends()
+  const { data: requests, isLoading: loadingRequests, refetch: refetchRequests } = useConnectionRequests()
   const { mutate: acceptConnection } = useAcceptConnection()
   const { mutate: rejectConnection } = useRejectConnection()
   const { mutate: deleteConnection } = useDeleteConnection()
+
+  // Refetch data when switching tabs
+  useEffect(() => {
+    if (activeTab === 'friends') {
+      refetchFriends()
+    } else {
+      refetchRequests()
+    }
+  }, [activeTab])
 
   const renderFriendItem = ({ item }: { item: Friend }) => (
     <TouchableOpacity style={styles.friendCard}>

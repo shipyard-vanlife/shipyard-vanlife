@@ -14,10 +14,15 @@ export function useMyFriends() {
   return useQuery({
     queryKey: connectionKeys.friends(),
     queryFn: async (): Promise<Friend[]> => {
+      console.log('🔵 Fetching friends...')
       const { data, error } = await supabase.rpc('get_my_friends')
+      console.log('🔵 Friends data:', data)
+      console.log('🔵 Friends error:', error)
       if (error) throw error
       return (data as Friend[]) ?? []
     },
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   })
 }
 
@@ -26,10 +31,15 @@ export function useConnectionRequests() {
   return useQuery({
     queryKey: connectionKeys.requests(),
     queryFn: async (): Promise<ConnectionRequest[]> => {
+      console.log('🔵 Fetching requests...')
       const { data, error } = await supabase.rpc('get_connection_requests')
+      console.log('🔵 Requests data:', data)
+      console.log('🔵 Requests error:', error)
       if (error) throw error
       return (data as ConnectionRequest[]) ?? []
     },
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   })
 }
 
@@ -45,10 +55,11 @@ export function useSendConnectionRequest() {
       if (error) throw error
       return data as string
     },
-    onSuccess: () => {
-      // Invalidate ALL connection queries to refresh everywhere
-      queryClient.invalidateQueries({ queryKey: connectionKeys.all })
-      console.log('✅ Cache invalidé après envoi de demande')
+    onSuccess: async () => {
+      // Force refetch instead of just invalidate
+      await queryClient.refetchQueries({ queryKey: connectionKeys.friends() })
+      await queryClient.refetchQueries({ queryKey: connectionKeys.requests() })
+      console.log('✅ Refetch forcé après envoi de demande')
     },
   })
 }
@@ -64,10 +75,11 @@ export function useAcceptConnection() {
       })
       if (error) throw error
     },
-    onSuccess: () => {
-      // Invalidate ALL connection queries to refresh everywhere
-      queryClient.invalidateQueries({ queryKey: connectionKeys.all })
-      console.log('✅ Cache invalidé après acceptation')
+    onSuccess: async () => {
+      // Force refetch instead of just invalidate
+      await queryClient.refetchQueries({ queryKey: connectionKeys.friends() })
+      await queryClient.refetchQueries({ queryKey: connectionKeys.requests() })
+      console.log('✅ Refetch forcé après acceptation')
     },
   })
 }
@@ -83,10 +95,11 @@ export function useRejectConnection() {
       })
       if (error) throw error
     },
-    onSuccess: () => {
-      // Invalidate ALL connection queries to refresh everywhere
-      queryClient.invalidateQueries({ queryKey: connectionKeys.all })
-      console.log('✅ Cache invalidé après rejet')
+    onSuccess: async () => {
+      // Force refetch instead of just invalidate
+      await queryClient.refetchQueries({ queryKey: connectionKeys.friends() })
+      await queryClient.refetchQueries({ queryKey: connectionKeys.requests() })
+      console.log('✅ Refetch forcé après rejet')
     },
   })
 }
@@ -117,9 +130,11 @@ export function useDeleteConnection() {
       })
       if (error) throw error
     },
-    onSuccess: () => {
-      // Refresh all connection-related queries
-      queryClient.invalidateQueries({ queryKey: connectionKeys.all })
+    onSuccess: async () => {
+      // Force refetch instead of just invalidate
+      await queryClient.refetchQueries({ queryKey: connectionKeys.friends() })
+      await queryClient.refetchQueries({ queryKey: connectionKeys.requests() })
+      console.log('✅ Refetch forcé après suppression')
     },
   })
 }
