@@ -3,7 +3,7 @@ import { StyleSheet, TouchableOpacity, View } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { colors, shadows } from '../styles/theme'
 
-type TabName = 'trips' | 'home' | 'search' | 'profile'
+type TabName = 'trips' | 'home' | 'chat' | 'search' | 'profile'
 
 interface BottomTabNavigatorProps {
   activeTab: TabName
@@ -19,6 +19,7 @@ interface TabConfig {
 const tabs: TabConfig[] = [
   { name: 'trips', icon: 'map-outline', iconActive: 'map' },
   { name: 'home', icon: 'home-outline', iconActive: 'home' },
+  { name: 'chat', icon: 'chatbubbles-outline', iconActive: 'chatbubbles' },
   { name: 'search', icon: 'search-outline', iconActive: 'search' },
   { name: 'profile', icon: 'person-outline', iconActive: 'person' },
 ]

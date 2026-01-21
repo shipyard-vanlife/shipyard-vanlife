@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { UserProfile } from '../types/user'
 import { SkillBadge } from './SkillBadge'
 import { ProfilePhotoGrid } from './profile/ProfilePhotoGrid'
+import { useSendConnectionRequest, useCheckConnection } from '../hooks/useConnections'
 import { colors } from '../styles/theme'
 
 const SCREEN_HEIGHT = Dimensions.get('window').height
@@ -35,13 +36,32 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
   const [isClosing, setIsClosing] = useState(false)
   const [zoomedImage, setZoomedImage] = useState<string | null>(null)
 
+  const { mutate: sendRequest, isPending: sendingRequest } = useSendConnectionRequest()
+  const { data: connectionStatus } = useCheckConnection(profile.id)
+
   const handleConnect = () => {
-    // TODO: Implémenter la logique de connexion
-    Alert.alert('Connexion', `Demande de connexion envoyée à ${profile.username}`)
+    if (connectionStatus) {
+      if (connectionStatus.status === 'pending') {
+        Alert.alert('Demande en attente', 'Une demande de connexion est déjà en attente')
+      } else if (connectionStatus.status === 'accepted') {
+        Alert.alert('Déjà connecté', `Tu es déjà connecté avec ${profile.username}`)
+      }
+      return
+    }
+
+    sendRequest(profile.id, {
+      onSuccess: () => {
+        Alert.alert('Demande envoyée', `Demande de connexion envoyée à ${profile.username} !`)
+      },
+      onError: (error) => {
+        Alert.alert('Erreur', 'Impossible d\'envoyer la demande de connexion')
+        console.error('Connection request error:', error)
+      },
+    })
   }
 
   const handleMessage = () => {
-    // TODO: Implémenter la messagerie
+    // TODO: Implémenter la messagerie - ouvrir ConversationScreen
     Alert.alert('Message', `Ouvrir la conversation avec ${profile.username}`)
   }
 
@@ -172,9 +192,22 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
           )}
 
           {/* Actions pour interagir avec ce vanlifer */}
-          <TouchableOpacity style={styles.connectButton} onPress={handleConnect}>
+          <TouchableOpacity
+            style={[
+              styles.connectButton,
+              (sendingRequest || connectionStatus?.status === 'accepted') && styles.connectButtonDisabled
+            ]}
+            onPress={handleConnect}
+            disabled={sendingRequest || connectionStatus?.status === 'accepted'}
+          >
             <Ionicons name="person-add" size={20} color={colors.white} />
-            <Text style={styles.connectText}>Se connecter</Text>
+            <Text style={styles.connectText}>
+              {connectionStatus?.status === 'accepted'
+                ? 'Déjà connecté'
+                : connectionStatus?.status === 'pending'
+                ? 'Demande en attente'
+                : 'Se connecter'}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.messageButton} onPress={handleMessage}>
@@ -351,6 +384,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 8,
+  },
+  connectButtonDisabled: {
+    backgroundColor: colors.text.tertiary,
+    opacity: 0.7,
   },
   connectText: {
     color: colors.white,
