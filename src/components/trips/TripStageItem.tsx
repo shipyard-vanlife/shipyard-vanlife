@@ -30,13 +30,15 @@ export function TripStageItem({ stage, isFirst, isLast, showCountryFlag = false 
       {/* Timeline connector */}
       <View style={styles.timeline}>
         {!isFirst && <View style={styles.lineTop} />}
-        {showCountryFlag && stage.country ? (
-          <View style={styles.flagContainer}>
-            <CountryFlag isoCode={stage.country} size={FLAG_IMAGE_SIZE} />
-          </View>
-        ) : (
-          <View style={[styles.dot, isFirst && styles.dotFirst]} />
-        )}
+        <View style={styles.iconWrapper}>
+          {showCountryFlag && stage.country ? (
+            <View style={styles.flagContainer}>
+              <CountryFlag isoCode={stage.country} size={FLAG_IMAGE_SIZE} />
+            </View>
+          ) : (
+            <View style={[styles.dot, isFirst && styles.dotFirst]} />
+          )}
+        </View>
         {!isLast && <View style={styles.lineBottom} />}
       </View>
 
@@ -65,13 +67,18 @@ const styles = StyleSheet.create({
   },
   lineTop: {
     width: 2,
-    height: 8,
+    height: 4,
     backgroundColor: colors.border.main,
   },
   lineBottom: {
     width: 2,
     flex: 1,
     backgroundColor: colors.border.main,
+  },
+  iconWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   dot: {
     width: 12,
