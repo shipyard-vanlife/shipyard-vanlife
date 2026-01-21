@@ -14,6 +14,7 @@ export interface LocationData {
   latitude: number
   longitude: number
   city: string | null
+  country: string | null // ISO 3166-1 alpha-2 code (e.g., "FR", "ES")
 }
 
 export interface UseLocationReturn {
@@ -74,23 +75,25 @@ export function useLocation(): UseLocationReturn {
       const { latitude, longitude } = position.coords
 
       let city: string | null = null
+      let country: string | null = null
       try {
         const [geocode] = await Location.reverseGeocodeAsync({ latitude, longitude })
         if (geocode) {
-          // Only use city name, no country
           city = geocode.city || null
+          // ISO 3166-1 alpha-2 country code (e.g., "FR", "ES")
+          country = geocode.isoCountryCode || null
         }
       } catch {
         console.warn('Reverse geocoding failed')
       }
 
- 
       const randomizedCoords = randomizeCoordinates(latitude, longitude)
 
       const locationData: LocationData = {
         latitude: randomizedCoords.latitude,
         longitude: randomizedCoords.longitude,
         city,
+        country,
       }
       setLocation(locationData)
       setStatus('granted')
