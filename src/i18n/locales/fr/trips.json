@@ -63,5 +63,30 @@
     "tripEnded": "Voyage terminé",
     "tripDeleted": "Voyage supprimé",
     "stageAdded": "Étape ajoutée"
+  },
+  "stageDetail": {
+    "title": "Étape {{number}}",
+    "arrivalDate": "Date d'arrivée",
+    "fromPrevious": "Depuis l'étape précédente",
+    "distance": "{{km}} km",
+    "duration": "{{days}}j {{hours}}h",
+    "durationHoursOnly": "{{hours}}h",
+    "note": "Note personnelle",
+    "notePlaceholder": "Ajouter une note sur cette étape...",
+    "saveNote": "Enregistrer",
+    "deleteStage": "Supprimer cette étape",
+    "confirmDeleteTitle": "Supprimer l'étape ?",
+    "confirmDeleteMessage": "Cette action est irréversible.",
+    "cannotDeleteFirst": "La première étape ne peut pas être supprimée.",
+    "deleteFailed": "Impossible de supprimer l'étape"
+  },
+  "photos": {
+    "title": "Photos",
+    "addPhoto": "Ajouter une photo",
+    "fromGallery": "Depuis la galerie",
+    "takePhoto": "Prendre une photo",
+    "maxReached": "Maximum 4 photos",
+    "deletePhoto": "Supprimer cette photo ?",
+    "confirmDeletePhoto": "Supprimer cette photo ?"
   }
 }

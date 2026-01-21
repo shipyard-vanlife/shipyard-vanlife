@@ -63,5 +63,30 @@
     "tripEnded": "Trip ended",
     "tripDeleted": "Trip deleted",
     "stageAdded": "Stage added"
+  },
+  "stageDetail": {
+    "title": "Stage {{number}}",
+    "arrivalDate": "Arrival date",
+    "fromPrevious": "From previous stage",
+    "distance": "{{km}} km",
+    "duration": "{{days}}d {{hours}}h",
+    "durationHoursOnly": "{{hours}}h",
+    "note": "Personal note",
+    "notePlaceholder": "Add a note about this stage...",
+    "saveNote": "Save",
+    "deleteStage": "Delete this stage",
+    "confirmDeleteTitle": "Delete stage?",
+    "confirmDeleteMessage": "This action cannot be undone.",
+    "cannotDeleteFirst": "The first stage cannot be deleted.",
+    "deleteFailed": "Failed to delete stage"
+  },
+  "photos": {
+    "title": "Photos",
+    "addPhoto": "Add a photo",
+    "fromGallery": "From gallery",
+    "takePhoto": "Take a photo",
+    "maxReached": "Maximum 4 photos",
+    "deletePhoto": "Delete this photo?",
+    "confirmDeletePhoto": "Delete this photo?"
   }
 }
