@@ -84,3 +84,25 @@ export const updateLocationSchema = z.object({
 })
 
 export type UpdateLocationInput = z.infer<typeof updateLocationSchema>
+
+// ============================================
+// TRIP SCHEMAS
+// ============================================
+
+const tripNameRegex = /^[a-zA-ZÀ-ÿ0-9\s\-_']+$/
+
+export const tripNameSchema = z
+  .string()
+  .trim()
+  .min(2, 'trips:validation.tripNameMin')
+  .max(50, 'trips:validation.tripNameMax')
+  .regex(tripNameRegex, 'trips:validation.tripNameChars')
+
+export const createTripSchema = z.object({
+  name: tripNameSchema,
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+  city: z.string().trim().max(100).optional().nullable(),
+})
+
+export type CreateTripValidatedInput = z.infer<typeof createTripSchema>

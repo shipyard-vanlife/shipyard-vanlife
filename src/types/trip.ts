@@ -17,8 +17,9 @@ export interface Trip {
   start_date: string
   end_date: string | null
   is_active: boolean
-  total_distance_km: number
   days_count: number
+  stages_count: number
+  total_distance_km: number
   created_at: string
   stages: TripStage[]
 }
@@ -46,8 +47,6 @@ export interface TripRow {
   start_date: string
   end_date: string | null
   is_active: boolean
-  total_distance_km: number
-  days_count: number
   created_at: string
 }
 
