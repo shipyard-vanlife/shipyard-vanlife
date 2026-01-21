@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   Modal,
   View,
@@ -16,8 +16,10 @@ import { colors, spacing, fontSize, fontWeight, borderRadius } from '../../style
 import { useEndTrip, useDeleteTrip, useTripDetail } from '../../hooks/useTrips'
 import { TripStatusBadge } from './TripStatusBadge'
 import { TripStats } from './TripStats'
-import { TripStagesList } from './TripStagesList'
+import { TripStagesList } from './stages/TripStagesList'
 import { AddStageButton } from './AddStageButton'
+import { TripStageDetailModal } from './stages/detail/TripStageDetailModal'
+import type { TripStage } from '../../types/trip'
 
 interface TripDetailModalProps {
   visible: boolean
@@ -30,6 +32,23 @@ export function TripDetailModal({ visible, tripId, onClose }: TripDetailModalPro
   const { data: trip, isLoading } = useTripDetail(visible ? tripId : null)
   const { mutate: endTrip, isPending: isEnding } = useEndTrip()
   const { mutate: deleteTrip, isPending: isDeleting } = useDeleteTrip()
+
+  // Stage detail modal state
+  const [selectedStage, setSelectedStage] = useState<TripStage | null>(null)
+  const [previousStage, setPreviousStage] = useState<TripStage | null>(null)
+  const [stageDetailVisible, setStageDetailVisible] = useState(false)
+
+  const handleStagePress = (stage: TripStage, prevStage: TripStage | null) => {
+    setSelectedStage(stage)
+    setPreviousStage(prevStage)
+    setStageDetailVisible(true)
+  }
+
+  const handleCloseStageDetail = () => {
+    setStageDetailVisible(false)
+    setSelectedStage(null)
+    setPreviousStage(null)
+  }
 
   if (!trip) {
     if (isLoading && visible) {
@@ -158,7 +177,7 @@ export function TripDetailModal({ visible, tripId, onClose }: TripDetailModalPro
           </View>
 
           {/* Stages List */}
-          <TripStagesList stages={trip.stages} />
+          <TripStagesList stages={trip.stages} onStagePress={handleStagePress} />
 
           {/* Actions */}
           <View style={styles.actions}>
@@ -202,6 +221,14 @@ export function TripDetailModal({ visible, tripId, onClose }: TripDetailModalPro
             </TouchableOpacity>
           </View>
         </ScrollView>
+
+        {/* Stage Detail Modal */}
+        <TripStageDetailModal
+          visible={stageDetailVisible}
+          stage={selectedStage}
+          previousStage={previousStage}
+          onClose={handleCloseStageDetail}
+        />
       </SafeAreaView>
     </Modal>
   )
