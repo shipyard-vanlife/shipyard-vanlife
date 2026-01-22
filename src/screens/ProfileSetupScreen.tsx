@@ -14,6 +14,7 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { ProfilePhotoInput } from '../components/ProfilePhotoInput'
+import { useAuth } from '../contexts/AuthContext'
 import { useImagePicker } from '../hooks/useImagePicker'
 import { useLocation, LocationErrorCode } from '../hooks/useLocation'
 import { useCreateProfile } from '../hooks/useProfiles'
@@ -33,7 +34,8 @@ const locationErrorKeys: Record<LocationErrorCode, string> = {
 }
 
 export const ProfileSetupScreen: React.FC = () => {
-  const { t } = useTranslation(['common', 'skills'])
+  const { t } = useTranslation(['common', 'skills', 'profile'])
+  const { signOut } = useAuth()
   const { mutate: createProfile, isPending } = useCreateProfile()
   const {
     status: locationStatus,
@@ -294,6 +296,11 @@ export const ProfileSetupScreen: React.FC = () => {
               <Text style={styles.buttonText}>{t('buttons.createProfile')}</Text>
             )}
           </TouchableOpacity>
+
+          {/* Sign out link */}
+          <TouchableOpacity style={styles.signOutLink} onPress={signOut} disabled={isPending}>
+            <Text style={styles.signOutLinkText}>{t('profile:actions.signOut')}</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -418,5 +425,15 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: fontSize.lg,
     fontWeight: fontWeight.semibold,
+  },
+  signOutLink: {
+    alignItems: 'center',
+    marginTop: spacing.xl,
+    paddingVertical: spacing.md,
+  },
+  signOutLinkText: {
+    color: colors.text.tertiary,
+    fontSize: fontSize.base,
+    textDecorationLine: 'underline',
   },
 })
