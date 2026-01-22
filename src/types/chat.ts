@@ -19,6 +19,7 @@ export interface Friend {
   last_message: string | null
   last_message_time: string | null
   unread_count: number
+  status: string // 'accepted' or 'pending'
 }
 
 // Demande de connexion

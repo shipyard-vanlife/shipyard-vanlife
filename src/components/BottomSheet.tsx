@@ -37,33 +37,45 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
   const [zoomedImage, setZoomedImage] = useState<string | null>(null)
 
   const { mutate: sendRequest, isPending: sendingRequest } = useSendConnectionRequest()
-  const { data: connectionStatus } = useCheckConnection(profile.id)
+  const { data: connectionStatus, refetch: refetchConnectionStatus } = useCheckConnection(profile.id)
 
-  const handleConnect = () => {
-    if (connectionStatus) {
-      if (connectionStatus.status === 'pending') {
-        Alert.alert('Demande en attente', 'Une demande de connexion est déjà en attente')
-      } else if (connectionStatus.status === 'accepted') {
-        Alert.alert('Déjà connecté', `Tu es déjà connecté avec ${profile.username}`)
+  const handleConnect = async () => {
+    try {
+      const { data: freshStatus } = await refetchConnectionStatus()
+      const hasConnection = freshStatus && (Array.isArray(freshStatus) ? freshStatus.length > 0 : freshStatus.status)
+
+      if (hasConnection) {
+        const status = Array.isArray(freshStatus) ? freshStatus[0]?.status : freshStatus.status
+
+        if (status === 'pending') {
+          Alert.alert('Demande en attente', 'Une demande de connexion est déjà en attente')
+        } else if (status === 'accepted') {
+          Alert.alert('Déjà connecté', `Tu es déjà connecté avec ${profile.username}`)
+        } else if (status === 'rejected') {
+          Alert.alert('Demande refusée', 'Cette personne a refusé ta demande de connexion')
+        }
+        return
       }
-      return
+
+      sendRequest(profile.id, {
+        onSuccess: () => {
+          Alert.alert('Demande envoyée', `Demande de connexion envoyée à ${profile.username} !`)
+          setTimeout(() => refetchConnectionStatus(), 300)
+        },
+        onError: (error: any) => {
+          refetchConnectionStatus()
+          if (error?.message?.includes('Connection already exists')) {
+            Alert.alert('Connexion existante', 'Une connexion existe déjà avec cet utilisateur.')
+          } else {
+            Alert.alert('Erreur', 'Impossible d\'envoyer la demande de connexion')
+          }
+        },
+      })
+    } catch (error) {
+      Alert.alert('Erreur', 'Une erreur est survenue')
     }
-
-    sendRequest(profile.id, {
-      onSuccess: () => {
-        Alert.alert('Demande envoyée', `Demande de connexion envoyée à ${profile.username} !`)
-      },
-      onError: (error) => {
-        Alert.alert('Erreur', 'Impossible d\'envoyer la demande de connexion')
-        console.error('Connection request error:', error)
-      },
-    })
   }
 
-  const handleMessage = () => {
-    // TODO: Implémenter la messagerie - ouvrir ConversationScreen
-    Alert.alert('Message', `Ouvrir la conversation avec ${profile.username}`)
-  }
 
   const handleClose = () => {
     if (isClosing || !onClose) return
@@ -195,25 +207,34 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
           <TouchableOpacity
             style={[
               styles.connectButton,
-              (sendingRequest || connectionStatus?.status === 'accepted') && styles.connectButtonDisabled
+              connectionStatus?.status === 'pending' && styles.connectButtonPending,
+              connectionStatus?.status === 'accepted' && styles.connectButtonAccepted
             ]}
             onPress={handleConnect}
-            disabled={sendingRequest || connectionStatus?.status === 'accepted'}
+            disabled={sendingRequest || connectionStatus?.status === 'accepted' || connectionStatus?.status === 'pending'}
           >
-            <Ionicons name="person-add" size={20} color={colors.white} />
+            <Ionicons
+              name={
+                connectionStatus?.status === 'accepted'
+                  ? 'checkmark-circle'
+                  : connectionStatus?.status === 'pending'
+                  ? 'time'
+                  : 'person-add'
+              }
+              size={20}
+              color={colors.white}
+            />
             <Text style={styles.connectText}>
               {connectionStatus?.status === 'accepted'
-                ? 'Déjà connecté'
+                ? 'Est votre ami'
                 : connectionStatus?.status === 'pending'
-                ? 'Demande en attente'
+                ? 'Demande envoyée'
+                : sendingRequest
+                ? 'Envoi en cours...'
                 : 'Se connecter'}
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.messageButton} onPress={handleMessage}>
-            <Ionicons name="chatbubble-outline" size={20} color={colors.secondary.main} />
-            <Text style={styles.messageText}>Envoyer un message</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -385,9 +406,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
   },
-  connectButtonDisabled: {
+  connectButtonPending: {
     backgroundColor: colors.text.tertiary,
     opacity: 0.7,
+  },
+  connectButtonAccepted: {
+    backgroundColor: '#4A90E2',
   },
   connectText: {
     color: colors.white,

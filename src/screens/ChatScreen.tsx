@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
@@ -10,8 +10,11 @@ import {
   View,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { useMyFriends, useConnectionRequests, useAcceptConnection, useRejectConnection } from '../hooks/useConnections'
+import { useMyFriends, useConnectionRequests, useAcceptConnection, useRejectConnection, useDeleteConnection } from '../hooks/useConnections'
+import { useRealtimeConnections } from '../hooks/useRealtimeConnections'
 import { Friend, ConnectionRequest } from '../types/chat'
+import { FriendProfileModal } from '../components/FriendProfileModal'
+import { ConversationScreen } from './ConversationScreen'
 import { colors } from '../styles/theme'
 
 type ChatTab = 'friends' | 'requests'
@@ -19,15 +22,41 @@ type ChatTab = 'friends' | 'requests'
 export const ChatScreen: React.FC = () => {
   const { t } = useTranslation('common')
   const [activeTab, setActiveTab] = useState<ChatTab>('friends')
+  const [selectedFriend, setSelectedFriend] = useState<{ friendId: string; connectionId: string } | null>(null)
+  const [openConversation, setOpenConversation] = useState<{
+    connectionId: string
+    friendName: string
+    friendAvatar: string | null
+    friendId: string
+  } | null>(null)
 
-  const { data: friends, isLoading: loadingFriends } = useMyFriends()
-  const { data: requests, isLoading: loadingRequests } = useConnectionRequests()
+  const { data: friends, isLoading: loadingFriends, refetch: refetchFriends } = useMyFriends()
+  const { data: requests, isLoading: loadingRequests, refetch: refetchRequests } = useConnectionRequests()
   const { mutate: acceptConnection } = useAcceptConnection()
   const { mutate: rejectConnection } = useRejectConnection()
+  const { mutate: deleteConnection } = useDeleteConnection()
+
+  // le realtime pour les connexions
+  useRealtimeConnections()
+
+  // Refetch data when switching tabs
+  useEffect(() => {
+    if (activeTab === 'friends') {
+      refetchFriends()
+    } else {
+      refetchRequests()
+    }
+  }, [activeTab])
 
   const renderFriendItem = ({ item }: { item: Friend }) => (
-    <TouchableOpacity style={styles.friendCard}>
-      <View style={styles.friendInfo}>
+    <View style={styles.friendCard}>
+      <TouchableOpacity
+        onPress={() => {
+          if (item.status === 'accepted') {
+            setSelectedFriend({ friendId: item.friend_id, connectionId: item.connection_id })
+          }
+        }}
+      >
         {item.friend_avatar_url ? (
           <Image source={{ uri: item.friend_avatar_url }} style={styles.avatar} />
         ) : (
@@ -35,28 +64,63 @@ export const ChatScreen: React.FC = () => {
             <Ionicons name="person" size={24} color={colors.text.tertiary} />
           </View>
         )}
-        <View style={styles.friendText}>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.friendText}
+        onPress={() => {
+          if (item.status === 'accepted') {
+            setOpenConversation({
+              connectionId: item.connection_id,
+              friendName: item.friend_username,
+              friendAvatar: item.friend_avatar_url,
+              friendId: item.friend_id,
+            })
+          }
+        }}
+      >
+        <View style={styles.friendNameRow}>
           <Text style={styles.friendName}>{item.friend_username}</Text>
-          {item.last_message ? (
-            <Text style={styles.lastMessage} numberOfLines={1}>
-              {item.last_message}
-            </Text>
-          ) : (
-            <Text style={styles.noMessage}>Aucun message</Text>
+          {item.status === 'pending' && (
+            <View style={styles.pendingBadge}>
+              <Text style={styles.pendingText}>En cours</Text>
+            </View>
           )}
         </View>
-      </View>
-      {item.unread_count > 0 && (
+        {item.last_message ? (
+          <Text style={styles.lastMessage} numberOfLines={1}>
+            {item.last_message}
+          </Text>
+        ) : (
+          <Text style={styles.noMessage}>
+            {item.status === 'pending' ? 'Demande envoyée' : 'Aucun message'}
+          </Text>
+        )}
+      </TouchableOpacity>
+
+      {item.status === 'pending' ? (
+        <TouchableOpacity
+          style={styles.cancelButton}
+          onPress={() => deleteConnection(item.connection_id)}
+        >
+          <Ionicons name="close" size={18} color={colors.text.tertiary} />
+        </TouchableOpacity>
+      ) : item.unread_count > 0 ? (
         <View style={styles.unreadBadge}>
           <Text style={styles.unreadText}>{item.unread_count}</Text>
         </View>
-      )}
-    </TouchableOpacity>
+      ) : null}
+    </View>
   )
 
   const renderRequestItem = ({ item }: { item: ConnectionRequest }) => (
     <View style={styles.requestCard}>
-      <View style={styles.requestInfo}>
+      {/* Avatar cliquable pour voir le profil */}
+      <TouchableOpacity
+        onPress={() => {
+          setSelectedFriend({ friendId: item.sender_id, connectionId: item.connection_id })
+        }}
+      >
         {item.sender_avatar_url ? (
           <Image source={{ uri: item.sender_avatar_url }} style={styles.avatar} />
         ) : (
@@ -64,13 +128,17 @@ export const ChatScreen: React.FC = () => {
             <Ionicons name="person" size={24} color={colors.text.tertiary} />
           </View>
         )}
-        <View style={styles.requestText}>
-          <Text style={styles.requestName}>{item.sender_username}</Text>
-          <Text style={styles.requestDate}>
-            {new Date(item.created_at).toLocaleDateString('fr-FR')}
-          </Text>
-        </View>
+      </TouchableOpacity>
+
+      {/* Info de la demande */}
+      <View style={styles.requestText}>
+        <Text style={styles.requestName}>{item.sender_username}</Text>
+        <Text style={styles.requestDate}>
+          {new Date(item.created_at).toLocaleDateString('fr-FR')}
+        </Text>
       </View>
+
+      {/* Boutons d'action */}
       <View style={styles.requestActions}>
         <TouchableOpacity
           style={styles.acceptButton}
@@ -150,9 +218,26 @@ export const ChatScreen: React.FC = () => {
     }
   }
 
+  if (openConversation) {
+    return (
+      <ConversationScreen
+        route={{
+          params: {
+            connectionId: openConversation.connectionId,
+            friendName: openConversation.friendName,
+            friendAvatar: openConversation.friendAvatar,
+            friendId: openConversation.friendId,
+          },
+        }}
+        navigation={{
+          goBack: () => setOpenConversation(null),
+        }}
+      />
+    )
+  }
+
   return (
     <View style={styles.container}>
-      {/* Header avec deux tabs */}
       <View style={styles.header}>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'friends' && styles.tabActive]}
@@ -178,8 +263,23 @@ export const ChatScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Contenu selon le tab actif */}
       <View style={styles.content}>{renderContent()}</View>
+
+      <FriendProfileModal
+        friendId={selectedFriend?.friendId ?? null}
+        connectionId={selectedFriend?.connectionId ?? null}
+        onClose={() => setSelectedFriend(null)}
+        onOpenConversation={(connectionId, friendName, friendAvatar) => {
+          const friend = friends?.find(f => f.connection_id === connectionId)
+          setSelectedFriend(null)
+          setOpenConversation({
+            connectionId,
+            friendName,
+            friendAvatar,
+            friendId: friend?.friend_id || ''
+          })
+        }}
+      />
     </View>
   )
 }
@@ -255,17 +355,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: colors.primary.main,
-  },
-  friendInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
+    gap: 12,
   },
   avatar: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    marginRight: 12,
   },
   avatarPlaceholder: {
     backgroundColor: colors.primary.main,
@@ -275,11 +370,27 @@ const styles = StyleSheet.create({
   friendText: {
     flex: 1,
   },
+  friendNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
   friendName: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.text.primary,
-    marginBottom: 4,
+  },
+  pendingBadge: {
+    backgroundColor: colors.primary.main,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  pendingText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.secondary.main,
   },
   lastMessage: {
     fontSize: 14,
@@ -314,11 +425,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: colors.primary.main,
-  },
-  requestInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
+    gap: 12,
   },
   requestText: {
     flex: 1,
@@ -352,5 +459,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  cancelButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.primary.main,
   },
 })

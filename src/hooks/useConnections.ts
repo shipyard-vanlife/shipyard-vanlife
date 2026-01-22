@@ -18,6 +18,8 @@ export function useMyFriends() {
       if (error) throw error
       return (data as Friend[]) ?? []
     },
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   })
 }
 
@@ -30,6 +32,8 @@ export function useConnectionRequests() {
       if (error) throw error
       return (data as ConnectionRequest[]) ?? []
     },
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   })
 }
 
@@ -45,9 +49,10 @@ export function useSendConnectionRequest() {
       if (error) throw error
       return data as string
     },
-    onSuccess: () => {
-      // Invalidate requests to refresh the list
-      queryClient.invalidateQueries({ queryKey: connectionKeys.requests() })
+    onSuccess: async () => {
+      // Force refetch instead of just invalidate
+      await queryClient.refetchQueries({ queryKey: connectionKeys.friends() })
+      await queryClient.refetchQueries({ queryKey: connectionKeys.requests() })
     },
   })
 }
@@ -63,10 +68,10 @@ export function useAcceptConnection() {
       })
       if (error) throw error
     },
-    onSuccess: () => {
-      // Refresh both friends and requests
-      queryClient.invalidateQueries({ queryKey: connectionKeys.friends() })
-      queryClient.invalidateQueries({ queryKey: connectionKeys.requests() })
+    onSuccess: async () => {
+      // Force refetch instead of just invalidate
+      await queryClient.refetchQueries({ queryKey: connectionKeys.friends() })
+      await queryClient.refetchQueries({ queryKey: connectionKeys.requests() })
     },
   })
 }
@@ -82,9 +87,10 @@ export function useRejectConnection() {
       })
       if (error) throw error
     },
-    onSuccess: () => {
-      // Refresh requests
-      queryClient.invalidateQueries({ queryKey: connectionKeys.requests() })
+    onSuccess: async () => {
+      // Force refetch instead of just invalidate
+      await queryClient.refetchQueries({ queryKey: connectionKeys.friends() })
+      await queryClient.refetchQueries({ queryKey: connectionKeys.requests() })
     },
   })
 }
@@ -94,12 +100,45 @@ export function useCheckConnection(userId: string) {
   return useQuery({
     queryKey: [...connectionKeys.all, 'check', userId],
     queryFn: async (): Promise<Connection | null> => {
+      console.log('🔵 Checking connection status for userId:', userId)
       const { data, error } = await supabase.rpc('check_connection_status', {
         p_other_user_id: userId,
       })
-      if (error) throw error
-      return data ? (data as Connection) : null
+
+      console.log('🔵 check_connection_status response:', { data, error })
+
+      if (error) {
+        console.log('🔴 check_connection_status error:', error)
+        throw error
+      }
+
+      // Si data est un array, prendre le premier élément
+      const connection = Array.isArray(data) ? (data.length > 0 ? data[0] : null) : data
+      console.log('🔵 Returning connection:', connection)
+      return connection as Connection | null
     },
     enabled: !!userId,
+    staleTime: 0, // Always refetch
+    refetchOnMount: 'always', // Refetch every time component mounts
+    refetchOnWindowFocus: true, // Refetch when window gains focus
+  })
+}
+
+// Delete a connection (cancel request or remove friend)
+export function useDeleteConnection() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (connectionId: string): Promise<void> => {
+      const { error } = await supabase.rpc('delete_connection', {
+        p_connection_id: connectionId,
+      })
+      if (error) throw error
+    },
+    onSuccess: async () => {
+      // Force refetch instead of just invalidate
+      await queryClient.refetchQueries({ queryKey: connectionKeys.friends() })
+      await queryClient.refetchQueries({ queryKey: connectionKeys.requests() })
+    },
   })
 }

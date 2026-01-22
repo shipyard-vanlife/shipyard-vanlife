@@ -15,6 +15,7 @@ export interface CreateProfileInput extends ProfileInput {
 export const profileKeys = {
   all: ['profiles'] as const,
   my: () => [...profileKeys.all, 'my'] as const,
+  byId: (userId: string) => [...profileKeys.all, 'byId', userId] as const,
   nearby: (params: NearbyProfilesParams) => [...profileKeys.all, 'nearby', params] as const,
   zone: (params: ZoneProfilesParams) => [...profileKeys.all, 'zone', params] as const,
   allVisible: () => [...profileKeys.all, 'visible'] as const,
@@ -38,6 +39,37 @@ export function useMyProfile() {
 
       return data as UserProfile
     },
+  })
+}
+
+// ============================================
+// GET PROFILE BY ID
+// ============================================
+
+export function useProfileById(userId: string | null) {
+  return useQuery({
+    queryKey: userId ? profileKeys.byId(userId) : ['disabled'],
+    queryFn: async (): Promise<UserProfile | null> => {
+      if (!userId) return null
+
+      console.log('🔵 Fetching profile for userId:', userId)
+      const { data, error } = await supabase.rpc('get_profile_by_id', {
+        p_user_id: userId,
+      })
+
+      console.log('🔵 get_profile_by_id response:', { data, error })
+
+      if (error) {
+        console.log('🔴 get_profile_by_id error:', error)
+        throw error
+      }
+
+      // Si data est un array, prendre le premier élément
+      const profile = Array.isArray(data) ? data[0] : data
+      console.log('🔵 Returning profile:', profile)
+      return profile as UserProfile
+    },
+    enabled: !!userId,
   })
 }
 

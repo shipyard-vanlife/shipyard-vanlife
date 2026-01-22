@@ -5,7 +5,8 @@ import { Message, MessageInput } from '../types/chat'
 // Query keys
 export const messageKeys = {
   all: ['messages'] as const,
-  conversation: (connectionId: string) => [...messageKeys.all, connectionId] as const,
+  byConnection: (connectionId: string) => [...messageKeys.all, connectionId] as const,
+  conversation: (connectionId: string) => [...messageKeys.all, connectionId] as const, // Alias for compatibility
 }
 
 // Get messages for a conversation
@@ -51,15 +52,18 @@ export function useMarkMessagesAsRead() {
 
   return useMutation({
     mutationFn: async (connectionId: string): Promise<void> => {
-      const { error } = await supabase.rpc('mark_messages_read', {
+      const { error } = await supabase.rpc('mark_messages_as_read', {
         p_connection_id: connectionId,
       })
       if (error) throw error
     },
     onSuccess: (_, connectionId) => {
-      // Refresh messages for this conversation
-      queryClient.invalidateQueries({
+      // Refresh messages for this conversation AND friends list
+      queryClient.refetchQueries({
         queryKey: messageKeys.conversation(connectionId),
+      })
+      queryClient.refetchQueries({
+        queryKey: ['connections', 'friends'],
       })
     },
   })
