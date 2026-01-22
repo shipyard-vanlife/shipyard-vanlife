@@ -259,3 +259,23 @@ export function useDeleteProfile() {
     },
   })
 }
+
+// ============================================
+// DELETE ACCOUNT (profile + auth user + files)
+// ============================================
+
+export function useDeleteAccount() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (): Promise<void> => {
+      const { error } = await supabase.rpc('delete_my_account')
+      if (error) throw error
+    },
+    onSuccess: async () => {
+      // Clear all React Query cache
+      queryClient.clear()
+      // Sign out will be handled by the component after this succeeds
+    },
+  })
+}

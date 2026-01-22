@@ -29,8 +29,10 @@
     "bioMax": "Maximum 500 caractères"
   },
   "profile": {
-    "deleteTitle": "Supprimer le profil",
-    "deleteConfirmation": "Es-tu sûr de vouloir supprimer ton profil ? Cette action est irréversible.",
+    "deleteTitle": "Supprimer le profil ?",
+    "deleteConfirmation": "Tu pourras recréer un profil avec le même compte.",
+    "deleteAccountTitle": "Supprimer ton compte ?",
+    "deleteAccountConfirmation": "Cette action est irréversible. Ton compte, profil, voyages et photos seront supprimés définitivement.",
     "setupTitle": "Bienvenue !",
     "setupSubtitle": "Configure ton profil vanlife",
     "usernameLabel": "Ton pseudo",

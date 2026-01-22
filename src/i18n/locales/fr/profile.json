@@ -40,6 +40,7 @@
     "addVan": "Ajouter mon van",
     "editProfile": "Modifier le profil",
     "signOut": "Se déconnecter",
+    "deleteProfile": "Supprimer le profil",
     "deleteAccount": "Supprimer mon compte"
   },
   "tagline": {

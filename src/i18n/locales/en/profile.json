@@ -40,7 +40,8 @@
     "addVan": "Add my van",
     "editProfile": "Edit profile",
     "signOut": "Sign out",
-    "deleteAccount": "Delete account"
+    "deleteProfile": "Delete profile",
+    "deleteAccount": "Delete my account"
   },
   "tagline": {
     "onRoadFor": "On the road for",
