@@ -115,7 +115,12 @@ export const ChatScreen: React.FC = () => {
 
   const renderRequestItem = ({ item }: { item: ConnectionRequest }) => (
     <View style={styles.requestCard}>
-      <View style={styles.requestInfo}>
+      {/* Avatar cliquable pour voir le profil */}
+      <TouchableOpacity
+        onPress={() => {
+          setSelectedFriend({ friendId: item.sender_id, connectionId: item.connection_id })
+        }}
+      >
         {item.sender_avatar_url ? (
           <Image source={{ uri: item.sender_avatar_url }} style={styles.avatar} />
         ) : (
@@ -123,13 +128,17 @@ export const ChatScreen: React.FC = () => {
             <Ionicons name="person" size={24} color={colors.text.tertiary} />
           </View>
         )}
-        <View style={styles.requestText}>
-          <Text style={styles.requestName}>{item.sender_username}</Text>
-          <Text style={styles.requestDate}>
-            {new Date(item.created_at).toLocaleDateString('fr-FR')}
-          </Text>
-        </View>
+      </TouchableOpacity>
+
+      {/* Info de la demande */}
+      <View style={styles.requestText}>
+        <Text style={styles.requestName}>{item.sender_username}</Text>
+        <Text style={styles.requestDate}>
+          {new Date(item.created_at).toLocaleDateString('fr-FR')}
+        </Text>
       </View>
+
+      {/* Boutons d'action */}
       <View style={styles.requestActions}>
         <TouchableOpacity
           style={styles.acceptButton}
@@ -416,11 +425,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: colors.primary.main,
-  },
-  requestInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
+    gap: 12,
   },
   requestText: {
     flex: 1,

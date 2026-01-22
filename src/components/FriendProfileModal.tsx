@@ -16,7 +16,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { UserProfile } from '../types/user'
 import { SkillBadge } from './SkillBadge'
 import { ProfilePhotoGrid } from './profile/ProfilePhotoGrid'
-import { useDeleteConnection } from '../hooks/useConnections'
+import { useDeleteConnection, useCheckConnection, useAcceptConnection, useRejectConnection } from '../hooks/useConnections'
 import { useProfileById } from '../hooks/useProfiles'
 import { colors } from '../styles/theme'
 
@@ -38,7 +38,51 @@ export const FriendProfileModal: React.FC<FriendProfileModalProps> = ({
   const { t } = useTranslation(['home', 'common'])
   const [zoomedImage, setZoomedImage] = useState<string | null>(null)
   const { data: profile, isLoading } = useProfileById(friendId)
+  const { data: connectionStatus } = useCheckConnection(friendId || '')
   const { mutate: deleteConnection, isPending: isDeleting } = useDeleteConnection()
+  const { mutate: acceptConnection, isPending: isAccepting } = useAcceptConnection()
+  const { mutate: rejectConnection, isPending: isRejecting } = useRejectConnection()
+
+  const handleAccept = () => {
+    if (!connectionId) return
+
+    acceptConnection(connectionId, {
+      onSuccess: () => {
+        Alert.alert('Ami ajouté', `${profile?.username} est maintenant ton ami !`)
+        onClose()
+      },
+      onError: () => {
+        Alert.alert('Erreur', 'Impossible d\'accepter la demande')
+      },
+    })
+  }
+
+  const handleReject = () => {
+    if (!connectionId) return
+
+    Alert.alert(
+      'Refuser la demande',
+      `Refuser la demande de ${profile?.username ?? 'cette personne'} ?`,
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Refuser',
+          style: 'destructive',
+          onPress: () => {
+            rejectConnection(connectionId, {
+              onSuccess: () => {
+                Alert.alert('Demande refusée')
+                onClose()
+              },
+              onError: () => {
+                Alert.alert('Erreur', 'Impossible de refuser la demande')
+              },
+            })
+          },
+        },
+      ]
+    )
+  }
 
   const handleRemoveFriend = () => {
     if (!connectionId) return
@@ -174,22 +218,55 @@ export const FriendProfileModal: React.FC<FriendProfileModalProps> = ({
               />
             )}
 
-            {/* Actions */}
-            <TouchableOpacity style={styles.messageButton} onPress={handleMessage}>
-              <Ionicons name="chatbubble-outline" size={20} color={colors.secondary.main} />
-              <Text style={styles.messageText}>Envoyer un message</Text>
-            </TouchableOpacity>
+            {/* Actions selon le statut de la connexion */}
+            {connectionStatus?.status === 'accepted' && (
+              <>
+                {/* Bouton Message (seulement si ami) */}
+                <TouchableOpacity style={styles.messageButton} onPress={handleMessage}>
+                  <Ionicons name="chatbubble-outline" size={20} color={colors.secondary.main} />
+                  <Text style={styles.messageText}>Envoyer un message</Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.removeButton, isDeleting && styles.removeButtonDisabled]}
-              onPress={handleRemoveFriend}
-              disabled={isDeleting}
-            >
-              <Ionicons name="person-remove" size={20} color={colors.white} />
-              <Text style={styles.removeText}>
-                {isDeleting ? 'Suppression...' : 'Retirer cet ami'}
-              </Text>
-            </TouchableOpacity>
+                {/* Bouton Retirer ami */}
+                <TouchableOpacity
+                  style={[styles.removeButton, isDeleting && styles.removeButtonDisabled]}
+                  onPress={handleRemoveFriend}
+                  disabled={isDeleting}
+                >
+                  <Ionicons name="person-remove" size={20} color={colors.white} />
+                  <Text style={styles.removeText}>
+                    {isDeleting ? 'Suppression...' : 'Retirer cet ami'}
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
+
+            {connectionStatus?.status === 'pending' && (
+              <>
+                {/* Boutons Accepter et Refuser */}
+                <TouchableOpacity
+                  style={[styles.acceptButton, isAccepting && styles.acceptButtonDisabled]}
+                  onPress={handleAccept}
+                  disabled={isAccepting}
+                >
+                  <Ionicons name="checkmark-circle" size={20} color={colors.white} />
+                  <Text style={styles.acceptText}>
+                    {isAccepting ? 'Acceptation...' : 'Accepter la demande'}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.removeButton, isRejecting && styles.removeButtonDisabled]}
+                  onPress={handleReject}
+                  disabled={isRejecting}
+                >
+                  <Ionicons name="close-circle" size={20} color={colors.white} />
+                  <Text style={styles.removeText}>
+                    {isRejecting ? 'Refus...' : 'Refuser la demande'}
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
           </ScrollView>
         )}
 
