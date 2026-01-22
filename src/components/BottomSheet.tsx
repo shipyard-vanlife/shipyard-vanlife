@@ -40,20 +40,12 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
   const { data: connectionStatus, refetch: refetchConnectionStatus } = useCheckConnection(profile.id)
 
   const handleConnect = async () => {
-    console.log('🔵 handleConnect appelé pour user:', profile.id)
-
     try {
-      // Force refresh du statut de connexion avant d'envoyer
-      console.log('🔵 Vérification du statut...')
       const { data: freshStatus } = await refetchConnectionStatus()
-      console.log('🔵 Statut actuel:', freshStatus)
-
-      // Check if connection exists (freshStatus peut être un tableau vide, un objet, ou null)
       const hasConnection = freshStatus && (Array.isArray(freshStatus) ? freshStatus.length > 0 : freshStatus.status)
 
       if (hasConnection) {
         const status = Array.isArray(freshStatus) ? freshStatus[0]?.status : freshStatus.status
-        console.log('🔵 Connexion existante avec statut:', status)
 
         if (status === 'pending') {
           Alert.alert('Demande en attente', 'Une demande de connexion est déjà en attente')
@@ -65,28 +57,21 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
         return
       }
 
-      console.log('🔵 Aucune connexion existante, envoi de la demande...')
       sendRequest(profile.id, {
         onSuccess: () => {
-          console.log('✅ Demande envoyée avec succès')
           Alert.alert('Demande envoyée', `Demande de connexion envoyée à ${profile.username} !`)
-          // Le cache est automatiquement invalidé par le hook useSendConnectionRequest
-          // On force quand même un refetch du statut pour mettre à jour l'UI immédiatement
           setTimeout(() => refetchConnectionStatus(), 300)
         },
         onError: (error: any) => {
-          console.error('❌ Connection request error:', error)
           refetchConnectionStatus()
-
           if (error?.message?.includes('Connection already exists')) {
-            Alert.alert('Connexion existante', 'Une connexion existe déjà avec cet utilisateur. Actualise l\'app.')
+            Alert.alert('Connexion existante', 'Une connexion existe déjà avec cet utilisateur.')
           } else {
             Alert.alert('Erreur', 'Impossible d\'envoyer la demande de connexion')
           }
         },
       })
     } catch (error) {
-      console.error('❌ Erreur dans handleConnect:', error)
       Alert.alert('Erreur', 'Une erreur est survenue')
     }
   }

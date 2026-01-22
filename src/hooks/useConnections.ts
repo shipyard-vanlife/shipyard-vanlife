@@ -14,10 +14,7 @@ export function useMyFriends() {
   return useQuery({
     queryKey: connectionKeys.friends(),
     queryFn: async (): Promise<Friend[]> => {
-      console.log('🔵 Fetching friends...')
       const { data, error } = await supabase.rpc('get_my_friends')
-      console.log('🔵 Friends data:', data)
-      console.log('🔵 Friends error:', error)
       if (error) throw error
       return (data as Friend[]) ?? []
     },
@@ -31,10 +28,7 @@ export function useConnectionRequests() {
   return useQuery({
     queryKey: connectionKeys.requests(),
     queryFn: async (): Promise<ConnectionRequest[]> => {
-      console.log('🔵 Fetching requests...')
       const { data, error } = await supabase.rpc('get_connection_requests')
-      console.log('🔵 Requests data:', data)
-      console.log('🔵 Requests error:', error)
       if (error) throw error
       return (data as ConnectionRequest[]) ?? []
     },
@@ -59,7 +53,6 @@ export function useSendConnectionRequest() {
       // Force refetch instead of just invalidate
       await queryClient.refetchQueries({ queryKey: connectionKeys.friends() })
       await queryClient.refetchQueries({ queryKey: connectionKeys.requests() })
-      console.log('✅ Refetch forcé après envoi de demande')
     },
   })
 }
@@ -79,7 +72,6 @@ export function useAcceptConnection() {
       // Force refetch instead of just invalidate
       await queryClient.refetchQueries({ queryKey: connectionKeys.friends() })
       await queryClient.refetchQueries({ queryKey: connectionKeys.requests() })
-      console.log('✅ Refetch forcé après acceptation')
     },
   })
 }
@@ -99,7 +91,6 @@ export function useRejectConnection() {
       // Force refetch instead of just invalidate
       await queryClient.refetchQueries({ queryKey: connectionKeys.friends() })
       await queryClient.refetchQueries({ queryKey: connectionKeys.requests() })
-      console.log('✅ Refetch forcé après rejet')
     },
   })
 }
@@ -134,7 +125,6 @@ export function useDeleteConnection() {
       // Force refetch instead of just invalidate
       await queryClient.refetchQueries({ queryKey: connectionKeys.friends() })
       await queryClient.refetchQueries({ queryKey: connectionKeys.requests() })
-      console.log('✅ Refetch forcé après suppression')
     },
   })
 }
