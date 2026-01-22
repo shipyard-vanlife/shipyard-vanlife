@@ -100,13 +100,27 @@ export function useCheckConnection(userId: string) {
   return useQuery({
     queryKey: [...connectionKeys.all, 'check', userId],
     queryFn: async (): Promise<Connection | null> => {
+      console.log('🔵 Checking connection status for userId:', userId)
       const { data, error } = await supabase.rpc('check_connection_status', {
         p_other_user_id: userId,
       })
-      if (error) throw error
-      return data ? (data as Connection) : null
+
+      console.log('🔵 check_connection_status response:', { data, error })
+
+      if (error) {
+        console.log('🔴 check_connection_status error:', error)
+        throw error
+      }
+
+      // Si data est un array, prendre le premier élément
+      const connection = Array.isArray(data) ? (data.length > 0 ? data[0] : null) : data
+      console.log('🔵 Returning connection:', connection)
+      return connection as Connection | null
     },
     enabled: !!userId,
+    staleTime: 0, // Always refetch
+    refetchOnMount: 'always', // Refetch every time component mounts
+    refetchOnWindowFocus: true, // Refetch when window gains focus
   })
 }
 

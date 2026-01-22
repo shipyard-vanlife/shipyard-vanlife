@@ -1,7 +1,9 @@
 import React from 'react'
-import { StyleSheet, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, TouchableOpacity, View, Text } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { colors, shadows } from '../styles/theme'
+import { useMyFriends } from '../hooks/useConnections'
+import { useRealtimeConnections } from '../hooks/useRealtimeConnections'
 
 type TabName = 'trips' | 'home' | 'chat' | 'search' | 'profile'
 
@@ -28,11 +30,21 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
   activeTab,
   onTabChange,
 }) => {
+  const { data: friends } = useMyFriends()
+
+  // Active le realtime pour mettre à jour le badge en temps réel
+  useRealtimeConnections()
+
+  // Calculer le nombre total de messages non lus
+  const totalUnreadCount = friends?.reduce((total, friend) => total + (friend.unread_count || 0), 0) || 0
+
   return (
     <View style={styles.container}>
       <View style={styles.tabBar}>
         {tabs.map(tab => {
           const isActive = activeTab === tab.name
+          const showBadge = tab.name === 'chat' && totalUnreadCount > 0
+
           return (
             <TouchableOpacity
               key={tab.name}
@@ -40,11 +52,20 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
               onPress={() => onTabChange(tab.name)}
               activeOpacity={0.7}
             >
-              <Ionicons
-                name={isActive ? tab.iconActive : tab.icon}
-                size={26}
-                color={isActive ? colors.secondary.main : colors.text.tertiary}
-              />
+              <View>
+                <Ionicons
+                  name={isActive ? tab.iconActive : tab.icon}
+                  size={26}
+                  color={isActive ? colors.secondary.main : colors.text.tertiary}
+                />
+                {showBadge && (
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>
+                      {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
+                    </Text>
+                  </View>
+                )}
+              </View>
             </TouchableOpacity>
           )
         })}
@@ -77,5 +98,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 8,
+  },
+  badge: {
+    position: 'absolute',
+    top: -6,
+    right: -10,
+    backgroundColor: colors.secondary.main,
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 5,
+  },
+  badgeText: {
+    color: colors.white,
+    fontSize: 11,
+    fontWeight: 'bold',
   },
 })

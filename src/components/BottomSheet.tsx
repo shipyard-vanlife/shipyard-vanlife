@@ -76,10 +76,6 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
     }
   }
 
-  const handleMessage = () => {
-    // TODO: Implémenter la messagerie - ouvrir ConversationScreen
-    Alert.alert('Message', `Ouvrir la conversation avec ${profile.username}`)
-  }
 
   const handleClose = () => {
     if (isClosing || !onClose) return
@@ -211,7 +207,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
           <TouchableOpacity
             style={[
               styles.connectButton,
-              (sendingRequest || connectionStatus?.status === 'accepted' || connectionStatus?.status === 'pending') && styles.connectButtonDisabled
+              connectionStatus?.status === 'pending' && styles.connectButtonPending,
+              connectionStatus?.status === 'accepted' && styles.connectButtonAccepted
             ]}
             onPress={handleConnect}
             disabled={sendingRequest || connectionStatus?.status === 'accepted' || connectionStatus?.status === 'pending'}
@@ -238,10 +235,6 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.messageButton} onPress={handleMessage}>
-            <Ionicons name="chatbubble-outline" size={20} color={colors.secondary.main} />
-            <Text style={styles.messageText}>Envoyer un message</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -413,9 +406,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
   },
-  connectButtonDisabled: {
+  connectButtonPending: {
     backgroundColor: colors.text.tertiary,
     opacity: 0.7,
+  },
+  connectButtonAccepted: {
+    backgroundColor: '#4A90E2',
   },
   connectText: {
     color: colors.white,
