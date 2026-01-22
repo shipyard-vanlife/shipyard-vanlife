@@ -1,5 +1,6 @@
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator'
 import type { ImageResult } from 'expo-image-manipulator'
+import { Image } from 'react-native'
 
 export interface CompressionOptions {
   maxWidth: number
@@ -56,8 +57,22 @@ async function getFileSizeFromUri(uri: string): Promise<number> {
 }
 
 /**
+ * Get image dimensions from URI
+ */
+function getImageSize(uri: string): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    Image.getSize(
+      uri,
+      (width, height) => resolve({ width, height }),
+      reject
+    )
+  })
+}
+
+/**
  * Compress an image using expo-image-manipulator
  * Uses progressive compression to reach target size
+ * Preserves aspect ratio by using only one dimension for resize
  *
  * @param uri - Local file URI of the image
  * @param options - Compression options (use COMPRESSION_PRESETS)
@@ -69,6 +84,9 @@ export async function compressImage(
 ): Promise<CompressedImage> {
   const { maxWidth, maxHeight, quality, targetSizeKB } = options
   const targetSizeBytes = (targetSizeKB ?? 150) * 1024
+
+  // Get original image dimensions to preserve aspect ratio
+  const { width: originalWidth, height: originalHeight } = await getImageSize(uri)
 
   let currentQuality = quality
   let currentMaxWidth = maxWidth
@@ -83,11 +101,23 @@ export async function compressImage(
     // Use the new expo-image-manipulator API
     const context = ImageManipulator.manipulate(uri)
 
-    // Resize to fit within max dimensions
-    context.resize({
-      width: currentMaxWidth,
-      height: currentMaxHeight,
-    })
+    // Calculate scale factor to fit within max dimensions while preserving aspect ratio
+    const widthRatio = currentMaxWidth / originalWidth
+    const heightRatio = currentMaxHeight / originalHeight
+    const scaleFactor = Math.min(widthRatio, heightRatio, 1) // Don't upscale
+
+    if (scaleFactor < 1) {
+      // Resize using only ONE dimension to preserve aspect ratio
+      // expo-image-manipulator will calculate the other dimension automatically
+      if (widthRatio < heightRatio) {
+        // Width is more constraining
+        context.resize({ width: Math.round(originalWidth * scaleFactor) })
+      } else {
+        // Height is more constraining
+        context.resize({ height: Math.round(originalHeight * scaleFactor) })
+      }
+    }
+    // If scaleFactor >= 1, no resize needed (image already fits)
 
     // Render and save with compression
     const imageRef = await context.renderAsync()
@@ -108,7 +138,7 @@ export async function compressImage(
     if (currentQuality > 0.5) {
       currentQuality = Math.max(0.5, currentQuality - 0.1)
     } else {
-      // Reduce dimensions by 20%
+      // Reduce max dimensions by 20%
       currentMaxWidth = Math.round(currentMaxWidth * 0.8)
       currentMaxHeight = Math.round(currentMaxHeight * 0.8)
     }
