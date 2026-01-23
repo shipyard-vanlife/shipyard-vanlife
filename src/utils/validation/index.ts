@@ -6,11 +6,18 @@ export {
   skillSchema,
   bioSchema,
   createProfileSchema,
+  completeProfileSchema,
   updateProfileSchema,
   coordinatesSchema,
   updateLocationSchema,
   tripNameSchema,
   createTripSchema,
+  // Verification schemas
+  firstnameSchema,
+  lastnameSchema,
+  dateOfBirthSchema,
+  photoUriSchema,
+  verificationSchema,
 } from './schemas'
 
 export type {
@@ -18,6 +25,7 @@ export type {
   UpdateProfileInput,
   UpdateLocationInput,
   CreateTripValidatedInput,
+  VerificationValidatedInput,
 } from './schemas'
 
 // Error utilities

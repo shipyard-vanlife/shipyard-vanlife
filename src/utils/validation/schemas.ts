@@ -36,6 +36,9 @@ export const createProfileSchema = z.object({
   skills: z.array(skillSchema).optional().default([]),
 })
 
+// Alias for completing profile after verification (same validation)
+export const completeProfileSchema = createProfileSchema
+
 export type CreateProfileInput = z.infer<typeof createProfileSchema>
 
 // Optional van name (for updates where it can be empty)
@@ -125,3 +128,73 @@ export const addStageSchema = z.object({
 })
 
 export type AddStageValidatedInput = z.infer<typeof addStageSchema>
+
+// ============================================
+// VERIFICATION SCHEMAS
+// ============================================
+
+// Name regex: letters, spaces, hyphens, apostrophes (supports accents)
+const nameRegex = /^[a-zA-ZÀ-ÿ\s\-']+$/
+
+// Firstname validation
+// Error keys are WITHOUT namespace prefix - component uses useTranslation('verification')
+export const firstnameSchema = z
+  .string()
+  .trim()
+  .min(2, 'errors.firstnameMin')
+  .max(50, 'errors.firstnameMax')
+  .regex(nameRegex, 'errors.nameChars')
+
+// Lastname validation
+export const lastnameSchema = z
+  .string()
+  .trim()
+  .min(2, 'errors.lastnameMin')
+  .max(50, 'errors.lastnameMax')
+  .regex(nameRegex, 'errors.nameChars')
+
+// Date of birth validation (21+ years old)
+// Uses a union with null to provide custom error message for missing date
+export const dateOfBirthSchema = z
+  .date({
+    required_error: 'errors.dateRequired',
+    invalid_type_error: 'errors.dateRequired',
+  })
+  .refine(
+    (date) => {
+      const age = Math.floor((Date.now() - date.getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+      return age >= 21
+    },
+    { message: 'errors.ageMinimum' }
+  )
+  .refine(
+    (date) => {
+      const age = Math.floor((Date.now() - date.getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+      return age <= 100
+    },
+    { message: 'errors.ageMaximum' }
+  )
+
+// Photo URI validation (local file URI)
+// Handles null values with custom error message
+export const photoUriSchema = z
+  .string({
+    required_error: 'errors.photoRequired',
+    invalid_type_error: 'errors.photoRequired',
+  })
+  .min(1, 'errors.photoRequired')
+  .refine((uri) => uri.startsWith('file://') || uri.startsWith('content://') || uri.startsWith('ph://'), {
+    message: 'errors.invalidPhotoUri',
+  })
+
+// Complete verification submission schema
+export const verificationSchema = z.object({
+  firstname: firstnameSchema,
+  lastname: lastnameSchema,
+  dateOfBirth: dateOfBirthSchema,
+  facePhotoUri: photoUriSchema,
+  vanWithPersonPhotoUri: photoUriSchema,
+  registrationPlatePhotoUri: photoUriSchema,
+})
+
+export type VerificationValidatedInput = z.infer<typeof verificationSchema>
