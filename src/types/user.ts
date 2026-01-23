@@ -1,3 +1,5 @@
+import type { VerificationStatus } from './verification'
+
 // Skill types - matches DB enum skill_type
 export type SkillType =
   | 'mechanic'
@@ -23,6 +25,7 @@ export interface UserProfile {
     longitude: number
   } | null
   city: string | null
+  country: string | null
   main_specialty: SkillType | null
   skills: SkillType[]
   days_on_road: number
@@ -37,6 +40,8 @@ export interface UserProfile {
   lastname: string | null
   bio: string | null
   photos: string[]
+  // Verification status (sensitive data is in verifications table)
+  verification_status: VerificationStatus | null
 }
 
 // Profile creation/update payload
@@ -48,6 +53,7 @@ export interface ProfileInput {
   latitude?: number
   longitude?: number
   city?: string
+  country?: string
   main_specialty?: SkillType | null
   skills?: SkillType[]
   days_on_road?: number
@@ -69,6 +75,7 @@ export interface ProfileRow {
   van_photo_url: string | null
   location: string | null // PostGIS geography as string
   city: string | null
+  country: string | null
   main_specialty: SkillType | null
   skills: SkillType[] | null
   days_on_road: number
@@ -83,6 +90,8 @@ export interface ProfileRow {
   lastname: string | null
   bio: string | null
   photos: string[] | null
+  // Verification status (sensitive data is in verifications table)
+  verification_status: VerificationStatus | null
 }
 
 // Skill colors for UI
