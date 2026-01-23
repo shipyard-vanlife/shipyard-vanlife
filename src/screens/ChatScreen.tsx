@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   StyleSheet,
@@ -11,6 +12,7 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useMyFriends, useConnectionRequests, useAcceptConnection, useRejectConnection, useDeleteConnection } from '../hooks/useConnections'
+import { useMyProfile } from '../hooks/useProfiles'
 import { useRealtimeConnections } from '../hooks/useRealtimeConnections'
 import { Friend, ConnectionRequest } from '../types/chat'
 import { FriendProfileModal } from '../components/FriendProfileModal'
@@ -35,6 +37,19 @@ export const ChatScreen: React.FC = () => {
   const { mutate: acceptConnection } = useAcceptConnection()
   const { mutate: rejectConnection } = useRejectConnection()
   const { mutate: deleteConnection } = useDeleteConnection()
+  const { data: myProfile } = useMyProfile()
+
+  const handleAcceptConnection = (connectionId: string) => {
+    // Block if user is not verified
+    if (myProfile?.verification_status !== 'approved') {
+      Alert.alert(
+        t('verification.requiredTitle'),
+        t('verification.requiredMessage')
+      )
+      return
+    }
+    acceptConnection(connectionId)
+  }
 
   // le realtime pour les connexions
   useRealtimeConnections()
@@ -142,7 +157,7 @@ export const ChatScreen: React.FC = () => {
       <View style={styles.requestActions}>
         <TouchableOpacity
           style={styles.acceptButton}
-          onPress={() => acceptConnection(item.connection_id)}
+          onPress={() => handleAcceptConnection(item.connection_id)}
         >
           <Ionicons name="checkmark" size={20} color={colors.white} />
         </TouchableOpacity>

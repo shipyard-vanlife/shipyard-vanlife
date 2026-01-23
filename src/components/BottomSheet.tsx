@@ -18,6 +18,7 @@ import { UserProfile } from '../types/user'
 import { SkillBadge } from './SkillBadge'
 import { ProfilePhotoGrid } from './profile/ProfilePhotoGrid'
 import { useSendConnectionRequest, useCheckConnection } from '../hooks/useConnections'
+import { useMyProfile } from '../hooks/useProfiles'
 import { colors } from '../styles/theme'
 
 const SCREEN_HEIGHT = Dimensions.get('window').height
@@ -38,8 +39,18 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
 
   const { mutate: sendRequest, isPending: sendingRequest } = useSendConnectionRequest()
   const { data: connectionStatus, refetch: refetchConnectionStatus } = useCheckConnection(profile.id)
+  const { data: myProfile } = useMyProfile()
 
   const handleConnect = async () => {
+    // Block if user is not verified
+    if (myProfile?.verification_status !== 'approved') {
+      Alert.alert(
+        t('common:verification.requiredTitle'),
+        t('common:verification.requiredMessage')
+      )
+      return
+    }
+
     try {
       const { data: freshStatus } = await refetchConnectionStatus()
       const hasConnection = freshStatus && (Array.isArray(freshStatus) ? freshStatus.length > 0 : freshStatus.status)
