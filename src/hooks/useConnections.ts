@@ -18,6 +18,7 @@ export function useMyFriends() {
       if (error) throw error
       return (data as Friend[]) ?? []
     },
+    staleTime: 0,
     refetchOnMount: 'always',
     refetchOnWindowFocus: true,
   })

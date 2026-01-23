@@ -86,6 +86,8 @@ export function useAllVisibleProfiles() {
       if (error) throw error
       return (data as UserProfile[]) ?? []
     },
+    staleTime: 0,
+    refetchOnMount: 'always',
   })
 }
 
