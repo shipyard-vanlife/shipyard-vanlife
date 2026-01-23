@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient, useInfiniteQuery } from '@tanstack/react-query'
 import { supabase } from '../services/supabase'
 import { Message, MessageInput } from '../types/chat'
 
@@ -7,6 +7,7 @@ export const messageKeys = {
   all: ['messages'] as const,
   byConnection: (connectionId: string) => [...messageKeys.all, connectionId] as const,
   conversation: (connectionId: string) => [...messageKeys.all, connectionId] as const, // Alias for compatibility
+  infinite: (connectionId: string) => [...messageKeys.all, 'infinite', connectionId] as const,
 }
 
 // Get messages for a conversation
@@ -38,9 +39,8 @@ export function useSendMessage() {
       return data as string
     },
     onSuccess: (_, variables) => {
-      // Refresh messages for this conversation
       queryClient.invalidateQueries({
-        queryKey: messageKeys.conversation(variables.connection_id),
+        queryKey: messageKeys.infinite(variables.connection_id),
       })
     },
   })
@@ -58,7 +58,6 @@ export function useMarkMessagesAsRead() {
       if (error) throw error
     },
     onSuccess: (_, connectionId) => {
-      // Refresh messages for this conversation AND friends list
       queryClient.refetchQueries({
         queryKey: messageKeys.conversation(connectionId),
       })
@@ -66,5 +65,31 @@ export function useMarkMessagesAsRead() {
         queryKey: ['connections', 'friends'],
       })
     },
+  })
+}
+
+const MESSAGES_PER_PAGE = 50
+
+export function useInfiniteMessages(connectionId: string) {
+  return useInfiniteQuery({
+    queryKey: messageKeys.infinite(connectionId),
+    queryFn: async ({ pageParam = 0 }): Promise<Message[]> => {
+      const { data, error } = await supabase.rpc('get_messages_paginated', {
+        p_connection_id: connectionId,
+        p_limit: MESSAGES_PER_PAGE,
+        p_offset: pageParam * MESSAGES_PER_PAGE,
+      })
+
+      if (error) throw error
+      return (data as Message[]) ?? []
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.length < MESSAGES_PER_PAGE) {
+        return undefined
+      }
+      return allPages.length
+    },
+    initialPageParam: 0,
+    enabled: !!connectionId,
   })
 }
