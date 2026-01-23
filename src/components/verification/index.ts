@@ -1,0 +1,5 @@
+export { VerificationStepIndicator } from './VerificationStepIndicator'
+export { VerificationPhotoInput } from './VerificationPhotoInput'
+export { VerificationIdentityForm } from './VerificationIdentityForm'
+export { VerificationPhotosForm } from './VerificationPhotosForm'
+export { VerificationConfirmation } from './VerificationConfirmation'
