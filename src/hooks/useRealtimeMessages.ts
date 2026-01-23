@@ -28,9 +28,8 @@ export function useRealtimeMessages(connectionId: string | null) {
         (payload) => {
           console.log('🔴 Message change detected:', payload)
 
-          // Refetch les messages de cette conversation
           queryClient.refetchQueries({
-            queryKey: messageKeys.byConnection(connectionId)
+            queryKey: messageKeys.infinite(connectionId)
           })
         }
       )

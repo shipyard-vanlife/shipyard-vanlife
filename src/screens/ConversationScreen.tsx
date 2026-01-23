@@ -13,7 +13,7 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { colors, spacing, borderRadius, fontSize } from '../styles/theme'
-import { useMessages, useSendMessage, useMarkMessagesAsRead } from '../hooks/useMessages'
+import { useInfiniteMessages, useSendMessage, useMarkMessagesAsRead } from '../hooks/useMessages'
 import { useRealtimeMessages } from '../hooks/useRealtimeMessages'
 import { FriendProfileModal } from '../components/FriendProfileModal'
 import { Message } from '../types/chat'
@@ -40,28 +40,35 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
   const [messageText, setMessageText] = useState('')
   const flatListRef = useRef<FlatList>(null)
 
-  const { data: messages, isLoading, refetch } = useMessages(connectionId)
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useInfiniteMessages(connectionId)
   const { mutate: sendMessage, isPending: isSending } = useSendMessage()
   const { mutate: markAsRead } = useMarkMessagesAsRead()
 
-  //  le realtime pour cette conversation
   useRealtimeMessages(connectionId)
 
-  // Marquer les messages comme lus quand on ouvre la conversation
+  const messages = data?.pages.flatMap((page) => page) ?? []
+
   useEffect(() => {
     if (connectionId) {
       markAsRead(connectionId)
     }
   }, [connectionId, markAsRead])
 
-  // Scroll to bottom when messages change
   useEffect(() => {
-    if (messages && messages.length > 0) {
+    if (messages.length > 0 && !isLoading) {
       setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: true })
+        flatListRef.current?.scrollToOffset({ offset: 0, animated: false })
       }, 100)
     }
-  }, [messages])
+  }, [messages.length, isLoading])
+
 
   const handleSend = () => {
     if (!messageText.trim() || isSending) return
@@ -145,7 +152,6 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
         <View style={styles.backButton} />
       </View>
 
-      {/* Messages list */}
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.secondary.main} />
@@ -157,7 +163,21 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
           renderItem={renderMessage}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.messagesList}
-          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) {
+              fetchNextPage()
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          inverted
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <View style={styles.loadMoreContainer}>
+                <ActivityIndicator size="small" color={colors.secondary.main} />
+                <Text style={styles.loadMoreText}>Chargement...</Text>
+              </View>
+            ) : null
+          }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="chatbubbles-outline" size={64} color={colors.text.tertiary} />
@@ -352,5 +372,16 @@ const styles = StyleSheet.create({
   sendButtonDisabled: {
     backgroundColor: colors.text.tertiary,
     opacity: 0.5,
+  },
+  loadMoreContainer: {
+    paddingVertical: spacing.md,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  loadMoreText: {
+    fontSize: fontSize.sm,
+    color: colors.text.tertiary,
   },
 })
