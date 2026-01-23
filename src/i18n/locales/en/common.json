@@ -102,5 +102,12 @@
     "section6Content": "We reserve the right to modify these terms at any time. Users will be informed of significant changes via in-app notification.",
     "lastUpdate": "Last updated: January 2026",
     "acceptButton": "I accept the terms"
+  },
+  "verification": {
+    "requiredTitle": "Verification required",
+    "requiredMessage": "You need to be verified to use this feature. Your verification is being processed.",
+    "mapBlockedTitle": "Verification in progress",
+    "mapBlockedMessage": "Your account is being verified. You'll be able to access the map and see other vanlifers once verified.",
+    "mapBlockedNote": "This usually takes less than 24 hours."
   }
 }

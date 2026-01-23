@@ -102,5 +102,12 @@
     "section6Content": "Nous nous réservons le droit de modifier ces conditions à tout moment. Les utilisateurs seront informés des modifications importantes par notification dans l'application.",
     "lastUpdate": "Dernière mise à jour : Janvier 2026",
     "acceptButton": "J'accepte les conditions"
+  },
+  "verification": {
+    "requiredTitle": "Vérification requise",
+    "requiredMessage": "Tu dois être vérifié pour utiliser cette fonctionnalité. Ta vérification est en cours de traitement.",
+    "mapBlockedTitle": "Vérification en cours",
+    "mapBlockedMessage": "Ton compte est en cours de vérification. Tu pourras accéder à la carte et voir les autres vanlifers une fois vérifié.",
+    "mapBlockedNote": "Cela prend généralement moins de 24h."
   }
 }
