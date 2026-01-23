@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   View,
   Text,
@@ -10,10 +11,12 @@ import {
   Platform,
   ActivityIndicator,
   Image,
+  Alert,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { colors, spacing, borderRadius, fontSize } from '../styles/theme'
 import { useInfiniteMessages, useSendMessage, useMarkMessagesAsRead } from '../hooks/useMessages'
+import { useMyProfile } from '../hooks/useProfiles'
 import { useRealtimeMessages } from '../hooks/useRealtimeMessages'
 import { FriendProfileModal } from '../components/FriendProfileModal'
 import { Message } from '../types/chat'
@@ -34,6 +37,8 @@ interface ConversationScreenProps {
 
 export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, navigation }) => {
   const { connectionId, friendName, friendAvatar, friendId } = route.params
+  const { t } = useTranslation('common')
+  const { data: myProfile } = useMyProfile()
 
   const [selectedFriend, setSelectedFriend] = useState<string | null>(null)
 
@@ -72,6 +77,15 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
 
   const handleSend = () => {
     if (!messageText.trim() || isSending) return
+
+    // Block if user is not verified
+    if (myProfile?.verification_status !== 'approved') {
+      Alert.alert(
+        t('verification.requiredTitle'),
+        t('verification.requiredMessage')
+      )
+      return
+    }
 
     sendMessage(
       { connection_id: connectionId, content: messageText.trim() },

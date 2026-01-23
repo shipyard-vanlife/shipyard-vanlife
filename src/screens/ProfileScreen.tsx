@@ -20,6 +20,7 @@ import {
   ProfileSkillBadges,
   ProfileStats,
   ProfileVanSection,
+  VerificationPendingBanner,
 } from '../components/profile'
 import { useAuth } from '../contexts/AuthContext'
 import { useImagePicker } from '../hooks/useImagePicker'
@@ -269,6 +270,9 @@ export const ProfileScreen: React.FC = () => {
           onEditPress={handleEditPress}
           isUploadingAvatar={isUploadingAvatar}
         />
+
+        {/* Verification pending banner */}
+        <VerificationPendingBanner verificationStatus={profile.verification_status} />
 
         {/* Stats grid */}
         <ProfileStats

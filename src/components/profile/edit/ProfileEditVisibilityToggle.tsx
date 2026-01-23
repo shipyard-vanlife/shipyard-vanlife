@@ -28,8 +28,8 @@ export const ProfileEditVisibilityToggle: React.FC<ProfileEditVisibilityTogglePr
   const isVerified = verificationStatus === 'approved'
   const isPending = verificationStatus === 'pending'
 
-  // Disable toggle if user is not verified (can only turn OFF, not ON)
-  const isToggleDisabled = disabled || (!isVerified && !value)
+  // Disable toggle completely if user is not verified
+  const isToggleDisabled = disabled || !isVerified
 
   // Show warning if not verified
   const showWarning = !isVerified

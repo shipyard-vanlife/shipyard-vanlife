@@ -15,7 +15,7 @@ export const HomeScreen: React.FC = () => {
   const { data: otherProfiles, isLoading: loadingOthers } = useAllVisibleProfiles()
   const [selectedProfile, setSelectedProfile] = useState<UserProfile | null>(null)
   const { mutate: updateLocation } = useUpdateLocation()
-  const { loading: locationLoading, requestLocation } = useLocation()
+  const { isLoading: locationLoading, requestLocation } = useLocation()
 
   // Debug : afficher le nombre d'autres profils
   console.log('👥 Autres profils chargés:', otherProfiles?.length || 0)
@@ -32,7 +32,7 @@ export const HomeScreen: React.FC = () => {
       updateLocation({
         latitude: loc.latitude,
         longitude: loc.longitude,
-        city: loc.city,
+        city: loc.city ?? undefined,
       })
     }
   }
@@ -56,6 +56,25 @@ export const HomeScreen: React.FC = () => {
 
   // Pas de localisation = afficher le bouton pour activer
   const hasLocation = profile.location?.latitude && profile.location?.longitude
+
+  // Vérification du statut de vérification
+  const isVerified = profile.verification_status === 'approved'
+
+  // Si l'utilisateur n'est pas vérifié, afficher l'overlay de blocage
+  if (!isVerified) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.verificationOverlay}>
+          <View style={styles.verificationIconContainer}>
+            <Ionicons name="shield-checkmark-outline" size={80} color={colors.secondary.main} />
+          </View>
+          <Text style={styles.verificationTitle}>{t('verification.mapBlockedTitle')}</Text>
+          <Text style={styles.verificationMessage}>{t('verification.mapBlockedMessage')}</Text>
+          <Text style={styles.verificationNote}>{t('verification.mapBlockedNote')}</Text>
+        </View>
+      </View>
+    )
+  }
 
   return (
     <View style={styles.container}>
@@ -179,5 +198,46 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 16,
     fontWeight: '600',
+  },
+  verificationOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+    backgroundColor: colors.primary.main,
+  },
+  verificationIconContainer: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: colors.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 32,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  verificationTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.text.primary,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  verificationMessage: {
+    fontSize: 16,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 12,
+  },
+  verificationNote: {
+    fontSize: 14,
+    color: colors.text.tertiary,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 })

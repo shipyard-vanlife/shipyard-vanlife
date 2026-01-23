@@ -53,7 +53,7 @@ export interface ProfileInput {
   latitude?: number
   longitude?: number
   city?: string
-  country?: string
+  country?: string | null
   main_specialty?: SkillType | null
   skills?: SkillType[]
   days_on_road?: number

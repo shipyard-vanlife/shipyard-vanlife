@@ -17,7 +17,7 @@ import { UserProfile } from '../types/user'
 import { SkillBadge } from './SkillBadge'
 import { ProfilePhotoGrid } from './profile/ProfilePhotoGrid'
 import { useDeleteConnection, useCheckConnection, useAcceptConnection, useRejectConnection } from '../hooks/useConnections'
-import { useProfileById } from '../hooks/useProfiles'
+import { useProfileById, useMyProfile } from '../hooks/useProfiles'
 import { colors } from '../styles/theme'
 
 const SCREEN_HEIGHT = Dimensions.get('window').height
@@ -42,9 +42,19 @@ export const FriendProfileModal: React.FC<FriendProfileModalProps> = ({
   const { mutate: deleteConnection, isPending: isDeleting } = useDeleteConnection()
   const { mutate: acceptConnection, isPending: isAccepting } = useAcceptConnection()
   const { mutate: rejectConnection, isPending: isRejecting } = useRejectConnection()
+  const { data: myProfile } = useMyProfile()
 
   const handleAccept = () => {
     if (!connectionId) return
+
+    // Block if user is not verified
+    if (myProfile?.verification_status !== 'approved') {
+      Alert.alert(
+        t('common:verification.requiredTitle'),
+        t('common:verification.requiredMessage')
+      )
+      return
+    }
 
     acceptConnection(connectionId, {
       onSuccess: () => {
@@ -113,6 +123,15 @@ export const FriendProfileModal: React.FC<FriendProfileModalProps> = ({
 
   const handleMessage = () => {
     if (!connectionId || !profile) return
+
+    // Block if user is not verified
+    if (myProfile?.verification_status !== 'approved') {
+      Alert.alert(
+        t('common:verification.requiredTitle'),
+        t('common:verification.requiredMessage')
+      )
+      return
+    }
 
     if (onOpenConversation) {
       // Fermer le modal et ouvrir la conversation
