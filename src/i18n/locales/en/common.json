@@ -79,6 +79,13 @@
       "unknown": "An error occurred"
     }
   },
+  "permissions": {
+    "cameraTitle": "Camera access required",
+    "cameraMessage": "To take a photo, please allow camera access in your phone settings.",
+    "galleryTitle": "Gallery access required",
+    "galleryMessage": "To choose a photo, please allow gallery access in your phone settings.",
+    "openSettings": "Open settings"
+  },
   "terms": {
     "title": "Terms and Conditions",
     "section1Title": "Acceptance of terms",

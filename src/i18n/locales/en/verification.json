@@ -1,0 +1,88 @@
+{
+  "title": "Verification",
+  "subtitle": "To join the community, we need to verify your identity",
+  "steps": {
+    "identity": "Identity",
+    "photos": "Photos",
+    "confirm": "Confirmation"
+  },
+  "stepIndicator": "Step {{current}}/{{total}}",
+  "confirm": {
+    "identityTitle": "Personal information",
+    "photosTitle": "Verification photos"
+  },
+  "accessibility": {
+    "stepCompleted": "{{name}} - completed",
+    "stepCurrent": "{{name}} - in progress",
+    "stepPending": "{{name}} - pending",
+    "completed": "completed",
+    "photoLoading": "Loading {{type}}",
+    "photoSelected": "{{type}} selected",
+    "photoAdd": "Add {{type}}",
+    "photoChangeHint": "Tap to change photo",
+    "photoAddHint": "Tap to take or choose a photo",
+    "photoPreview": "Preview of {{type}}",
+    "signOutHint": "Sign out and exit verification"
+  },
+  "form": {
+    "firstname": "First name",
+    "firstnamePlaceholder": "Your first name",
+    "lastname": "Last name",
+    "lastnamePlaceholder": "Your last name",
+    "dateOfBirth": "Date of birth",
+    "dateOfBirthPlaceholder": "DD/MM/YYYY",
+    "facePhoto": "Photo of your face",
+    "facePhotoHint": "Clear face, well lit",
+    "vanPhoto": "Photo of you in front of your van",
+    "vanPhotoHint": "Full van visible + you in front",
+    "platePhoto": "Photo of the license plate",
+    "platePhotoHint": "Readable plate, vehicle visible"
+  },
+  "buttons": {
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit my verification",
+    "submitting": "Submitting...",
+    "addPhoto": "Add a photo",
+    "changePhoto": "Change photo",
+    "loadingPhoto": "Loading..."
+  },
+  "privacy": {
+    "title": "Privacy",
+    "message": "Your personal data is secure and will never be shared publicly. Only our administrators have access to verify your identity."
+  },
+  "submitted": {
+    "title": "Request sent!",
+    "subtitle": "Thank you for your submission",
+    "message": "Your verification request has been received. Our team will review it within the next 24 to 48 hours.",
+    "note": "You can now set up your public profile. It will be visible to the community once your verification is approved.",
+    "continue": "Set up my profile"
+  },
+  "pending": {
+    "title": "Verification in progress",
+    "message": "Your request is being processed. You can continue setting up your profile in the meantime.",
+    "continue": "Continue"
+  },
+  "approved": {
+    "title": "Verified",
+    "message": "Your identity has been verified. Welcome to the community!"
+  },
+  "rejected": {
+    "title": "Verification rejected",
+    "message": "Your verification has been rejected. Contact us for more information."
+  },
+  "errors": {
+    "firstnameMin": "First name must be at least 2 characters",
+    "firstnameMax": "First name cannot exceed 50 characters",
+    "lastnameMin": "Last name must be at least 2 characters",
+    "lastnameMax": "Last name cannot exceed 50 characters",
+    "nameChars": "Only letters, spaces, hyphens and apostrophes are allowed",
+    "dateRequired": "Date of birth is required",
+    "ageMinimum": "You must be at least 21 years old",
+    "ageMaximum": "Invalid date of birth",
+    "photoRequired": "This photo is required",
+    "invalidPhotoUri": "Invalid photo",
+    "uploadFailed": "Failed to upload photo",
+    "submitFailed": "Submission failed. Please try again."
+  }
+}

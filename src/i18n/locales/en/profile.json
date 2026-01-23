@@ -15,6 +15,8 @@
     "mainSpecialtyHint": "Select your main skill",
     "visibilityLabel": "Visible profile",
     "visibilityDescription": "Other vanlifers can see you on the map",
+    "visibilityWarningPending": "Your verification is pending. You'll be visible once approved.",
+    "visibilityWarningRequired": "You need to verify your identity to be visible on the map.",
     "saveButton": "Save",
     "saving": "Saving...",
     "success": "Profile updated",

@@ -79,6 +79,13 @@
       "unknown": "Une erreur est survenue"
     }
   },
+  "permissions": {
+    "cameraTitle": "Accès caméra requis",
+    "cameraMessage": "Pour prendre une photo, autorise l'accès à la caméra dans les réglages de ton téléphone.",
+    "galleryTitle": "Accès galerie requis",
+    "galleryMessage": "Pour choisir une photo, autorise l'accès à ta galerie dans les réglages de ton téléphone.",
+    "openSettings": "Ouvrir les réglages"
+  },
   "terms": {
     "title": "Conditions Générales d'Utilisation",
     "section1Title": "Acceptation des conditions",
