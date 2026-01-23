@@ -340,6 +340,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
+    paddingTop: 12,
     paddingBottom: 40,
   },
   vanPhotoContainer: {
@@ -442,6 +443,24 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 16,
     fontWeight: '600',
+  },
+  acceptButton: {
+    backgroundColor: colors.secondary.main,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  acceptText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  acceptButtonDisabled: {
+    opacity: 0.5,
   },
   zoomModalContainer: {
     flex: 1,

@@ -117,8 +117,8 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? -90 : 0}
     >
       {/* Header */}
       <View style={styles.header}>
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
-    paddingBottom: 90, // Espace pour la navbar en bas
+    paddingBottom: 100,
     backgroundColor: colors.white,
     borderTopWidth: 1,
     borderTopColor: colors.border.light,
