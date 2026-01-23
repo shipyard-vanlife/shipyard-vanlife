@@ -17,10 +17,10 @@ import { ProfilePhotoInput } from '../components/ProfilePhotoInput'
 import { useAuth } from '../contexts/AuthContext'
 import { useImagePicker } from '../hooks/useImagePicker'
 import { useLocation, LocationErrorCode } from '../hooks/useLocation'
-import { useCreateProfile } from '../hooks/useProfiles'
+import { useCompleteProfile, useMyProfile } from '../hooks/useProfiles'
 import { supabase } from '../services/supabase'
 import { ALL_SKILLS, SKILL_COLORS, SkillType } from '../types/user'
-import { createProfileSchema, getFieldErrors, parseSupabaseError } from '../utils/validation'
+import { completeProfileSchema, getFieldErrors, parseSupabaseError } from '../utils/validation'
 import { colors, spacing, borderRadius, fontSize, fontWeight } from '../styles/theme'
 
 type ProfileFields = { username?: string; van_name?: string }
@@ -34,9 +34,10 @@ const locationErrorKeys: Record<LocationErrorCode, string> = {
 }
 
 export const ProfileSetupScreen: React.FC = () => {
-  const { t } = useTranslation(['common', 'skills', 'profile'])
+  const { t } = useTranslation(['common', 'skills', 'profile', 'verification'])
   const { signOut } = useAuth()
-  const { mutate: createProfile, isPending } = useCreateProfile()
+  const { data: profile } = useMyProfile()
+  const { mutate: completeProfile, isPending } = useCompleteProfile()
   const {
     status: locationStatus,
     location,
@@ -59,13 +60,17 @@ export const ProfileSetupScreen: React.FC = () => {
   const [fieldErrors, setFieldErrors] = useState<ProfileFields>({})
   const [globalError, setGlobalError] = useState<string | null>(null)
 
+  // Get firstname/lastname from verification data (read-only)
+  const firstname = profile?.firstname ?? ''
+  const lastname = profile?.lastname ?? ''
+
   const clearFieldError = (field: keyof ProfileFields) => {
     if (fieldErrors[field]) {
       setFieldErrors(prev => ({ ...prev, [field]: undefined }))
     }
   }
 
-  const formValidation = createProfileSchema.safeParse({
+  const formValidation = completeProfileSchema.safeParse({
     username: username.trim(),
     van_name: vanName.trim(),
     main_specialty: mainSpecialty,
@@ -92,7 +97,7 @@ export const ProfileSetupScreen: React.FC = () => {
       }
     }
 
-    const result = createProfileSchema.safeParse({
+    const result = completeProfileSchema.safeParse({
       username: username.trim(),
       van_name: vanName.trim(),
       main_specialty: mainSpecialty,
@@ -101,7 +106,7 @@ export const ProfileSetupScreen: React.FC = () => {
 
     if (!result.success) return
 
-    createProfile(
+    completeProfile(
       {
         username: result.data.username,
         van_name: result.data.van_name,
@@ -124,7 +129,7 @@ export const ProfileSetupScreen: React.FC = () => {
     setFieldErrors({})
     setGlobalError(null)
 
-    const result = createProfileSchema.safeParse({
+    const result = completeProfileSchema.safeParse({
       username: username.trim(),
       van_name: vanName.trim(),
       main_specialty: mainSpecialty,
@@ -186,6 +191,26 @@ export const ProfileSetupScreen: React.FC = () => {
             onTakePhoto={takePhoto}
             disabled={isPending}
           />
+
+          {/* Verified Identity (Read-only) */}
+          {firstname || lastname ? (
+            <View style={styles.verifiedSection}>
+              <View style={styles.verifiedHeader}>
+                <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+                <Text style={styles.verifiedLabel}>{t('verification:steps.identity')}</Text>
+              </View>
+              <View style={styles.verifiedRow}>
+                <View style={styles.verifiedField}>
+                  <Text style={styles.verifiedFieldLabel}>{t('verification:form.firstname')}</Text>
+                  <Text style={styles.verifiedFieldValue}>{firstname}</Text>
+                </View>
+                <View style={styles.verifiedField}>
+                  <Text style={styles.verifiedFieldLabel}>{t('verification:form.lastname')}</Text>
+                  <Text style={styles.verifiedFieldValue}>{lastname}</Text>
+                </View>
+              </View>
+            </View>
+          ) : null}
 
           {/* Username Input */}
           <Text style={styles.label}>{t('profile.usernameLabel')}</Text>
@@ -293,7 +318,7 @@ export const ProfileSetupScreen: React.FC = () => {
             {isPending ? (
               <ActivityIndicator color={colors.white} />
             ) : (
-              <Text style={styles.buttonText}>{t('buttons.createProfile')}</Text>
+              <Text style={styles.buttonText}>{t('buttons.completeProfile')}</Text>
             )}
           </TouchableOpacity>
 
@@ -435,5 +460,41 @@ const styles = StyleSheet.create({
     color: colors.text.tertiary,
     fontSize: fontSize.base,
     textDecorationLine: 'underline',
+  },
+  verifiedSection: {
+    backgroundColor: colors.primary.light,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    marginTop: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.success,
+  },
+  verifiedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginBottom: spacing.sm,
+  },
+  verifiedLabel: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.semibold,
+    color: colors.success,
+  },
+  verifiedRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  verifiedField: {
+    flex: 1,
+  },
+  verifiedFieldLabel: {
+    fontSize: fontSize.xs,
+    color: colors.text.muted,
+    marginBottom: spacing.xs,
+  },
+  verifiedFieldValue: {
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.medium,
+    color: colors.text.primary,
   },
 })

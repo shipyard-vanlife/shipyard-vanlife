@@ -359,6 +359,7 @@ export const ProfileScreen: React.FC = () => {
           bio: profile.bio,
           main_specialty: profile.main_specialty,
           is_visible: profile.is_visible,
+          verification_status: profile.verification_status,
         }}
       />
     </SafeAreaView>
