@@ -202,6 +202,72 @@ export function useCreateProfile() {
 }
 
 // ============================================
+// COMPLETE PROFILE (after verification)
+// ============================================
+// Used when a partial profile exists from verification and needs username etc.
+
+export function useCompleteProfile() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (input: CreateProfileInput): Promise<void> => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) throw new Error('Not authenticated')
+
+      // 1. Update existing profile with remaining fields
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          username: input.username,
+          avatar_url: input.avatar_url ?? null,
+          van_name: input.van_name ?? null,
+          van_photo_url: input.van_photo_url ?? null,
+          city: input.city ?? null,
+          main_specialty: input.main_specialty ?? null,
+          skills: input.skills ?? [],
+          days_on_road: input.days_on_road ?? 0,
+          is_visible: input.is_visible ?? true,
+          bio: input.bio ?? null,
+          photos: input.photos ?? [],
+        })
+        .eq('id', user.id)
+
+      if (profileError) throw profileError
+
+      // 2. Update location and create first trip (only if location provided)
+      const hasLocation = input.latitude !== undefined && input.longitude !== undefined
+
+      if (hasLocation) {
+        const { error: locationError } = await supabase.rpc('update_my_location', {
+          lat: input.latitude,
+          lng: input.longitude,
+          city_name: input.city ?? null,
+        })
+
+        if (locationError) throw locationError
+
+        // 3. Create first trip with first stage
+        const { error: tripError } = await supabase.rpc('create_first_trip', {
+          trip_name: input.tripName,
+          lat: input.latitude,
+          lng: input.longitude,
+          city_name: input.city ?? null,
+          country_code: input.country ?? null,
+        })
+
+        if (tripError) throw tripError
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: profileKeys.my() })
+    },
+  })
+}
+
+// ============================================
 // UPDATE PROFILE
 // ============================================
 
@@ -288,6 +354,26 @@ export function useDeleteProfile() {
       queryClient.invalidateQueries({ queryKey: ['trips'] })
       // Specifically set my profile to null to trigger ProfileSetupScreen
       queryClient.setQueryData(profileKeys.my(), null)
+    },
+  })
+}
+
+// ============================================
+// DELETE ACCOUNT (profile + auth user + files)
+// ============================================
+
+export function useDeleteAccount() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (): Promise<void> => {
+      const { error } = await supabase.rpc('delete_my_account')
+      if (error) throw error
+    },
+    onSuccess: async () => {
+      // Clear all React Query cache
+      queryClient.clear()
+      // Sign out will be handled by the component after this succeeds
     },
   })
 }

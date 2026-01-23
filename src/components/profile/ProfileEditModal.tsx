@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
 import { SkillType } from '../../types/user'
+import type { VerificationStatus } from '../../types/verification'
 import { useAuth } from '../../contexts/AuthContext'
 import { useUpdateProfile } from '../../hooks/useProfiles'
 import { useVanPhotoUpload } from '../../hooks/useVanPhotoUpload'
@@ -37,6 +38,7 @@ interface ProfileEditModalProps {
     bio: string | null
     main_specialty: SkillType | null
     is_visible: boolean
+    verification_status: VerificationStatus | null
   }
 }
 
@@ -255,6 +257,9 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ visible, onC
               value={isVisible}
               onValueChange={setIsVisible}
               disabled={isProcessing}
+              verificationStatus={initialData.verification_status}
+              verificationPendingText={t('edit.visibilityWarningPending')}
+              verificationRequiredText={t('edit.visibilityWarningRequired')}
             />
 
             {/* Save Button */}

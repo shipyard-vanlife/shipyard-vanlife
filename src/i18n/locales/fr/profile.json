@@ -15,6 +15,8 @@
     "mainSpecialtyHint": "Sélectionne ta compétence principale",
     "visibilityLabel": "Profil visible",
     "visibilityDescription": "Les autres vanlifers peuvent te voir sur la carte",
+    "visibilityWarningPending": "Ta vérification est en cours. Tu seras visible une fois approuvé.",
+    "visibilityWarningRequired": "Tu dois vérifier ton identité pour être visible sur la carte.",
     "saveButton": "Enregistrer",
     "saving": "Enregistrement...",
     "success": "Profil mis à jour",
@@ -40,6 +42,7 @@
     "addVan": "Ajouter mon van",
     "editProfile": "Modifier le profil",
     "signOut": "Se déconnecter",
+    "deleteProfile": "Supprimer le profil",
     "deleteAccount": "Supprimer mon compte"
   },
   "tagline": {

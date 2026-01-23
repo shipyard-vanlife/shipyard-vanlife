@@ -23,8 +23,13 @@ import {
 } from '../components/profile'
 import { useAuth } from '../contexts/AuthContext'
 import { useImagePicker } from '../hooks/useImagePicker'
-import { useDeleteProfile, useMyProfile, useUpdateProfile } from '../hooks/useProfiles'
 import { useProfilePhotosUpload } from '../hooks/useProfilePhotos'
+import {
+  useDeleteAccount,
+  useDeleteProfile,
+  useMyProfile,
+  useUpdateProfile,
+} from '../hooks/useProfiles'
 import { borderRadius, colors, fontSize, fontWeight, spacing } from '../styles/theme'
 
 type PickerMode = 'avatar' | 'profile-photo' | null
@@ -33,12 +38,21 @@ export const ProfileScreen: React.FC = () => {
   const { t } = useTranslation(['profile', 'common'])
   const { signOut, user } = useAuth()
   const { data: profile, isLoading } = useMyProfile()
-  const { mutate: deleteProfile, isPending: isDeleting } = useDeleteProfile()
+  const { mutate: deleteProfile, isPending: isDeletingProfile } = useDeleteProfile()
+  const { mutate: deleteAccount, isPending: isDeletingAccount } = useDeleteAccount()
   const { mutate: updateProfile } = useUpdateProfile()
 
+  const isDeleting = isDeletingProfile || isDeletingAccount
+
   // Single image picker instance for both avatar and profile photos
-  const { pickImage, takePhoto, uploadImage, imageUri, error: imageError, clearImage } =
-    useImagePicker()
+  const {
+    pickImage,
+    takePhoto,
+    uploadImage,
+    imageUri,
+    error: imageError,
+    clearImage,
+  } = useImagePicker()
 
   // Track what we're uploading
   const [pickerMode, setPickerMode] = useState<PickerMode>(null)
@@ -137,6 +151,26 @@ export const ProfileScreen: React.FC = () => {
       },
     ])
   }, [deleteProfile, t])
+
+  const handleDeleteAccount = useCallback(() => {
+    Alert.alert(t('common:profile.deleteAccountTitle'), t('common:profile.deleteAccountConfirmation'), [
+      { text: t('common:buttons.cancel'), style: 'cancel' },
+      {
+        text: t('common:buttons.delete'),
+        style: 'destructive',
+        onPress: () => {
+          deleteAccount(undefined, {
+            onSuccess: async () => {
+              await signOut()
+            },
+            onError: (error: Error) => {
+              Alert.alert(t('common:errors.generic'), error.message)
+            },
+          })
+        },
+      },
+    ])
+  }, [deleteAccount, signOut, t])
 
   const handleViewTrip = useCallback(() => {
     // TODO: Navigate to trip screen when implemented
@@ -282,14 +316,26 @@ export const ProfileScreen: React.FC = () => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.deleteButton, isDeleting && styles.buttonDisabled]}
+            style={[styles.deleteProfileButton, isDeleting && styles.buttonDisabled]}
             onPress={handleDeleteProfile}
             disabled={isDeleting}
           >
-            {isDeleting ? (
+            {isDeletingProfile ? (
+              <ActivityIndicator color={colors.text.tertiary} size="small" />
+            ) : (
+              <Text style={styles.deleteProfileButtonText}>{t('actions.deleteProfile')}</Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.deleteAccountButton, isDeleting && styles.buttonDisabled]}
+            onPress={handleDeleteAccount}
+            disabled={isDeleting}
+          >
+            {isDeletingAccount ? (
               <ActivityIndicator color={colors.error} size="small" />
             ) : (
-              <Text style={styles.deleteButtonText}>{t('actions.deleteAccount')}</Text>
+              <Text style={styles.deleteAccountButtonText}>{t('actions.deleteAccount')}</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -313,6 +359,7 @@ export const ProfileScreen: React.FC = () => {
           bio: profile.bio,
           main_specialty: profile.main_specialty,
           is_visible: profile.is_visible,
+          verification_status: profile.verification_status,
         }}
       />
     </SafeAreaView>
@@ -361,16 +408,27 @@ const styles = StyleSheet.create({
     fontSize: fontSize.lg,
     fontWeight: fontWeight.semibold,
   },
-  deleteButton: {
+  deleteProfileButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: colors.error,
+    borderColor: colors.text.tertiary,
     padding: spacing.lg,
     borderRadius: borderRadius.lg,
     alignItems: 'center',
   },
-  deleteButtonText: {
-    color: colors.error,
+  deleteProfileButtonText: {
+    color: colors.text.tertiary,
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
+  },
+  deleteAccountButton: {
+    backgroundColor: colors.error,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    alignItems: 'center',
+  },
+  deleteAccountButtonText: {
+    color: colors.white,
     fontSize: fontSize.lg,
     fontWeight: fontWeight.semibold,
   },

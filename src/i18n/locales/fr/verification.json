@@ -1,0 +1,88 @@
+{
+  "title": "Vérification",
+  "subtitle": "Pour rejoindre la communauté, nous devons vérifier ton identité",
+  "steps": {
+    "identity": "Identité",
+    "photos": "Photos",
+    "confirm": "Confirmation"
+  },
+  "stepIndicator": "Étape {{current}}/{{total}}",
+  "confirm": {
+    "identityTitle": "Informations personnelles",
+    "photosTitle": "Photos de vérification"
+  },
+  "accessibility": {
+    "stepCompleted": "{{name}} - terminé",
+    "stepCurrent": "{{name}} - en cours",
+    "stepPending": "{{name}} - à venir",
+    "completed": "terminé",
+    "photoLoading": "Chargement de {{type}} en cours",
+    "photoSelected": "{{type}} sélectionnée",
+    "photoAdd": "Ajouter {{type}}",
+    "photoChangeHint": "Appuie pour changer la photo",
+    "photoAddHint": "Appuie pour prendre ou choisir une photo",
+    "photoPreview": "Aperçu de {{type}}",
+    "signOutHint": "Se déconnecter et quitter la vérification"
+  },
+  "form": {
+    "firstname": "Prénom",
+    "firstnamePlaceholder": "Ton prénom",
+    "lastname": "Nom",
+    "lastnamePlaceholder": "Ton nom de famille",
+    "dateOfBirth": "Date de naissance",
+    "dateOfBirthPlaceholder": "JJ/MM/AAAA",
+    "facePhoto": "Photo de ton visage",
+    "facePhotoHint": "Face claire, bien éclairée",
+    "vanPhoto": "Photo de toi devant ton van",
+    "vanPhotoHint": "Van entier visible + toi devant",
+    "platePhoto": "Photo de l'immatriculation",
+    "platePhotoHint": "Plaque lisible, véhicule visible"
+  },
+  "buttons": {
+    "next": "Suivant",
+    "previous": "Précédent",
+    "submit": "Soumettre ma vérification",
+    "submitting": "Envoi en cours...",
+    "addPhoto": "Ajouter une photo",
+    "changePhoto": "Changer la photo",
+    "loadingPhoto": "Chargement..."
+  },
+  "privacy": {
+    "title": "Confidentialité",
+    "message": "Tes données personnelles sont sécurisées et ne seront jamais partagées publiquement. Seuls nos administrateurs y ont accès pour vérifier ton identité."
+  },
+  "submitted": {
+    "title": "Demande envoyée !",
+    "subtitle": "Merci pour ta soumission",
+    "message": "Ta demande de vérification a bien été reçue. Notre équipe va l'examiner dans les prochaines 24 à 48 heures.",
+    "note": "Tu peux maintenant configurer ton profil public. Il sera visible par la communauté une fois ta vérification approuvée.",
+    "continue": "Configurer mon profil"
+  },
+  "pending": {
+    "title": "Vérification en cours",
+    "message": "Ta demande est en cours de traitement. Tu peux continuer à configurer ton profil en attendant.",
+    "continue": "Continuer"
+  },
+  "approved": {
+    "title": "Vérifié",
+    "message": "Ton identité a été vérifiée. Bienvenue dans la communauté !"
+  },
+  "rejected": {
+    "title": "Vérification refusée",
+    "message": "Ta vérification a été refusée. Contacte-nous pour plus d'informations."
+  },
+  "errors": {
+    "firstnameMin": "Le prénom doit contenir au moins 2 caractères",
+    "firstnameMax": "Le prénom ne peut pas dépasser 50 caractères",
+    "lastnameMin": "Le nom doit contenir au moins 2 caractères",
+    "lastnameMax": "Le nom ne peut pas dépasser 50 caractères",
+    "nameChars": "Seules les lettres, espaces, tirets et apostrophes sont autorisés",
+    "dateRequired": "La date de naissance est requise",
+    "ageMinimum": "Tu dois avoir au moins 21 ans",
+    "ageMaximum": "Date de naissance invalide",
+    "photoRequired": "Cette photo est requise",
+    "invalidPhotoUri": "Photo invalide",
+    "uploadFailed": "Échec de l'upload de la photo",
+    "submitFailed": "Échec de la soumission. Réessaie."
+  }
+}

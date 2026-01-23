@@ -10,6 +10,7 @@ import { MainNavigator } from './src/navigation/MainNavigator'
 import { LoginScreen } from './src/screens/LoginScreen'
 import { ProfileSetupScreen } from './src/screens/ProfileSetupScreen'
 import { RegisterScreen } from './src/screens/RegisterScreen'
+import { VerificationScreen } from './src/screens/VerificationScreen'
 import { colors } from './src/styles/theme'
 
 const queryClient = new QueryClient({
@@ -35,12 +36,17 @@ function AuthenticatedApp() {
     )
   }
 
-  // Pas de profil → création
+  // Cas 1: Aucun profil → Vérification d'identité d'abord
   if (!profile) {
+    return <VerificationScreen />
+  }
+
+  // Cas 2: Profil existe mais pas de username → Profile Setup
+  if (!profile.username) {
     return <ProfileSetupScreen />
   }
 
-  // Profil existe → navigation principale
+  // Cas 3: Profil complet → Navigation principale
   return <MainNavigator />
 }
 

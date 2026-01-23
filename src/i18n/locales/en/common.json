@@ -29,8 +29,10 @@
     "bioMax": "Maximum 500 characters"
   },
   "profile": {
-    "deleteTitle": "Delete profile",
-    "deleteConfirmation": "Are you sure you want to delete your profile? This action is irreversible.",
+    "deleteTitle": "Delete profile?",
+    "deleteConfirmation": "You can create a new profile with the same account.",
+    "deleteAccountTitle": "Delete your account?",
+    "deleteAccountConfirmation": "This action is irreversible. Your account, profile, trips and photos will be permanently deleted.",
     "setupTitle": "Welcome!",
     "setupSubtitle": "Set up your vanlife profile",
     "usernameLabel": "Your username",
@@ -76,6 +78,13 @@
       "uploadFailed": "Failed to upload photo",
       "unknown": "An error occurred"
     }
+  },
+  "permissions": {
+    "cameraTitle": "Camera access required",
+    "cameraMessage": "To take a photo, please allow camera access in your phone settings.",
+    "galleryTitle": "Gallery access required",
+    "galleryMessage": "To choose a photo, please allow gallery access in your phone settings.",
+    "openSettings": "Open settings"
   },
   "terms": {
     "title": "Terms and Conditions",
