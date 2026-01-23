@@ -2,6 +2,10 @@
   "header": {
     "edit": "Edit"
   },
+  "verificationPending": {
+    "title": "Verification in progress",
+    "message": "You don't have access to all features yet. We're reviewing your profile, this may take a few hours."
+  },
   "edit": {
     "title": "Edit my profile",
     "vanNameLabel": "Your van's name",
