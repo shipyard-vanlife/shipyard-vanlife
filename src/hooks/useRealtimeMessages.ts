@@ -2,25 +2,22 @@ import { useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../services/supabase'
 import { messageKeys } from './useMessages'
+import { helpRequestKeys } from './useHelpRequests'
 
-/**
- * Hook pour écouter les changements en temps réel sur les messages d'une conversation
- * @param connectionId - L'ID de la connexion (conversation) à surveiller
- */
 export function useRealtimeMessages(connectionId: string | null) {
   const queryClient = useQueryClient()
 
   useEffect(() => {
     if (!connectionId) return
 
-    console.log('🔵 Setting up realtime for messages in connection:', connectionId)
+    console.log('🔵 Setting up realtime for messages and help requests in connection:', connectionId)
 
     const channel = supabase
-      .channel(`messages-${connectionId}`)
+      .channel(`conversation-${connectionId}`)
       .on(
         'postgres_changes',
         {
-          event: '*', 
+          event: '*',
           schema: 'public',
           table: 'messages',
           filter: `connection_id=eq.${connectionId}`,
@@ -33,10 +30,26 @@ export function useRealtimeMessages(connectionId: string | null) {
           })
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'help_requests',
+          filter: `connection_id=eq.${connectionId}`,
+        },
+        (payload) => {
+          console.log('🔴 Help request change detected:', payload)
+
+          queryClient.refetchQueries({
+            queryKey: helpRequestKeys.byConnection(connectionId)
+          })
+        }
+      )
       .subscribe()
 
     return () => {
-      console.log('🔵 Cleaning up realtime for messages in connection:', connectionId)
+      console.log('🔵 Cleaning up realtime for conversation:', connectionId)
       supabase.removeChannel(channel)
     }
   }, [connectionId, queryClient])

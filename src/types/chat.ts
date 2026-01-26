@@ -46,3 +46,16 @@ export interface MessageInput {
   connection_id: string
   content: string
 }
+
+// Help Request
+export type HelpRequestStatus = 'pending' | 'accepted' | 'declined'
+
+export interface HelpRequest {
+  id: string
+  connection_id: string
+  requester_id: string
+  skill_requested: string
+  status: HelpRequestStatus
+  created_at: string
+  responded_at: string | null
+}

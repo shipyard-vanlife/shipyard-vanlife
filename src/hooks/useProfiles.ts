@@ -294,6 +294,28 @@ export function useUpdateProfile() {
   })
 }
 
+export function useUpdateUsername() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (newUsername: string): Promise<void> => {
+      const { error } = await supabase.rpc('update_username', {
+        p_new_username: newUsername,
+      })
+
+      if (error) {
+        if (error.message.includes('once per month')) {
+          throw new Error('Tu ne peux changer ton pseudo qu\'une fois par mois')
+        }
+        throw error
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: profileKeys.my() })
+    },
+  })
+}
+
 // ============================================
 // UPDATE LOCATION
 // ============================================

@@ -20,11 +20,10 @@ interface ProfileHeaderProps {
   city: string | null
   daysOnRoad: number
   isOwnProfile: boolean
-  // Own profile actions
   onAvatarPress?: () => void
   onEditPress?: () => void
+  onUsernamePress?: () => void
   isUploadingAvatar?: boolean
-  // Other profile actions
   onBackPress?: () => void
   onFavoritePress?: () => void
   isFavorite?: boolean
@@ -41,6 +40,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   isOwnProfile,
   onAvatarPress,
   onEditPress,
+  onUsernamePress,
   isUploadingAvatar = false,
   onBackPress,
   onFavoritePress,
@@ -152,7 +152,16 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       <Text style={styles.name}>{displayName}</Text>
 
       {/* Username */}
-      <Text style={styles.username}>@{username}</Text>
+      {isOwnProfile && onUsernamePress ? (
+        <TouchableOpacity onPress={onUsernamePress} activeOpacity={0.7}>
+          <View style={styles.usernameContainer}>
+            <Text style={styles.username}>@{username}</Text>
+            <Ionicons name="pencil" size={14} color={colors.text.tertiary} />
+          </View>
+        </TouchableOpacity>
+      ) : (
+        <Text style={styles.username}>@{username}</Text>
+      )}
 
       {/* Subtitle: location + van */}
       {subtitle ? (
@@ -258,10 +267,15 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     marginBottom: spacing.xs,
   },
+  usernameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginBottom: spacing.sm,
+  },
   username: {
     fontSize: fontSize.base,
     color: colors.text.tertiary,
-    marginBottom: spacing.sm,
   },
   subtitleContainer: {
     flexDirection: 'row',
