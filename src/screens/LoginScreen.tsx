@@ -65,6 +65,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister }
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
+          textContentType="emailAddress"
+          autoComplete="email"
           editable={!loading}
         />
 
@@ -75,6 +77,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister }
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
+            textContentType="password"
+            autoComplete="password"
             editable={!loading}
           />
           <TouchableOpacity style={styles.eyeButton} onPress={() => setShowPassword(!showPassword)}>
