@@ -176,16 +176,17 @@ export const dateOfBirthSchema = z
   )
 
 // Photo URI validation (local file URI)
-// Handles null values with custom error message
-export const photoUriSchema = z
-  .string({
-    required_error: 'errors.photoRequired',
-    invalid_type_error: 'errors.photoRequired',
-  })
-  .min(1, 'errors.photoRequired')
-  .refine((uri) => uri.startsWith('file://') || uri.startsWith('content://') || uri.startsWith('ph://'), {
-    message: 'errors.invalidPhotoUri',
-  })
+// Uses preprocess to handle null values with proper error message
+export const photoUriSchema = z.preprocess(
+  (val) => (val === null || val === undefined ? '' : val),
+  z
+    .string()
+    .min(1, 'errors.photoRequired')
+    .refine(
+      (uri) => uri.startsWith('file://') || uri.startsWith('content://') || uri.startsWith('ph://'),
+      { message: 'errors.invalidPhotoUri' }
+    )
+)
 
 // Complete verification submission schema
 export const verificationSchema = z.object({
