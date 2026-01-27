@@ -1,0 +1,76 @@
+{
+  "choice": {
+    "title": "Join the community",
+    "subtitle": "How would you like to verify?",
+    "withCode": {
+      "title": "I have an invitation code",
+      "description": "Someone from the community invited me"
+    },
+    "classic": {
+      "title": "Classic verification",
+      "description": "I don't have an invitation code"
+    }
+  },
+  "codeInput": {
+    "title": "Invitation code",
+    "subtitle": "Enter the code you received",
+    "placeholder": "VAN-XXXX",
+    "hint": "The code format is VAN-XXXX",
+    "validate": "Validate code",
+    "validating": "Validating...",
+    "success": "Valid code!",
+    "continue": "Continue"
+  },
+  "generate": {
+    "title": "Invite a friend",
+    "subtitle": "Generate a code to invite someone to join the community",
+    "button": "Generate a code",
+    "generating": "Generating...",
+    "success": "Code generated!",
+    "copyHint": "Tap the code to copy it",
+    "copied": "Code copied!",
+    "share": "Share",
+    "shareMessage": "Join me on Shipyard Vanlife! Use my invitation code: {{code}}"
+  },
+  "section": {
+    "title": "Sponsorship",
+    "invitee": "invitee",
+    "invitees": "invitees",
+    "generateButton": "Invite someone",
+    "generateHint": "Share your unique code",
+    "count": "{{count}} person invited",
+    "count_plural": "{{count}} people invited",
+    "countZero": "No one invited yet",
+    "suspended": "You cannot invite until {{date}}",
+    "notVerified": "You must be verified to invite"
+  },
+  "milestones": {
+    "start": "Start inviting!",
+    "beginner": "Well done, keep going!",
+    "growing": "You're becoming a real ambassador!",
+    "ambassador": "Confirmed ambassador!",
+    "legend": "You're a legend!"
+  },
+  "history": {
+    "title": "My codes",
+    "emptyTitle": "No invitations yet",
+    "emptySubtitle": "Generate your first code and invite your vanlifer friends!",
+    "inviteesTitle": "Your invitees",
+    "pendingTitle": "Pending code",
+    "joinedOn": "Joined on {{date}}",
+    "waitingFor": "Waiting since {{date}}",
+    "empty": "You haven't generated any codes yet",
+    "used": "Used by {{username}}",
+    "unused": "Not used",
+    "createdAt": "Created on {{date}}"
+  },
+  "errors": {
+    "invalidCode": "Invalid invitation code",
+    "codeUsed": "This code has already been used",
+    "ownCode": "You cannot use your own code",
+    "verificationRequired": "You must be verified to generate codes",
+    "suspended": "Your invitation privilege is suspended",
+    "generateFailed": "Failed to generate code",
+    "useFailed": "Failed to use code"
+  }
+}
