@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from 'react'
+import React, { useRef } from 'react'
 import { StyleSheet, Text, View, Image } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import RNMapView, { Marker, Circle, PROVIDER_GOOGLE } from 'react-native-maps'
@@ -32,21 +32,17 @@ export const MapView: React.FC<MapViewProps> = ({
     )
   }
 
-  // Memoize profile data to prevent unnecessary re-renders
-  const profilesData = useMemo(
-    () =>
-      otherProfiles
-        .filter(p => p.zone_center?.latitude && p.zone_center?.longitude)
-        .map(p => ({
-          id: p.id,
-          username: p.username,
-          lat: p.zone_center!.latitude,
-          lng: p.zone_center!.longitude,
-          avatarUrl: p.avatar_url,
-          profile: p,
-        })),
-    [otherProfiles]
-  )
+  // Use zone_center (BLURRED coordinates) for other users' markers
+  const profilesData = otherProfiles
+    .filter(p => p.zone_center?.latitude && p.zone_center?.longitude)
+    .map(p => ({
+      id: p.id,
+      username: p.username,
+      lat: p.zone_center!.latitude,
+      lng: p.zone_center!.longitude,
+      avatarUrl: p.avatar_url,
+      profile: p,
+    }))
 
   return (
     <View style={styles.container}>
@@ -80,7 +76,6 @@ export const MapView: React.FC<MapViewProps> = ({
         <Marker
           coordinate={{ latitude, longitude }}
           anchor={{ x: 0.5, y: 0.5 }}
-          tracksViewChanges={false}
         >
           <View style={styles.myMarker}>
             {myAvatarUrl ? (
@@ -98,7 +93,6 @@ export const MapView: React.FC<MapViewProps> = ({
             coordinate={{ latitude: profile.lat, longitude: profile.lng }}
             anchor={{ x: 0.5, y: 0.5 }}
             onPress={() => onProfileSelect(profile.profile)}
-            tracksViewChanges={false}
           >
             <View style={styles.otherMarker}>
               {profile.avatarUrl ? (
@@ -139,7 +133,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary.main,
     borderWidth: 4,
     borderColor: '#fff',
-    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
@@ -162,7 +160,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.tertiary.main,
     borderWidth: 3,
     borderColor: '#fff',
-    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 6,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
