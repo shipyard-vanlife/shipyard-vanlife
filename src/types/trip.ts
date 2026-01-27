@@ -20,7 +20,7 @@ export interface TripStage {
   note: string | null
 }
 
-// Trip - a journey with multiple stages
+// Trip - a journey with multiple stages (own trips with EXACT coordinates)
 export interface Trip {
   id: string
   name: string
@@ -32,6 +32,34 @@ export interface Trip {
   total_distance_km: number
   created_at: string
   stages: TripStage[]
+}
+
+// Public trip stage - for viewing OTHER users' trips (BLURRED coordinates)
+export interface PublicTripStage {
+  id: string
+  location: {
+    latitude: number // BLURRED (~11km precision)
+    longitude: number // BLURRED (~11km precision)
+  }
+  city: string | null
+  country: string | null
+  arrived_at: string
+  stage_order: number
+  note: null // Notes are private, always null for other users
+}
+
+// Public trip - for viewing OTHER users' trips (BLURRED coordinates, no private data)
+export interface PublicTrip {
+  id: string
+  name: string
+  start_date: string
+  end_date: string | null
+  is_active: boolean
+  days_count: number
+  stages_count: number
+  total_distance_km: number
+  created_at: string
+  stages: PublicTripStage[]
 }
 
 // Trip creation payload
