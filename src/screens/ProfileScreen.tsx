@@ -11,6 +11,7 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { PhotoSourceModal } from '../components/PhotoSourceModal'
+import { InvitationSection } from '../components/invitation'
 import {
   ProfileAboutSection,
   ProfileActionButton,
@@ -306,6 +307,18 @@ export const ProfileScreen: React.FC = () => {
           isDeleting={isDeletingPhoto}
         />
 
+        {/* Invitation section - only for verified users */}
+        <View style={styles.invitationContainer}>
+          <InvitationSection
+            isVerified={profile.verification_status === 'approved'}
+            isSuspended={
+              Boolean(profile.invitation_suspended_until) &&
+              new Date(profile.invitation_suspended_until!) > new Date()
+            }
+            suspendedUntil={profile.invitation_suspended_until}
+          />
+        </View>
+
         {/* Main action button */}
         <ProfileActionButton isOwnProfile={true} onPress={handleViewTrip} />
 
@@ -395,6 +408,10 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: spacing.huge + spacing.xxxl,
+  },
+  invitationContainer: {
+    paddingHorizontal: spacing.xl,
+    marginTop: spacing.lg,
   },
   adminActions: {
     paddingHorizontal: spacing.xl,
