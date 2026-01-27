@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native'
+import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import { colors, spacing, fontSize, fontWeight } from '../../styles/theme'
@@ -94,11 +87,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       {/* Top bar */}
       <View style={styles.topBar}>
         {!isOwnProfile ? (
-          <TouchableOpacity
-            style={styles.topBarButton}
-            onPress={onBackPress}
-            activeOpacity={0.7}
-          >
+          <TouchableOpacity style={styles.topBarButton} onPress={onBackPress} activeOpacity={0.7}>
             <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
           </TouchableOpacity>
         ) : (
@@ -120,11 +109,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             </TouchableOpacity>
           ) : null}
           {isOwnProfile && onEditPress ? (
-            <TouchableOpacity
-              style={styles.editChip}
-              onPress={onEditPress}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity style={styles.editChip} onPress={onEditPress} activeOpacity={0.7}>
               <Text style={styles.editChipText}>{t('header.edit')}</Text>
             </TouchableOpacity>
           ) : null}

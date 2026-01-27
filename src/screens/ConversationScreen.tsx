@@ -52,14 +52,8 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
   const [messageText, setMessageText] = useState('')
   const flatListRef = useRef<FlatList>(null)
 
-  const {
-    data,
-    isLoading,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    refetch,
-  } = useInfiniteMessages(connectionId)
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } =
+    useInfiniteMessages(connectionId)
   const { mutate: sendMessage, isPending: isSending } = useSendMessage()
   const { mutate: markAsRead } = useMarkMessagesAsRead()
 
@@ -69,7 +63,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
 
   useRealtimeMessages(connectionId)
 
-  const messages = data?.pages.flatMap((page) => page) ?? []
+  const messages = data?.pages.flatMap(page => page) ?? []
 
   const chatItems = [
     ...messages.map(m => ({ type: 'message' as const, data: m, timestamp: m.created_at })),
@@ -90,16 +84,12 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
     }
   }, [messages.length, isLoading])
 
-
   const handleSend = () => {
     if (!messageText.trim() || isSending) return
 
     // Block if user is not verified
     if (myProfile?.verification_status !== 'approved') {
-      Alert.alert(
-        t('verification.requiredTitle'),
-        t('verification.requiredMessage')
-      )
+      Alert.alert(t('verification.requiredTitle'), t('verification.requiredMessage'))
       return
     }
 
@@ -189,10 +179,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
     >
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
         </TouchableOpacity>
 
@@ -273,7 +260,10 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
           maxLength={1000}
         />
         <TouchableOpacity
-          style={[styles.sendButton, (!messageText.trim() || isSending) && styles.sendButtonDisabled]}
+          style={[
+            styles.sendButton,
+            (!messageText.trim() || isSending) && styles.sendButtonDisabled,
+          ]}
           onPress={handleSend}
           disabled={!messageText.trim() || isSending}
         >

@@ -57,9 +57,7 @@ export function useTripDetail(tripId: string | null) {
     queryFn: async (): Promise<Trip | null> => {
       if (!tripId) return null
 
-      const { data, error } = await supabase
-        .rpc('get_trip_detail', { p_trip_id: tripId })
-        .single()
+      const { data, error } = await supabase.rpc('get_trip_detail', { p_trip_id: tripId }).single()
 
       if (error) {
         if (error.code === 'PGRST116') return null

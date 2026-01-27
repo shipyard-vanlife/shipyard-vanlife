@@ -38,7 +38,9 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
   const [zoomedImage, setZoomedImage] = useState<string | null>(null)
 
   const { mutate: sendRequest, isPending: sendingRequest } = useSendConnectionRequest()
-  const { data: connectionStatus, refetch: refetchConnectionStatus } = useCheckConnection(profile.id)
+  const { data: connectionStatus, refetch: refetchConnectionStatus } = useCheckConnection(
+    profile.id
+  )
   const { data: myProfile } = useMyProfile()
   const { data: freshProfile } = useProfileById(profile.id)
 
@@ -48,16 +50,14 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
   const handleConnect = async () => {
     // Block if user is not verified
     if (myProfile?.verification_status !== 'approved') {
-      Alert.alert(
-        t('common:verification.requiredTitle'),
-        t('common:verification.requiredMessage')
-      )
+      Alert.alert(t('common:verification.requiredTitle'), t('common:verification.requiredMessage'))
       return
     }
 
     try {
       const { data: freshStatus } = await refetchConnectionStatus()
-      const hasConnection = freshStatus && (Array.isArray(freshStatus) ? freshStatus.length > 0 : freshStatus.status)
+      const hasConnection =
+        freshStatus && (Array.isArray(freshStatus) ? freshStatus.length > 0 : freshStatus.status)
 
       if (hasConnection) {
         const status = Array.isArray(freshStatus) ? freshStatus[0]?.status : freshStatus.status
@@ -82,7 +82,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
           if (error?.message?.includes('Connection already exists')) {
             Alert.alert('Connexion existante', 'Une connexion existe déjà avec cet utilisateur.')
           } else {
-            Alert.alert('Erreur', 'Impossible d\'envoyer la demande de connexion')
+            Alert.alert('Erreur', "Impossible d'envoyer la demande de connexion")
           }
         },
       })
@@ -90,7 +90,6 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
       Alert.alert('Erreur', 'Une erreur est survenue')
     }
   }
-
 
   const handleClose = () => {
     if (isClosing || !onClose) return
@@ -214,18 +213,22 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
             style={[
               styles.connectButton,
               connectionStatus?.status === 'pending' && styles.connectButtonPending,
-              connectionStatus?.status === 'accepted' && styles.connectButtonAccepted
+              connectionStatus?.status === 'accepted' && styles.connectButtonAccepted,
             ]}
             onPress={handleConnect}
-            disabled={sendingRequest || connectionStatus?.status === 'accepted' || connectionStatus?.status === 'pending'}
+            disabled={
+              sendingRequest ||
+              connectionStatus?.status === 'accepted' ||
+              connectionStatus?.status === 'pending'
+            }
           >
             <Ionicons
               name={
                 connectionStatus?.status === 'accepted'
                   ? 'checkmark-circle'
                   : connectionStatus?.status === 'pending'
-                  ? 'time'
-                  : 'person-add'
+                    ? 'time'
+                    : 'person-add'
               }
               size={20}
               color={colors.white}
@@ -234,13 +237,12 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
               {connectionStatus?.status === 'accepted'
                 ? 'Est votre ami'
                 : connectionStatus?.status === 'pending'
-                ? 'Demande envoyée'
-                : sendingRequest
-                ? 'Envoi en cours...'
-                : 'Se connecter'}
+                  ? 'Demande envoyée'
+                  : sendingRequest
+                    ? 'Envoi en cours...'
+                    : 'Se connecter'}
             </Text>
           </TouchableOpacity>
-
         </View>
       </ScrollView>
 
@@ -257,11 +259,26 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
       )}
 
       {/* Image Zoom Modal */}
-      <Modal visible={!!zoomedImage} transparent animationType="fade" onRequestClose={() => setZoomedImage(null)}>
+      <Modal
+        visible={!!zoomedImage}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setZoomedImage(null)}
+      >
         <View style={styles.zoomModalContainer}>
-          <TouchableOpacity style={styles.zoomModalOverlay} activeOpacity={1} onPress={() => setZoomedImage(null)}>
+          <TouchableOpacity
+            style={styles.zoomModalOverlay}
+            activeOpacity={1}
+            onPress={() => setZoomedImage(null)}
+          >
             <TouchableOpacity activeOpacity={1} onPress={e => e.stopPropagation()}>
-              {zoomedImage && <Image source={{ uri: zoomedImage }} style={styles.zoomedImage} resizeMode="contain" />}
+              {zoomedImage && (
+                <Image
+                  source={{ uri: zoomedImage }}
+                  style={styles.zoomedImage}
+                  resizeMode="contain"
+                />
+              )}
             </TouchableOpacity>
             <TouchableOpacity style={styles.zoomCloseButton} onPress={() => setZoomedImage(null)}>
               <Ionicons name="close" size={30} color={colors.white} />

@@ -47,7 +47,11 @@ type FieldErrors = {
   bio?: string
 }
 
-export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ visible, onClose, initialData }) => {
+export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
+  visible,
+  onClose,
+  initialData,
+}) => {
   const { t } = useTranslation(['profile', 'common'])
   const { user } = useAuth()
   const { mutateAsync: updateProfile, isPending: isSaving } = useUpdateProfile()
@@ -94,7 +98,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ visible, onC
 
   const clearFieldError = (field: keyof FieldErrors) => {
     if (fieldErrors[field]) {
-      setFieldErrors((prev) => ({ ...prev, [field]: undefined }))
+      setFieldErrors(prev => ({ ...prev, [field]: undefined }))
     }
   }
 
@@ -222,7 +226,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ visible, onC
             <ProfileEditTextField
               label={t('edit.vanNameLabel')}
               value={vanName}
-              onChangeText={(text) => {
+              onChangeText={text => {
                 setVanName(text)
                 clearFieldError('van_name')
               }}
@@ -237,7 +241,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ visible, onC
             <ProfileEditTextField
               label={t('edit.bioLabel')}
               value={bio}
-              onChangeText={(text) => {
+              onChangeText={text => {
                 setBio(text)
                 clearFieldError('bio')
               }}

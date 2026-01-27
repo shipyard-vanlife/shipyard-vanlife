@@ -26,7 +26,6 @@ export interface UseLocationReturn {
   isLoading: boolean
 }
 
-
 function randomizeCoordinates(lat: number, lng: number): { latitude: number; longitude: number } {
   const minRadiusInDegrees = 0.009 // ~1km
   const maxRadiusInDegrees = 0.027 // ~3km
@@ -35,7 +34,7 @@ function randomizeCoordinates(lat: number, lng: number): { latitude: number; lon
   const distance = minRadiusInDegrees + Math.random() * (maxRadiusInDegrees - minRadiusInDegrees)
 
   const randomLat = lat + distance * Math.cos(angle)
-  const randomLng = lng + distance * Math.sin(angle) / Math.cos((lat * Math.PI) / 180)
+  const randomLng = lng + (distance * Math.sin(angle)) / Math.cos((lat * Math.PI) / 180)
 
   // Debug logs
   const distanceKm = distance * 111 // Rough conversion to km
@@ -80,7 +79,6 @@ export function useLocation(): UseLocationReturn {
         })
         return null
       }
-
 
       const position = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,

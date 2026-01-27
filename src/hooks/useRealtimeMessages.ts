@@ -22,11 +22,11 @@ export function useRealtimeMessages(connectionId: string | null) {
           table: 'messages',
           filter: `connection_id=eq.${connectionId}`,
         },
-        (payload) => {
+        payload => {
           console.log('🔴 Message change detected:', payload)
 
           queryClient.refetchQueries({
-            queryKey: messageKeys.infinite(connectionId)
+            queryKey: messageKeys.infinite(connectionId),
           })
         }
       )

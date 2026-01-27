@@ -37,11 +37,7 @@ export const ProfileVanSection: React.FC<ProfileVanSectionProps> = ({
           <View style={styles.vanInfo}>
             <Text style={styles.vanName}>{vanName ?? t('placeholders.noVan')}</Text>
             {isOwnProfile && onEditPress ? (
-              <TouchableOpacity
-                style={styles.editButton}
-                onPress={onEditPress}
-                activeOpacity={0.7}
-              >
+              <TouchableOpacity style={styles.editButton} onPress={onEditPress} activeOpacity={0.7}>
                 <Ionicons name="pencil" size={16} color={colors.secondary.main} />
               </TouchableOpacity>
             ) : null}
@@ -52,11 +48,7 @@ export const ProfileVanSection: React.FC<ProfileVanSectionProps> = ({
           <Ionicons name="car-sport-outline" size={32} color={colors.text.muted} />
           <Text style={styles.emptyText}>{t('placeholders.noVan')}</Text>
           {isOwnProfile && onEditPress ? (
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={onEditPress}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity style={styles.addButton} onPress={onEditPress} activeOpacity={0.7}>
               <Text style={styles.addButtonText}>{t('actions.addVan')}</Text>
             </TouchableOpacity>
           ) : null}

@@ -61,11 +61,7 @@ async function getFileSizeFromUri(uri: string): Promise<number> {
  */
 function getImageSize(uri: string): Promise<{ width: number; height: number }> {
   return new Promise((resolve, reject) => {
-    Image.getSize(
-      uri,
-      (width, height) => resolve({ width, height }),
-      reject
-    )
+    Image.getSize(uri, (width, height) => resolve({ width, height }), reject)
   })
 }
 
@@ -130,7 +126,10 @@ export async function compressImage(
     const fileSize = await getFileSizeFromUri(result.uri)
 
     // If within target or at minimum settings, we're done
-    if (fileSize <= targetSizeBytes || (currentQuality <= 0.5 && currentMaxWidth <= maxWidth * 0.5)) {
+    if (
+      fileSize <= targetSizeBytes ||
+      (currentQuality <= 0.5 && currentMaxWidth <= maxWidth * 0.5)
+    ) {
       break
     }
 

@@ -10,10 +10,7 @@ export interface DurationResult {
  * @param toDate End date (ISO string or Date)
  * @returns Object with days, hours, and totalHours
  */
-export function calculateDuration(
-  fromDate: string | Date,
-  toDate: string | Date
-): DurationResult {
+export function calculateDuration(fromDate: string | Date, toDate: string | Date): DurationResult {
   const from = typeof fromDate === 'string' ? new Date(fromDate) : fromDate
   const to = typeof toDate === 'string' ? new Date(toDate) : toDate
 

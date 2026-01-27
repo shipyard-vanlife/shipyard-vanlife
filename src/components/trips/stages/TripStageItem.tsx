@@ -17,7 +17,13 @@ interface TripStageItemProps {
   onPress?: () => void
 }
 
-export function TripStageItem({ stage, isFirst, isLast, showCountryFlag = false, onPress }: TripStageItemProps) {
+export function TripStageItem({
+  stage,
+  isFirst,
+  isLast,
+  showCountryFlag = false,
+  onPress,
+}: TripStageItemProps) {
   const { t } = useTranslation('trips')
 
   const formattedDate = new Date(stage.arrived_at).toLocaleDateString('fr-FR', {

@@ -72,10 +72,7 @@ export const VerificationStepIndicator: React.FC<VerificationStepIndicatorProps>
                   </Text>
                 )}
               </View>
-              <Text
-                style={[styles.stepName, isActive && styles.stepNameActive]}
-                numberOfLines={1}
-              >
+              <Text style={[styles.stepName, isActive && styles.stepNameActive]} numberOfLines={1}>
                 {name}
               </Text>
             </View>

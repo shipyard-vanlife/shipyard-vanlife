@@ -41,6 +41,10 @@ export interface UserProfile {
   photos: string[]
   // Verification status (sensitive data is in verifications table)
   verification_status: VerificationStatus | null
+  // Invitation/sponsorship fields
+  invited_by: string | null
+  invitation_suspended_until: string | null
+  invitation_count: number
 }
 
 // Profile creation/update payload
@@ -89,6 +93,9 @@ export interface ProfileRow {
   photos: string[] | null
   // Verification status (sensitive data is in verifications table)
   verification_status: VerificationStatus | null
+  // Invitation/sponsorship fields
+  invited_by: string | null
+  invitation_suspended_until: string | null
 }
 
 // Skill colors for UI

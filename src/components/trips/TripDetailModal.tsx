@@ -53,7 +53,12 @@ export function TripDetailModal({ visible, tripId, onClose }: TripDetailModalPro
   if (!trip) {
     if (isLoading && visible) {
       return (
-        <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+        <Modal
+          visible={visible}
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={onClose}
+        >
           <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color={colors.secondary.main} />
@@ -121,7 +126,12 @@ export function TripDetailModal({ visible, tripId, onClose }: TripDetailModalPro
   const isProcessing = isEnding || isDeleting
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={onClose}
+    >
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         {/* Header */}
         <View style={styles.header}>
@@ -182,9 +192,7 @@ export function TripDetailModal({ visible, tripId, onClose }: TripDetailModalPro
           {/* Actions */}
           <View style={styles.actions}>
             {/* Add Stage Button (only for active trips) */}
-            {trip.is_active ? (
-              <AddStageButton onSuccess={() => {}} />
-            ) : null}
+            {trip.is_active ? <AddStageButton onSuccess={() => {}} /> : null}
 
             {/* End Trip Button (only for active trips) */}
             {trip.is_active ? (
