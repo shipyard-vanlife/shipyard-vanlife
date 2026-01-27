@@ -54,7 +54,7 @@ export function useProfileById(userId: string | null) {
 
       console.log('🔵 Fetching profile for userId:', userId)
       const { data, error } = await supabase.rpc('get_profile_by_id', {
-        p_user_id: userId,
+        profile_id: userId,
       })
 
       console.log('🔵 get_profile_by_id response:', { data, error })
@@ -161,7 +161,6 @@ export function useCreateProfile() {
         van_name: input.van_name ?? null,
         van_photo_url: input.van_photo_url ?? null,
         city: input.city ?? null,
-        main_specialty: input.main_specialty ?? null,
         skills: input.skills ?? [],
         days_on_road: input.days_on_road ?? 0,
         is_visible: input.is_visible ?? true,
@@ -228,7 +227,6 @@ export function useCompleteProfile() {
           van_name: input.van_name ?? null,
           van_photo_url: input.van_photo_url ?? null,
           city: input.city ?? null,
-          main_specialty: input.main_specialty ?? null,
           skills: input.skills ?? [],
           days_on_road: input.days_on_road ?? 0,
           is_visible: input.is_visible ?? true,

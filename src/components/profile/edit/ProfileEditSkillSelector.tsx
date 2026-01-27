@@ -7,47 +7,73 @@ import { colors, spacing, fontSize, fontWeight, borderRadius } from '../../../st
 interface ProfileEditSkillSelectorProps {
   label: string
   hint?: string
-  selectedSkill: SkillType | null
-  onSelectSkill: (skill: SkillType | null) => void
+  selectedSkills: SkillType[]
+  onSelectSkills: (skills: SkillType[]) => void
+  maxSkills?: number
   disabled?: boolean
 }
 
 export const ProfileEditSkillSelector: React.FC<ProfileEditSkillSelectorProps> = ({
   label,
   hint,
-  selectedSkill,
-  onSelectSkill,
+  selectedSkills,
+  onSelectSkills,
+  maxSkills = 3,
   disabled = false,
 }) => {
   const { t } = useTranslation('skills')
 
   const handlePress = (skill: SkillType) => {
     if (disabled) return
-    // Toggle: if already selected, deselect
-    onSelectSkill(selectedSkill === skill ? null : skill)
+
+    const isSelected = selectedSkills.includes(skill)
+
+    if (isSelected) {
+      // Désélectionner
+      onSelectSkills(selectedSkills.filter(s => s !== skill))
+    } else {
+      // Sélectionner si on n'a pas atteint le max
+      if (selectedSkills.length < maxSkills) {
+        onSelectSkills([...selectedSkills, skill])
+      }
+    }
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+      <View style={styles.labelContainer}>
+        <Text style={styles.label}>{label}</Text>
+        <Text style={styles.counter}>
+          {selectedSkills.length}/{maxSkills}
+        </Text>
+      </View>
       {hint ? <Text style={styles.hint}>{hint}</Text> : null}
       <View style={styles.skillsGrid}>
         {ALL_SKILLS.map((skill) => {
-          const isSelected = selectedSkill === skill
+          const isSelected = selectedSkills.includes(skill)
+          const canSelect = selectedSkills.length < maxSkills || isSelected
+
           return (
             <TouchableOpacity
               key={skill}
               style={[
                 styles.skillButton,
-                { backgroundColor: isSelected ? SKILL_COLORS[skill] : colors.primary.dark },
-                disabled && styles.skillButtonDisabled,
+                {
+                  backgroundColor: isSelected ? SKILL_COLORS[skill] : colors.primary.dark,
+                  borderWidth: isSelected ? 0 : 1,
+                  borderColor: colors.border.light,
+                },
+                (!canSelect || disabled) && styles.skillButtonDisabled,
               ]}
               onPress={() => handlePress(skill)}
-              disabled={disabled}
+              disabled={disabled || !canSelect}
               activeOpacity={0.7}
             >
               <Text
-                style={[styles.skillButtonText, { color: isSelected ? colors.white : colors.text.secondary }]}
+                style={[
+                  styles.skillButtonText,
+                  { color: isSelected ? colors.white : colors.text.secondary }
+                ]}
               >
                 {t(skill)}
               </Text>
@@ -63,11 +89,21 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: spacing.lg,
   },
+  labelContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+  },
   label: {
     fontSize: fontSize.base,
     fontWeight: fontWeight.semibold,
     color: colors.text.primary,
-    marginBottom: spacing.xs,
+  },
+  counter: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.medium,
+    color: colors.secondary.main,
   },
   hint: {
     fontSize: fontSize.sm,
@@ -85,7 +121,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.round,
   },
   skillButtonDisabled: {
-    opacity: 0.6,
+    opacity: 0.4,
   },
   skillButtonText: {
     fontSize: fontSize.base,

@@ -32,6 +32,22 @@ export function useCreateHelpRequest() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
+      // Vérifier s'il existe déjà une demande pending sur cette connection (peu importe qui l'a faite)
+      const { data: existingRequests } = await supabase
+        .from('help_requests')
+        .select('id, requester_id')
+        .eq('connection_id', connectionId)
+        .eq('status', 'pending')
+
+      if (existingRequests && existingRequests.length > 0) {
+        const isMyRequest = existingRequests[0].requester_id === user.id
+        if (isMyRequest) {
+          throw new Error('Tu as déjà une demande en attente')
+        } else {
+          throw new Error('Une demande d\'aide est déjà en cours sur cette conversation')
+        }
+      }
+
       const { error } = await supabase.from('help_requests').insert({
         connection_id: connectionId,
         requester_id: user.id,

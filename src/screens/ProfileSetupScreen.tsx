@@ -56,7 +56,7 @@ export const ProfileSetupScreen: React.FC = () => {
 
   const [username, setUsername] = useState('')
   const [vanName, setVanName] = useState('')
-  const [mainSpecialty, setMainSpecialty] = useState<SkillType | null>(null)
+  const [skills, setSkills] = useState<SkillType[]>([])
   const [fieldErrors, setFieldErrors] = useState<ProfileFields>({})
   const [globalError, setGlobalError] = useState<string | null>(null)
 
@@ -73,8 +73,7 @@ export const ProfileSetupScreen: React.FC = () => {
   const formValidation = completeProfileSchema.safeParse({
     username: username.trim(),
     van_name: vanName.trim(),
-    main_specialty: mainSpecialty,
-    skills: mainSpecialty ? [mainSpecialty] : [],
+    skills,
   })
 
   // Form is valid if form fields are valid (location is optional)
@@ -100,8 +99,7 @@ export const ProfileSetupScreen: React.FC = () => {
     const result = completeProfileSchema.safeParse({
       username: username.trim(),
       van_name: vanName.trim(),
-      main_specialty: mainSpecialty,
-      skills: mainSpecialty ? [mainSpecialty] : [],
+      skills,
     })
 
     if (!result.success) return
@@ -111,7 +109,6 @@ export const ProfileSetupScreen: React.FC = () => {
         username: result.data.username,
         van_name: result.data.van_name,
         avatar_url: avatarUrl,
-        main_specialty: result.data.main_specialty ?? null,
         skills: result.data.skills,
         latitude: location?.latitude,
         longitude: location?.longitude,
@@ -132,8 +129,7 @@ export const ProfileSetupScreen: React.FC = () => {
     const result = completeProfileSchema.safeParse({
       username: username.trim(),
       van_name: vanName.trim(),
-      main_specialty: mainSpecialty,
-      skills: mainSpecialty ? [mainSpecialty] : [],
+      skills,
     })
 
     if (!result.success) {
@@ -252,20 +248,33 @@ export const ProfileSetupScreen: React.FC = () => {
             <Text style={styles.fieldError}>{t(fieldErrors.van_name)}</Text>
           ) : null}
 
-          {/* Skills Selection */}
-          <Text style={styles.label}>{t('profile.mainSpecialtyLabel')}</Text>
+          {/* Skills Selection (max 3) */}
+          <View style={styles.skillsHeader}>
+            <Text style={styles.label}>{t('profile.skillsLabel', { defaultValue: 'Compétences (max 3)' })}</Text>
+            <Text style={styles.skillCounter}>{skills.length}/3</Text>
+          </View>
           <View style={styles.skillsGrid}>
             {ALL_SKILLS.map(skill => {
-              const isSelected = mainSpecialty === skill
+              const isSelected = skills.includes(skill)
+              const canSelect = skills.length < 3 || isSelected
               return (
                 <TouchableOpacity
                   key={skill}
                   style={[
                     styles.skillButton,
-                    { backgroundColor: isSelected ? SKILL_COLORS[skill] : colors.primary.dark },
+                    {
+                      backgroundColor: isSelected ? SKILL_COLORS[skill] : colors.primary.dark,
+                      opacity: !canSelect ? 0.4 : 1,
+                    },
                   ]}
-                  onPress={() => setMainSpecialty(isSelected ? null : skill)}
-                  disabled={isPending}
+                  onPress={() => {
+                    if (isSelected) {
+                      setSkills(skills.filter(s => s !== skill))
+                    } else if (skills.length < 3) {
+                      setSkills([...skills, skill])
+                    }
+                  }}
+                  disabled={isPending || (!canSelect && !isSelected)}
                 >
                   <Text
                     style={[
@@ -391,6 +400,17 @@ const styles = StyleSheet.create({
     color: colors.error,
     fontSize: fontSize.sm,
     marginTop: spacing.xs,
+  },
+  skillsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: spacing.lg,
+  },
+  skillCounter: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.medium,
+    color: colors.secondary.main,
   },
   skillsGrid: {
     flexDirection: 'row',

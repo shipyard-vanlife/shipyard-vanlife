@@ -2,20 +2,28 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
+import { useQueryClient } from '@tanstack/react-query'
 import { BottomSheet } from '../components/BottomSheet'
 import { MapView } from '../components/MapView'
-import { useAllVisibleProfiles, useMyProfile, useUpdateLocation } from '../hooks/useProfiles'
+import { useAllVisibleProfiles, useMyProfile, useUpdateLocation, profileKeys } from '../hooks/useProfiles'
 import { useLocation } from '../hooks/useLocation'
 import { UserProfile } from '../types/user'
 import { colors } from '../styles/theme'
 
 export const HomeScreen: React.FC = () => {
   const { t } = useTranslation('common')
+  const queryClient = useQueryClient()
   const { data: profile, isLoading } = useMyProfile()
-  const { data: otherProfiles, isLoading: loadingOthers } = useAllVisibleProfiles()
+  const { data: otherProfiles, isLoading: loadingOthers, refetch: refetchProfiles } = useAllVisibleProfiles()
   const [selectedProfile, setSelectedProfile] = useState<UserProfile | null>(null)
   const { mutate: updateLocation } = useUpdateLocation()
   const { isLoading: locationLoading, requestLocation } = useLocation()
+
+  const handleProfileSelect = async (profile: UserProfile) => {
+    // Invalider le cache pour avoir les dernières données du profil
+    await queryClient.invalidateQueries({ queryKey: profileKeys.byId(profile.id) })
+    setSelectedProfile(profile)
+  }
 
   // Debug : afficher le nombre d'autres profils
   console.log('👥 Autres profils chargés:', otherProfiles?.length || 0)
@@ -87,7 +95,7 @@ export const HomeScreen: React.FC = () => {
             city={profile.city}
             myAvatarUrl={profile.avatar_url}
             otherProfiles={otherProfiles ?? []}
-            onProfileSelect={setSelectedProfile}
+            onProfileSelect={handleProfileSelect}
           />
 
           {/* Card overlay avec info ville */}

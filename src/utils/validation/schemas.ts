@@ -32,8 +32,7 @@ export const skillSchema = z.enum(ALL_SKILLS as [SkillType, ...SkillType[]])
 export const createProfileSchema = z.object({
   username: usernameSchema,
   van_name: vanNameSchema,
-  main_specialty: skillSchema.nullable().optional(),
-  skills: z.array(skillSchema).optional().default([]),
+  skills: z.array(skillSchema).max(3, 'validation.skillsMax').optional().default([]),
 })
 
 // Alias for completing profile after verification (same validation)
@@ -65,7 +64,7 @@ export const updateProfileSchema = z.object({
   van_name: vanNameOptionalSchema,
   van_photo_url: z.string().url().nullable().optional(),
   bio: bioSchema,
-  main_specialty: skillSchema.nullable().optional(),
+  skills: z.array(skillSchema).max(3, 'validation.skillsMax').optional(),
   is_visible: z.boolean().optional(),
 })
 

@@ -18,7 +18,7 @@ import { UserProfile } from '../types/user'
 import { SkillBadge } from './SkillBadge'
 import { ProfilePhotoGrid } from './profile/ProfilePhotoGrid'
 import { useSendConnectionRequest, useCheckConnection } from '../hooks/useConnections'
-import { useMyProfile } from '../hooks/useProfiles'
+import { useMyProfile, useProfileById } from '../hooks/useProfiles'
 import { colors } from '../styles/theme'
 
 const SCREEN_HEIGHT = Dimensions.get('window').height
@@ -40,6 +40,10 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
   const { mutate: sendRequest, isPending: sendingRequest } = useSendConnectionRequest()
   const { data: connectionStatus, refetch: refetchConnectionStatus } = useCheckConnection(profile.id)
   const { data: myProfile } = useMyProfile()
+  const { data: freshProfile } = useProfileById(profile.id)
+
+  // Utiliser les données fraîches si disponibles, sinon fallback sur le profile en props
+  const displayProfile = freshProfile || profile
 
   const handleConnect = async () => {
     // Block if user is not verified
@@ -70,7 +74,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
 
       sendRequest(profile.id, {
         onSuccess: () => {
-          Alert.alert('Demande envoyée', `Demande de connexion envoyée à ${profile.username} !`)
+          Alert.alert('Demande envoyée', `Demande de connexion envoyée à ${displayProfile.username} !`)
           setTimeout(() => refetchConnectionStatus(), 300)
         },
         onError: (error: any) => {
@@ -144,14 +148,14 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
       >
         <View style={styles.contentContainer}>
           {/* Photo du van */}
-          {profile.van_photo_url && (
+          {displayProfile.van_photo_url && (
             <TouchableOpacity
               style={styles.vanPhotoContainer}
-              onPress={() => setZoomedImage(profile.van_photo_url)}
+              onPress={() => setZoomedImage(displayProfile.van_photo_url)}
               activeOpacity={0.9}
             >
               <Image
-                source={{ uri: profile.van_photo_url }}
+                source={{ uri: displayProfile.van_photo_url }}
                 style={styles.vanPhoto}
                 resizeMode="cover"
               />
@@ -160,55 +164,46 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
 
           {/* Avatar + Nom utilisateur + van */}
           <View style={styles.headerContainer}>
-            {profile.avatar_url && (
+            {displayProfile.avatar_url && (
               <Image
-                source={{ uri: profile.avatar_url }}
+                source={{ uri: displayProfile.avatar_url }}
                 style={styles.avatar}
                 resizeMode="cover"
               />
             )}
             <View style={styles.header}>
-              <Text style={styles.username}>{profile.username}</Text>
-              {profile.van_name ? <Text style={styles.vanName}>{profile.van_name}</Text> : null}
+              <Text style={styles.username}>{displayProfile.username}</Text>
+              {displayProfile.van_name ? <Text style={styles.vanName}>{displayProfile.van_name}</Text> : null}
             </View>
           </View>
 
-          {/* Badge principal */}
-          {profile.main_specialty ? (
-            <View style={styles.mainBadgeContainer}>
-              <SkillBadge skill={profile.main_specialty} isMain />
-            </View>
-          ) : null}
-          
-          {/* Autres badges */}
+          {/* Badges de compétences */}
           <View style={styles.skillsContainer}>
-            {profile.skills
-              .filter(skill => skill !== profile.main_specialty)
-              .map(skill => (
-                <SkillBadge key={skill} skill={skill} />
-              ))}
+            {displayProfile.skills.map(skill => (
+              <SkillBadge key={skill} skill={skill} />
+            ))}
           </View>
 
           {/* Stats */}
           <View style={styles.statsContainer}>
             <View style={styles.stat}>
               <Text style={styles.statLabel}>{t('profile.currentCity')}</Text>
-              <Text style={styles.statValue}>{profile.city ?? '-'}</Text>
+              <Text style={styles.statValue}>{displayProfile.city ?? '-'}</Text>
             </View>
             <View style={styles.stat}>
               <Text style={styles.statLabel}>{t('profile.daysOnRoad')}</Text>
-              <Text style={styles.statValue}>{profile.days_on_road}</Text>
+              <Text style={styles.statValue}>{displayProfile.days_on_road}</Text>
             </View>
             <View style={styles.stat}>
               <Text style={styles.statLabel}>{t('profile.connections')}</Text>
-              <Text style={styles.statValue}>{profile.connections_count}</Text>
+              <Text style={styles.statValue}>{displayProfile.connections_count}</Text>
             </View>
           </View>
 
           {/* Photos gallery */}
-          {profile.photos && profile.photos.length > 0 && (
+          {displayProfile.photos && displayProfile.photos.length > 0 && (
             <ProfilePhotoGrid
-              photos={profile.photos}
+              photos={displayProfile.photos}
               isOwnProfile={false}
               onPhotoPress={setZoomedImage}
             />

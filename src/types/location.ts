@@ -33,7 +33,6 @@ export interface NearbyProfile {
   van_photo_url: string | null
   zone_center: ZoneCenter | null
   city: string | null
-  main_specialty: import('./user').SkillType | null
   skills: import('./user').SkillType[]
   days_on_road: number
   distance_km: number | null

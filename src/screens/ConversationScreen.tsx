@@ -14,9 +14,10 @@ import {
   Alert,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
+import { useQueryClient } from '@tanstack/react-query'
 import { colors, spacing, borderRadius, fontSize } from '../styles/theme'
 import { useInfiniteMessages, useSendMessage, useMarkMessagesAsRead } from '../hooks/useMessages'
-import { useMyProfile, useProfileById } from '../hooks/useProfiles'
+import { useMyProfile, useProfileById, profileKeys } from '../hooks/useProfiles'
 import { useRealtimeMessages } from '../hooks/useRealtimeMessages'
 import { FriendProfileModal } from '../components/FriendProfileModal'
 import { HelpRequestModal } from '../components/HelpRequestModal'
@@ -41,6 +42,7 @@ interface ConversationScreenProps {
 export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, navigation }) => {
   const { connectionId, friendName, friendAvatar, friendId } = route.params
   const { t } = useTranslation('common')
+  const queryClient = useQueryClient()
   const { data: myProfile } = useMyProfile()
   const { data: friendProfile } = useProfileById(friendId || null)
 
@@ -196,8 +198,9 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
 
         <View style={styles.headerInfo}>
           <TouchableOpacity
-            onPress={() => {
+            onPress={async () => {
               if (friendId) {
+                await queryClient.invalidateQueries({ queryKey: profileKeys.byId(friendId) })
                 setSelectedFriend(friendId)
               }
             }}

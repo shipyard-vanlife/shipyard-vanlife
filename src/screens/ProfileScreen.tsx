@@ -286,7 +286,7 @@ export const ProfileScreen: React.FC = () => {
         />
 
         {/* Skill badges */}
-        <ProfileSkillBadges skills={profile.skills} mainSpecialty={profile.main_specialty} />
+        <ProfileSkillBadges skills={profile.skills} />
 
         {/* Van section */}
         <ProfileVanSection
@@ -364,7 +364,7 @@ export const ProfileScreen: React.FC = () => {
           van_name: profile.van_name,
           van_photo_url: profile.van_photo_url,
           bio: profile.bio,
-          main_specialty: profile.main_specialty,
+          skills: profile.skills,
           is_visible: profile.is_visible,
           verification_status: profile.verification_status,
         }}

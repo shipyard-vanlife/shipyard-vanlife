@@ -54,7 +54,7 @@ export const HelpRequestModal: React.FC<HelpRequestModalProps> = ({
   }
 
   return (
-    <Modal visible={visible} animationType="slide" transparent>
+    <Modal visible={visible} animationType="slide" transparent statusBarTranslucent>
       <View style={styles.overlay}>
         <View style={styles.modal}>
           <View style={styles.header}>
@@ -81,16 +81,21 @@ export const HelpRequestModal: React.FC<HelpRequestModalProps> = ({
                   styles.skillItem,
                   selectedSkill === item && styles.skillItemSelected,
                 ]}
-                onPress={() => setSelectedSkill(item)}
+                onPress={() => setSelectedSkill(selectedSkill === item ? null : item)}
               >
-                <Text
-                  style={[
-                    styles.skillText,
-                    selectedSkill === item && styles.skillTextSelected,
-                  ]}
-                >
-                  {item}
-                </Text>
+                <View style={[
+                  styles.skillBadge,
+                  selectedSkill === item && styles.skillBadgeSelected,
+                ]}>
+                  <Text
+                    style={[
+                      styles.skillText,
+                      selectedSkill === item && styles.skillTextSelected,
+                    ]}
+                  >
+                    {item}
+                  </Text>
+                </View>
                 {selectedSkill === item && (
                   <Ionicons name="checkmark-circle" size={20} color={colors.white} />
                 )}
@@ -123,7 +128,7 @@ export const HelpRequestModal: React.FC<HelpRequestModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'transparent',
     justifyContent: 'flex-end',
   },
   modal: {
@@ -131,7 +136,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: borderRadius.xl,
     borderTopRightRadius: borderRadius.xl,
     paddingBottom: 40,
-    maxHeight: '70%',
+    maxHeight: '80%',
   },
   header: {
     flexDirection: 'row',
@@ -178,6 +183,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary.main,
     borderLeftWidth: 4,
     borderLeftColor: colors.secondary.main,
+  },
+  skillBadge: {
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.full,
+    borderWidth: 1,
+    borderColor: colors.secondary.main,
+    backgroundColor: colors.white,
+  },
+  skillBadgeSelected: {
+    backgroundColor: colors.secondary.main,
+    borderColor: colors.white,
   },
   skillText: {
     fontSize: fontSize.base,
