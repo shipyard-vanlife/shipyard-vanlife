@@ -14,7 +14,12 @@ interface StageDetailHeaderProps {
   arrivedAt: string
 }
 
-export function StageDetailHeader({ stageNumber, city, country, arrivedAt }: StageDetailHeaderProps) {
+export function StageDetailHeader({
+  stageNumber,
+  city,
+  country,
+  arrivedAt,
+}: StageDetailHeaderProps) {
   const { t } = useTranslation('trips')
 
   const formattedDate = new Date(arrivedAt).toLocaleDateString('fr-FR', {
@@ -43,7 +48,9 @@ export function StageDetailHeader({ stageNumber, city, country, arrivedAt }: Sta
 
       <View style={styles.dateRow}>
         <Ionicons name="calendar-outline" size={16} color={colors.text.tertiary} />
-        <Text style={styles.dateText}>{t('stageDetail.arrivalDate')}: {formattedDate}</Text>
+        <Text style={styles.dateText}>
+          {t('stageDetail.arrivalDate')}: {formattedDate}
+        </Text>
       </View>
     </View>
   )

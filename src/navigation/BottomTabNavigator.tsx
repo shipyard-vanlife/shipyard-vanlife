@@ -36,7 +36,8 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
   useRealtimeConnections()
 
   // Calculer le nombre total de messages non lus
-  const totalUnreadCount = friends?.reduce((total, friend) => total + (friend.unread_count || 0), 0) || 0
+  const totalUnreadCount =
+    friends?.reduce((total, friend) => total + (friend.unread_count || 0), 0) || 0
 
   return (
     <View style={styles.container}>

@@ -67,7 +67,9 @@ async function uploadVerificationPhoto(
     .createSignedUrl(fileName, 60 * 60 * 24 * 365) // 1 year
 
   if (urlError || !urlData) {
-    throw new Error(`Failed to get URL for ${photoType}: ${urlError?.message ?? 'No data returned'}`)
+    throw new Error(
+      `Failed to get URL for ${photoType}: ${urlError?.message ?? 'No data returned'}`
+    )
   }
 
   return urlData.signedUrl

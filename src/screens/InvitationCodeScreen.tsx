@@ -152,7 +152,7 @@ export const InvitationCodeScreen: React.FC<InvitationCodeScreenProps> = ({
           accessibilityLabel={t('invitation:codeInput.submit')}
         >
           {useCodeMutation.isPending ? (
-            <ActivityIndicator color={colors.text.inverse} />
+            <ActivityIndicator color={colors.white} />
           ) : (
             <Text style={styles.submitButtonText}>{t('invitation:codeInput.submit')}</Text>
           )}
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     textAlign: 'center',
     letterSpacing: 2,
-    ...shadows.sm,
+    ...shadows.small,
   },
   inputError: {
     borderWidth: 2,
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadows.sm,
+    ...shadows.small,
   },
   submitButtonDisabled: {
     backgroundColor: colors.text.muted,
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
   submitButtonText: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.semibold,
-    color: colors.text.inverse,
+    color: colors.white,
   },
   successContainer: {
     flex: 1,

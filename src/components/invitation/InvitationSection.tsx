@@ -27,7 +27,7 @@ export const InvitationSection: React.FC<InvitationSectionProps> = ({
 
   const handleGenerateCode = () => {
     generateCodeMutation.mutate(undefined, {
-      onSuccess: (code) => {
+      onSuccess: code => {
         setGeneratedCode(code)
         setShowModal(true)
       },

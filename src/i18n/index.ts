@@ -59,7 +59,17 @@ i18n.use(initReactI18next).init({
   lng: initialLanguage,
   fallbackLng: 'fr',
   defaultNS,
-  ns: ['common', 'login', 'register', 'home', 'skills', 'profile', 'trips', 'verification', 'invitation'],
+  ns: [
+    'common',
+    'login',
+    'register',
+    'home',
+    'skills',
+    'profile',
+    'trips',
+    'verification',
+    'invitation',
+  ],
   interpolation: {
     escapeValue: false,
   },

@@ -1,17 +1,12 @@
+import * as Clipboard from 'expo-clipboard'
+import { CheckCircle, Copy, Share2, X } from 'lucide-react-native'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  Modal,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  Share,
-  Platform,
-} from 'react-native'
-import * as Clipboard from 'expo-clipboard'
-import { X, Copy, Share2, CheckCircle } from 'lucide-react-native'
-import { colors, fontSize, fontWeight, spacing, borderRadius, shadows } from '../../styles/theme'
+import { Modal, Platform, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { borderRadius, colors, fontSize, fontWeight, shadows, spacing } from '../../styles/theme'
+
+//TODO: check types across all the app
+//TODO: check user object in DB after inscription flow, maybe some fields are missing or NULL
 
 interface InvitationCodeModalProps {
   visible: boolean
@@ -53,12 +48,7 @@ export const InvitationCodeModal: React.FC<InvitationCodeModalProps> = ({
   }
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={handleClose}
-    >
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
       <View style={styles.overlay}>
         <View style={styles.container}>
           <TouchableOpacity
@@ -107,7 +97,7 @@ export const InvitationCodeModal: React.FC<InvitationCodeModalProps> = ({
                   accessibilityRole="button"
                   accessibilityLabel={t('invitation:generate.share')}
                 >
-                  <Share2 size={20} color={colors.text.inverse} />
+                  <Share2 size={20} color={colors.white} />
                   <Text style={[styles.actionButtonText, styles.shareButtonText]}>
                     {t('invitation:generate.share')}
                   </Text>
@@ -136,7 +126,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.xl,
     width: '100%',
     maxWidth: 400,
-    ...shadows.lg,
+    ...shadows.large,
   },
   closeButton: {
     position: 'absolute',
@@ -173,7 +163,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
     paddingHorizontal: spacing.xxl,
     marginBottom: spacing.xl,
-    ...shadows.sm,
+    ...shadows.small,
   },
   code: {
     fontSize: fontSize.title,
@@ -209,7 +199,7 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
   },
   shareButtonText: {
-    color: colors.text.inverse,
+    color: colors.white,
   },
   copiedText: {
     color: colors.success,

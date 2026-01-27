@@ -71,7 +71,12 @@ export const ProfileEditVisibilityToggle: React.FC<ProfileEditVisibilityTogglePr
             size={16}
             color={isPending ? colors.warning : colors.error}
           />
-          <Text style={[styles.warningText, isPending ? styles.warningTextPending : styles.warningTextRequired]}>
+          <Text
+            style={[
+              styles.warningText,
+              isPending ? styles.warningTextPending : styles.warningTextRequired,
+            ]}
+          >
             {warningText}
           </Text>
         </View>

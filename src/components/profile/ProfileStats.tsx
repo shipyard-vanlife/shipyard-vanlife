@@ -2,14 +2,7 @@ import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
-import {
-  colors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-  shadows,
-} from '../../styles/theme'
+import { colors, spacing, fontSize, fontWeight, borderRadius, shadows } from '../../styles/theme'
 
 interface ProfileStatsProps {
   daysOnRoad: number

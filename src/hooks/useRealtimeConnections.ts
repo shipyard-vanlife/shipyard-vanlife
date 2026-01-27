@@ -3,7 +3,6 @@ import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../services/supabase'
 import { connectionKeys } from './useConnections'
 
-
 export function useRealtimeConnections() {
   const queryClient = useQueryClient()
 
@@ -15,11 +14,11 @@ export function useRealtimeConnections() {
       .on(
         'postgres_changes',
         {
-          event: '*',  // INSERT, UPDATE, DELETE
+          event: '*', // INSERT, UPDATE, DELETE
           schema: 'public',
           table: 'connections',
         },
-        (payload) => {
+        payload => {
           console.log('🔴 Changement détecté dans connections:', payload)
 
           // Force refetch pour mettre à jour immédiatement
@@ -30,11 +29,11 @@ export function useRealtimeConnections() {
       .on(
         'postgres_changes',
         {
-          event: '*',  // INSERT, UPDATE, DELETE
+          event: '*', // INSERT, UPDATE, DELETE
           schema: 'public',
           table: 'messages',
         },
-        (payload) => {
+        payload => {
           console.log('🔴 Nouveau message détecté:', payload)
 
           // Refetch la liste des amis pour mettre à jour le dernier message et le compteur

@@ -155,23 +155,27 @@ export const ProfileScreen: React.FC = () => {
   }, [deleteProfile, t])
 
   const handleDeleteAccount = useCallback(() => {
-    Alert.alert(t('common:profile.deleteAccountTitle'), t('common:profile.deleteAccountConfirmation'), [
-      { text: t('common:buttons.cancel'), style: 'cancel' },
-      {
-        text: t('common:buttons.delete'),
-        style: 'destructive',
-        onPress: () => {
-          deleteAccount(undefined, {
-            onSuccess: async () => {
-              await signOut()
-            },
-            onError: (error: Error) => {
-              Alert.alert(t('common:errors.generic'), error.message)
-            },
-          })
+    Alert.alert(
+      t('common:profile.deleteAccountTitle'),
+      t('common:profile.deleteAccountConfirmation'),
+      [
+        { text: t('common:buttons.cancel'), style: 'cancel' },
+        {
+          text: t('common:buttons.delete'),
+          style: 'destructive',
+          onPress: () => {
+            deleteAccount(undefined, {
+              onSuccess: async () => {
+                await signOut()
+              },
+              onError: (error: Error) => {
+                Alert.alert(t('common:errors.generic'), error.message)
+              },
+            })
+          },
         },
-      },
-    ])
+      ]
+    )
   }, [deleteAccount, signOut, t])
 
   const handleViewTrip = useCallback(() => {

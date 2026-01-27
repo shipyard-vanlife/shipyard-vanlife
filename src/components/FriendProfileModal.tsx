@@ -16,7 +16,12 @@ import { Ionicons } from '@expo/vector-icons'
 import { UserProfile } from '../types/user'
 import { SkillBadge } from './SkillBadge'
 import { ProfilePhotoGrid } from './profile/ProfilePhotoGrid'
-import { useDeleteConnection, useCheckConnection, useAcceptConnection, useRejectConnection } from '../hooks/useConnections'
+import {
+  useDeleteConnection,
+  useCheckConnection,
+  useAcceptConnection,
+  useRejectConnection,
+} from '../hooks/useConnections'
 import { useProfileById, useMyProfile } from '../hooks/useProfiles'
 import { colors } from '../styles/theme'
 
@@ -26,7 +31,11 @@ interface FriendProfileModalProps {
   friendId: string | null
   connectionId: string | null
   onClose: () => void
-  onOpenConversation?: (connectionId: string, friendName: string, friendAvatar: string | null) => void
+  onOpenConversation?: (
+    connectionId: string,
+    friendName: string,
+    friendAvatar: string | null
+  ) => void
 }
 
 export const FriendProfileModal: React.FC<FriendProfileModalProps> = ({
@@ -49,10 +58,7 @@ export const FriendProfileModal: React.FC<FriendProfileModalProps> = ({
 
     // Block if user is not verified
     if (myProfile?.verification_status !== 'approved') {
-      Alert.alert(
-        t('common:verification.requiredTitle'),
-        t('common:verification.requiredMessage')
-      )
+      Alert.alert(t('common:verification.requiredTitle'), t('common:verification.requiredMessage'))
       return
     }
 
@@ -62,7 +68,7 @@ export const FriendProfileModal: React.FC<FriendProfileModalProps> = ({
         onClose()
       },
       onError: () => {
-        Alert.alert('Erreur', 'Impossible d\'accepter la demande')
+        Alert.alert('Erreur', "Impossible d'accepter la demande")
       },
     })
   }
@@ -126,10 +132,7 @@ export const FriendProfileModal: React.FC<FriendProfileModalProps> = ({
 
     // Block if user is not verified
     if (myProfile?.verification_status !== 'approved') {
-      Alert.alert(
-        t('common:verification.requiredTitle'),
-        t('common:verification.requiredMessage')
-      )
+      Alert.alert(t('common:verification.requiredTitle'), t('common:verification.requiredMessage'))
       return
     }
 
@@ -304,7 +307,11 @@ export const FriendProfileModal: React.FC<FriendProfileModalProps> = ({
             >
               <TouchableOpacity activeOpacity={1} onPress={e => e.stopPropagation()}>
                 {zoomedImage && (
-                  <Image source={{ uri: zoomedImage }} style={styles.zoomedImage} resizeMode="contain" />
+                  <Image
+                    source={{ uri: zoomedImage }}
+                    style={styles.zoomedImage}
+                    resizeMode="contain"
+                  />
                 )}
               </TouchableOpacity>
               <TouchableOpacity style={styles.zoomCloseButton} onPress={() => setZoomedImage(null)}>

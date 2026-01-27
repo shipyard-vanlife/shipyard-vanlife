@@ -75,11 +75,7 @@ export function TripStageDetailModal({
           <StageDetailNote stageId={stage.id} initialNote={stage.note} />
 
           {/* Delete button */}
-          <StageDetailActions
-            stageId={stage.id}
-            isFirstStage={isFirstStage}
-            onDeleted={onClose}
-          />
+          <StageDetailActions stageId={stage.id} isFirstStage={isFirstStage} onDeleted={onClose} />
         </ScrollView>
       </SafeAreaView>
     </Modal>

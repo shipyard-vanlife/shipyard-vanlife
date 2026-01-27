@@ -3,7 +3,12 @@ import { View, Text, StyleSheet, Alert, ActionSheetIOS, Platform } from 'react-n
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import { colors, fontSize, fontWeight, spacing, borderRadius } from '../../../../../styles/theme'
-import { useStagePhotos, useAddStagePhoto, useDeleteStagePhoto, useStagePhotoPicker } from '../../../../../hooks/useStagePhotos'
+import {
+  useStagePhotos,
+  useAddStagePhoto,
+  useDeleteStagePhoto,
+  useStagePhotoPicker,
+} from '../../../../../hooks/useStagePhotos'
 import { useAuth } from '../../../../../contexts/AuthContext'
 import { StagePhotoGrid } from './StagePhotoGrid'
 import { StagePhotoViewer } from './StagePhotoViewer'
@@ -92,7 +97,7 @@ export function StagePhotoSection({ stageId }: StagePhotoSectionProps) {
           options: [t('confirmations.cancel'), t('photos.fromGallery'), t('photos.takePhoto')],
           cancelButtonIndex: 0,
         },
-        (buttonIndex) => {
+        buttonIndex => {
           if (buttonIndex === 1) handleAddPhoto('gallery')
           if (buttonIndex === 2) handleAddPhoto('camera')
         }

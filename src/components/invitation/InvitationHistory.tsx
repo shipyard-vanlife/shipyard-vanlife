@@ -12,8 +12,8 @@ export const InvitationHistory: React.FC = () => {
   const { data: codes = [], isLoading } = useMyInvitationCodes()
 
   // Separate used and unused codes
-  const usedCodes = codes.filter((c) => c.used_by_id !== null)
-  const pendingCodes = codes.filter((c) => c.used_by_id === null)
+  const usedCodes = codes.filter(c => c.used_by_id !== null)
+  const pendingCodes = codes.filter(c => c.used_by_id === null)
 
   if (isLoading) {
     return (

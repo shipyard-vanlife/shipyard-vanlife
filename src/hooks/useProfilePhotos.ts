@@ -134,7 +134,7 @@ export function useProfilePhotosUpload(): UseProfilePhotosUploadReturn {
         }
 
         // Update profile without the deleted photo
-        const newPhotos = currentPhotos.filter((p) => p !== photoUrl)
+        const newPhotos = currentPhotos.filter(p => p !== photoUrl)
         await updateProfile({ photos: newPhotos })
       } catch {
         Alert.alert(t('common:errors.generic'), t('photos.deleteFailed'))

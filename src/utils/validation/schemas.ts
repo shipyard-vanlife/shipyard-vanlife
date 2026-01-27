@@ -49,7 +49,7 @@ export const vanNameOptionalSchema = z
   .regex(vanNameRegex, 'validation.vanNameChars')
   .optional()
   .or(z.literal(''))
-  .transform((v) => (v && v.length > 0 ? v : null))
+  .transform(v => (v && v.length > 0 ? v : null))
 
 // Bio field
 export const bioSchema = z
@@ -58,7 +58,7 @@ export const bioSchema = z
   .max(500, 'validation.bioMax')
   .optional()
   .or(z.literal(''))
-  .transform((v) => (v && v.length > 0 ? v : null))
+  .transform(v => (v && v.length > 0 ? v : null))
 
 // Update profile schema (for edit modal - all fields optional)
 export const updateProfileSchema = z.object({
@@ -102,13 +102,7 @@ export const tripNameSchema = z
   .regex(tripNameRegex, 'trips:validation.tripNameChars')
 
 // ISO 3166-1 alpha-2 country code (2 uppercase letters)
-export const countryCodeSchema = z
-  .string()
-  .trim()
-  .length(2)
-  .toUpperCase()
-  .optional()
-  .nullable()
+export const countryCodeSchema = z.string().trim().length(2).toUpperCase().optional().nullable()
 
 export const createTripSchema = z.object({
   name: tripNameSchema,
@@ -161,14 +155,14 @@ export const dateOfBirthSchema = z
     invalid_type_error: 'errors.dateRequired',
   })
   .refine(
-    (date) => {
+    date => {
       const age = Math.floor((Date.now() - date.getTime()) / (365.25 * 24 * 60 * 60 * 1000))
       return age >= 21
     },
     { message: 'errors.ageMinimum' }
   )
   .refine(
-    (date) => {
+    date => {
       const age = Math.floor((Date.now() - date.getTime()) / (365.25 * 24 * 60 * 60 * 1000))
       return age <= 100
     },
@@ -178,12 +172,12 @@ export const dateOfBirthSchema = z
 // Photo URI validation (local file URI)
 // Uses preprocess to handle null values with proper error message
 export const photoUriSchema = z.preprocess(
-  (val) => (val === null || val === undefined ? '' : val),
+  val => (val === null || val === undefined ? '' : val),
   z
     .string()
     .min(1, 'errors.photoRequired')
     .refine(
-      (uri) => uri.startsWith('file://') || uri.startsWith('content://') || uri.startsWith('ph://'),
+      uri => uri.startsWith('file://') || uri.startsWith('content://') || uri.startsWith('ph://'),
       { message: 'errors.invalidPhotoUri' }
     )
 )

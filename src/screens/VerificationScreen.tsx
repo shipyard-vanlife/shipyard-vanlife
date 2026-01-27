@@ -65,7 +65,11 @@ export const VerificationScreen: React.FC = () => {
 
   // Memoize step names to avoid unnecessary re-renders
   const stepNames = useMemo(
-    () => [t('verification:steps.identity'), t('verification:steps.photos'), t('verification:steps.confirm')],
+    () => [
+      t('verification:steps.identity'),
+      t('verification:steps.photos'),
+      t('verification:steps.confirm'),
+    ],
     [t]
   )
 
@@ -377,7 +381,9 @@ export const VerificationScreen: React.FC = () => {
                 {isPending ? (
                   <View style={styles.loadingButtonContent}>
                     <ActivityIndicator color={colors.white} size="small" />
-                    <Text style={styles.primaryButtonText}>{t('verification:buttons.submitting')}</Text>
+                    <Text style={styles.primaryButtonText}>
+                      {t('verification:buttons.submitting')}
+                    </Text>
                   </View>
                 ) : (
                   <Text style={styles.primaryButtonText}>{t('verification:buttons.submit')}</Text>

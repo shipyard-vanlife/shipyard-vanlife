@@ -140,12 +140,7 @@ export const VerificationPhotoInput: React.FC<VerificationPhotoInputProps> = ({
               accessibilityLabel={t('verification:accessibility.photoPreview', { type: label })}
             />
             <View style={styles.changeOverlay}>
-              <Ionicons
-                name="camera"
-                size={20}
-                color={colors.white}
-                accessibilityElementsHidden
-              />
+              <Ionicons name="camera" size={20} color={colors.white} accessibilityElementsHidden />
               <Text style={styles.changeText}>{t('verification:buttons.changePhoto')}</Text>
             </View>
           </View>
