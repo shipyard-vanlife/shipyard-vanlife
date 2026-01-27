@@ -26,25 +26,6 @@ export interface UseLocationReturn {
   isLoading: boolean
 }
 
-function randomizeCoordinates(lat: number, lng: number): { latitude: number; longitude: number } {
-  const minRadiusInDegrees = 0.009 // ~1km
-  const maxRadiusInDegrees = 0.027 // ~3km
-
-  const angle = Math.random() * 2 * Math.PI
-  const distance = minRadiusInDegrees + Math.random() * (maxRadiusInDegrees - minRadiusInDegrees)
-
-  const randomLat = lat + distance * Math.cos(angle)
-  const randomLng = lng + (distance * Math.sin(angle)) / Math.cos((lat * Math.PI) / 180)
-
-  // Debug logs
-  const distanceKm = distance * 111 // Rough conversion to km
-  console.log(`🎲 Randomisation: ${distanceKm.toFixed(2)}km de distance`)
-  console.log(`📍 Vraie position: ${lat.toFixed(4)}, ${lng.toFixed(4)}`)
-  console.log(`🔀 Position randomisée: ${randomLat.toFixed(4)}, ${randomLng.toFixed(4)}`)
-
-  return { latitude: randomLat, longitude: randomLng }
-}
-
 export function useLocation(): UseLocationReturn {
   const [status, setStatus] = useState<LocationStatus>('idle')
   const [location, setLocation] = useState<LocationData | null>(null)
@@ -99,11 +80,11 @@ export function useLocation(): UseLocationReturn {
         console.warn('Reverse geocoding failed')
       }
 
-      const randomizedCoords = randomizeCoordinates(latitude, longitude)
-
+      // Store exact coordinates - privacy is enforced at the SQL level
+      // via zone_center which rounds to ~11km precision for other users
       const locationData: LocationData = {
-        latitude: randomizedCoords.latitude,
-        longitude: randomizedCoords.longitude,
+        latitude,
+        longitude,
         city,
         country,
       }
