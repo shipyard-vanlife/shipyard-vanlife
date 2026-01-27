@@ -129,6 +129,8 @@ export const InvitationCodeScreen: React.FC<InvitationCodeScreenProps> = ({
             placeholderTextColor={colors.text.muted}
             autoCapitalize="characters"
             autoCorrect={false}
+            textContentType="none"
+            autoComplete="off"
             maxLength={8}
             editable={!useCodeMutation.isPending}
           />

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { View, Text, StyleSheet, Alert, ActionSheetIOS, Platform } from 'react-native'
+import { View, Text, StyleSheet, Alert, ActionSheetIOS, Keyboard, Platform } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import { colors, fontSize, fontWeight, spacing, borderRadius } from '../../../../../styles/theme'
@@ -91,6 +91,7 @@ export function StagePhotoSection({ stageId }: StagePhotoSectionProps) {
   }
 
   const showAddPhotoOptions = () => {
+    Keyboard.dismiss()
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
         {

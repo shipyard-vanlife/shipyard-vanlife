@@ -45,6 +45,8 @@ export interface UserProfile {
   invited_by: string | null
   invitation_suspended_until: string | null
   invitation_count: number
+  // Username update tracking
+  username_last_updated_at: string | null
 }
 
 // Profile creation/update payload

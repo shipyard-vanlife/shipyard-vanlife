@@ -108,6 +108,8 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
             onChangeText={setEmail}
             autoCapitalize="none"
             keyboardType="email-address"
+            textContentType="emailAddress"
+            autoComplete="email"
             editable={!loading}
           />
 
@@ -118,6 +120,8 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
+              textContentType="newPassword"
+              autoComplete="password-new"
               editable={!loading}
             />
             <TouchableOpacity
@@ -135,6 +139,8 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               secureTextEntry={!showConfirmPassword}
+              textContentType="newPassword"
+              autoComplete="password-new"
               editable={!loading}
             />
             <TouchableOpacity

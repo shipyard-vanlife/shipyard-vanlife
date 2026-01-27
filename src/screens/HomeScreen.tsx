@@ -7,31 +7,22 @@ import { BottomSheet } from '../components/BottomSheet'
 import { MapView } from '../components/MapView'
 import { useAllVisibleProfiles, useMyProfile, useUpdateLocation, profileKeys } from '../hooks/useProfiles'
 import { useLocation } from '../hooks/useLocation'
-import { UserProfile } from '../types/user'
+import { NearbyProfile } from '../types/location'
 import { colors } from '../styles/theme'
 
 export const HomeScreen: React.FC = () => {
   const { t } = useTranslation('common')
   const queryClient = useQueryClient()
   const { data: profile, isLoading } = useMyProfile()
-  const { data: otherProfiles, isLoading: loadingOthers, refetch: refetchProfiles } = useAllVisibleProfiles()
-  const [selectedProfile, setSelectedProfile] = useState<UserProfile | null>(null)
+  const { data: otherProfiles } = useAllVisibleProfiles()
+  const [selectedProfile, setSelectedProfile] = useState<NearbyProfile | null>(null)
   const { mutate: updateLocation } = useUpdateLocation()
   const { isLoading: locationLoading, requestLocation } = useLocation()
 
-  const handleProfileSelect = async (profile: UserProfile) => {
+  const handleProfileSelect = async (selectedProf: NearbyProfile) => {
     // Invalider le cache pour avoir les dernières données du profil
-    await queryClient.invalidateQueries({ queryKey: profileKeys.byId(profile.id) })
-    setSelectedProfile(profile)
-  }
-
-  // Debug : afficher le nombre d'autres profils
-  console.log('👥 Autres profils chargés:', otherProfiles?.length || 0)
-  if (otherProfiles && otherProfiles.length > 0) {
-    console.log(
-      '📍 Profils avec localisation:',
-      otherProfiles.filter(p => p.location?.latitude).length
-    )
+    await queryClient.invalidateQueries({ queryKey: profileKeys.byId(selectedProf.id) })
+    setSelectedProfile(selectedProf)
   }
 
   const handleEnableLocation = async () => {

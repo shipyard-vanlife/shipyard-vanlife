@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../services/supabase'
-import type { AddStageInput, CreateTripInput, Trip, UpdateStageNoteInput } from '../types/trip'
+import type { AddStageInput, CreateTripInput, Trip, PublicTrip, UpdateStageNoteInput } from '../types/trip'
 
 // Query keys
 export const tripKeys = {
@@ -8,6 +8,7 @@ export const tripKeys = {
   list: () => [...tripKeys.all, 'list'] as const,
   active: () => [...tripKeys.all, 'active'] as const,
   detail: (id: string) => [...tripKeys.all, 'detail', id] as const,
+  userTrips: (userId: string) => [...tripKeys.all, 'user', userId] as const,
 }
 
 // ============================================
@@ -211,5 +212,26 @@ export function useDeleteStage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tripKeys.all })
     },
+  })
+}
+
+// ============================================
+// GET USER TRIPS (view another user's trips with BLURRED locations)
+// ============================================
+
+export function useUserTrips(userId: string | null) {
+  return useQuery({
+    queryKey: userId ? tripKeys.userTrips(userId) : ['disabled'],
+    queryFn: async (): Promise<PublicTrip[]> => {
+      if (!userId) return []
+
+      const { data, error } = await supabase.rpc('get_user_trips', {
+        p_user_id: userId,
+      })
+
+      if (error) throw error
+      return (data as PublicTrip[]) ?? []
+    },
+    enabled: !!userId,
   })
 }

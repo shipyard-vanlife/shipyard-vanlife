@@ -221,6 +221,8 @@ export const ProfileSetupScreen: React.FC = () => {
             }}
             autoCapitalize="words"
             autoCorrect={false}
+            textContentType="nickname"
+            autoComplete="username"
             maxLength={30}
             editable={!isPending}
           />
@@ -241,6 +243,8 @@ export const ProfileSetupScreen: React.FC = () => {
             }}
             autoCapitalize="words"
             autoCorrect={false}
+            textContentType="none"
+            autoComplete="off"
             maxLength={50}
             editable={!isPending}
           />

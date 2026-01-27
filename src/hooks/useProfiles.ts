@@ -1,6 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../services/supabase'
-import type { NearbyProfile, NearbyProfilesParams, ZoneProfilesParams } from '../types/location'
+import type {
+  NearbyProfile,
+  NearbyProfilesParams,
+  ZoneProfilesParams,
+  PublicProfile,
+} from '../types/location'
 import type { ProfileInput, UserProfile } from '../types/user'
 
 // Extended input for profile creation (location optional)
@@ -43,48 +48,43 @@ export function useMyProfile() {
 }
 
 // ============================================
-// GET PROFILE BY ID
+// GET PROFILE BY ID (returns BLURRED zone_center for other users)
 // ============================================
 
 export function useProfileById(userId: string | null) {
   return useQuery({
     queryKey: userId ? profileKeys.byId(userId) : ['disabled'],
-    queryFn: async (): Promise<UserProfile | null> => {
+    queryFn: async (): Promise<PublicProfile | null> => {
       if (!userId) return null
 
-      console.log('🔵 Fetching profile for userId:', userId)
       const { data, error } = await supabase.rpc('get_profile_by_id', {
         profile_id: userId,
       })
 
-      console.log('🔵 get_profile_by_id response:', { data, error })
-
       if (error) {
-        console.log('🔴 get_profile_by_id error:', error)
         throw error
       }
 
       // Si data est un array, prendre le premier élément
       const profile = Array.isArray(data) ? data[0] : data
-      console.log('🔵 Returning profile:', profile)
-      return profile as UserProfile
+      return profile as PublicProfile
     },
     enabled: !!userId,
   })
 }
 
 // ============================================
-// GET ALL VISIBLE PROFILES (sauf son compte perso évidemment lolilol)
+// GET ALL VISIBLE PROFILES (returns BLURRED zone_center for privacy)
 // ============================================
 
 export function useAllVisibleProfiles() {
   return useQuery({
     queryKey: profileKeys.allVisible(),
-    queryFn: async (): Promise<UserProfile[]> => {
+    queryFn: async (): Promise<NearbyProfile[]> => {
       const { data, error } = await supabase.rpc('get_all_visible_profiles')
 
       if (error) throw error
-      return (data as UserProfile[]) ?? []
+      return (data as NearbyProfile[]) ?? []
     },
     staleTime: 0,
     refetchOnMount: 'always',
@@ -397,5 +397,29 @@ export function useDeleteAccount() {
       queryClient.clear()
       // Sign out will be handled by the component after this succeeds
     },
+  })
+}
+
+// ============================================
+// GET USER PROFILE (view another user's profile with BLURRED location)
+// ============================================
+
+export function useUserProfile(userId: string | null) {
+  return useQuery({
+    queryKey: userId ? [...profileKeys.all, 'user', userId] : ['disabled'],
+    queryFn: async (): Promise<PublicProfile | null> => {
+      if (!userId) return null
+
+      const { data, error } = await supabase.rpc('get_user_profile', {
+        p_user_id: userId,
+      })
+
+      if (error) throw error
+
+      // Si data est un array, prendre le premier élément
+      const profile = Array.isArray(data) ? data[0] : data
+      return profile as PublicProfile
+    },
+    enabled: !!userId,
   })
 }

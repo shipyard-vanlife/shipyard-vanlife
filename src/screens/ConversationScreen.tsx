@@ -257,6 +257,8 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
           value={messageText}
           onChangeText={setMessageText}
           multiline
+          textContentType="none"
+          autoComplete="off"
           maxLength={1000}
         />
         <TouchableOpacity
