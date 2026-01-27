@@ -28,6 +28,7 @@ import {
   dateOfBirthSchema,
   photoUriSchema,
   verificationSchema,
+  getFirstZodError,
 } from '../utils/validation'
 import { colors, fontSize, fontWeight, spacing, borderRadius } from '../styles/theme'
 
@@ -64,7 +65,11 @@ export const VerificationScreen: React.FC = () => {
 
   // Memoize step names to avoid unnecessary re-renders
   const stepNames = useMemo(
-    () => [t('verification:steps.identity'), t('verification:steps.photos'), t('verification:steps.confirm')],
+    () => [
+      t('verification:steps.identity'),
+      t('verification:steps.photos'),
+      t('verification:steps.confirm'),
+    ],
     [t]
   )
 
@@ -87,34 +92,22 @@ export const VerificationScreen: React.FC = () => {
     })
   }, [])
 
-  // Helper to safely extract error message from Zod result
-  const getZodErrorMessage = (
-    result: { success: false; error: { errors: Array<{ message: string }> } },
-    fallback: string
-  ): string => {
-    try {
-      return result.error?.errors?.[0]?.message ?? fallback
-    } catch {
-      return fallback
-    }
-  }
-
   const validateStep1 = (): boolean => {
     const newErrors: FormErrors = {}
 
     const firstnameResult = firstnameSchema.safeParse(firstname.trim())
     if (!firstnameResult.success) {
-      newErrors.firstname = getZodErrorMessage(firstnameResult, 'errors.firstnameMin')
+      newErrors.firstname = getFirstZodError(firstnameResult.error)
     }
 
     const lastnameResult = lastnameSchema.safeParse(lastname.trim())
     if (!lastnameResult.success) {
-      newErrors.lastname = getZodErrorMessage(lastnameResult, 'errors.lastnameMin')
+      newErrors.lastname = getFirstZodError(lastnameResult.error)
     }
 
     const dateOfBirthResult = dateOfBirthSchema.safeParse(dateOfBirth)
     if (!dateOfBirthResult.success) {
-      newErrors.dateOfBirth = getZodErrorMessage(dateOfBirthResult, 'errors.dateRequired')
+      newErrors.dateOfBirth = getFirstZodError(dateOfBirthResult.error)
     }
 
     setErrors(newErrors)
@@ -126,17 +119,17 @@ export const VerificationScreen: React.FC = () => {
 
     const facePhotoResult = photoUriSchema.safeParse(facePhotoUri)
     if (!facePhotoResult.success) {
-      newErrors.facePhoto = getZodErrorMessage(facePhotoResult, 'errors.photoRequired')
+      newErrors.facePhoto = getFirstZodError(facePhotoResult.error)
     }
 
     const vanPhotoResult = photoUriSchema.safeParse(vanWithPersonPhotoUri)
     if (!vanPhotoResult.success) {
-      newErrors.vanWithPersonPhoto = getZodErrorMessage(vanPhotoResult, 'errors.photoRequired')
+      newErrors.vanWithPersonPhoto = getFirstZodError(vanPhotoResult.error)
     }
 
     const platePhotoResult = photoUriSchema.safeParse(registrationPlatePhotoUri)
     if (!platePhotoResult.success) {
-      newErrors.registrationPlatePhoto = getZodErrorMessage(platePhotoResult, 'errors.photoRequired')
+      newErrors.registrationPlatePhoto = getFirstZodError(platePhotoResult.error)
     }
 
     setErrors(newErrors)
@@ -388,7 +381,9 @@ export const VerificationScreen: React.FC = () => {
                 {isPending ? (
                   <View style={styles.loadingButtonContent}>
                     <ActivityIndicator color={colors.white} size="small" />
-                    <Text style={styles.primaryButtonText}>{t('verification:buttons.submitting')}</Text>
+                    <Text style={styles.primaryButtonText}>
+                      {t('verification:buttons.submitting')}
+                    </Text>
                   </View>
                 ) : (
                   <Text style={styles.primaryButtonText}>{t('verification:buttons.submit')}</Text>

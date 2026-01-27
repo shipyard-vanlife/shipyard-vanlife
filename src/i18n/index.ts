@@ -10,6 +10,7 @@ import frSkills from './locales/fr/skills.json'
 import frProfile from './locales/fr/profile.json'
 import frTrips from './locales/fr/trips.json'
 import frVerification from './locales/fr/verification.json'
+import frInvitation from './locales/fr/invitation.json'
 
 import enCommon from './locales/en/common.json'
 import enLogin from './locales/en/login.json'
@@ -19,6 +20,7 @@ import enSkills from './locales/en/skills.json'
 import enProfile from './locales/en/profile.json'
 import enTrips from './locales/en/trips.json'
 import enVerification from './locales/en/verification.json'
+import enInvitation from './locales/en/invitation.json'
 
 export const defaultNS = 'common'
 
@@ -32,6 +34,7 @@ export const resources = {
     profile: frProfile,
     trips: frTrips,
     verification: frVerification,
+    invitation: frInvitation,
   },
   en: {
     common: enCommon,
@@ -42,6 +45,7 @@ export const resources = {
     profile: enProfile,
     trips: enTrips,
     verification: enVerification,
+    invitation: enInvitation,
   },
 } as const
 
@@ -55,7 +59,17 @@ i18n.use(initReactI18next).init({
   lng: initialLanguage,
   fallbackLng: 'fr',
   defaultNS,
-  ns: ['common', 'login', 'register', 'home', 'skills', 'profile', 'trips', 'verification'],
+  ns: [
+    'common',
+    'login',
+    'register',
+    'home',
+    'skills',
+    'profile',
+    'trips',
+    'verification',
+    'invitation',
+  ],
   interpolation: {
     escapeValue: false,
   },

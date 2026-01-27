@@ -45,20 +45,14 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
   const [messageText, setMessageText] = useState('')
   const flatListRef = useRef<FlatList>(null)
 
-  const {
-    data,
-    isLoading,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    refetch,
-  } = useInfiniteMessages(connectionId)
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } =
+    useInfiniteMessages(connectionId)
   const { mutate: sendMessage, isPending: isSending } = useSendMessage()
   const { mutate: markAsRead } = useMarkMessagesAsRead()
 
   useRealtimeMessages(connectionId)
 
-  const messages = data?.pages.flatMap((page) => page) ?? []
+  const messages = data?.pages.flatMap(page => page) ?? []
 
   useEffect(() => {
     if (connectionId) {
@@ -74,16 +68,12 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
     }
   }, [messages.length, isLoading])
 
-
   const handleSend = () => {
     if (!messageText.trim() || isSending) return
 
     // Block if user is not verified
     if (myProfile?.verification_status !== 'approved') {
-      Alert.alert(
-        t('verification.requiredTitle'),
-        t('verification.requiredMessage')
-      )
+      Alert.alert(t('verification.requiredTitle'), t('verification.requiredMessage'))
       return
     }
 
@@ -114,10 +104,20 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
             isMyMessage ? styles.myMessageBubble : styles.theirMessageBubble,
           ]}
         >
-          <Text style={[styles.messageText, isMyMessage ? styles.myMessageText : styles.theirMessageText]}>
+          <Text
+            style={[
+              styles.messageText,
+              isMyMessage ? styles.myMessageText : styles.theirMessageText,
+            ]}
+          >
             {item.content}
           </Text>
-          <Text style={[styles.messageTime, isMyMessage ? styles.myMessageTime : styles.theirMessageTime]}>
+          <Text
+            style={[
+              styles.messageTime,
+              isMyMessage ? styles.myMessageTime : styles.theirMessageTime,
+            ]}
+          >
             {new Date(item.created_at).toLocaleTimeString('fr-FR', {
               hour: '2-digit',
               minute: '2-digit',
@@ -136,10 +136,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
     >
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
         </TouchableOpacity>
 
@@ -175,7 +172,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
           ref={flatListRef}
           data={messages}
           renderItem={renderMessage}
-          keyExtractor={(item) => item.id}
+          keyExtractor={item => item.id}
           contentContainerStyle={styles.messagesList}
           onEndReached={() => {
             if (hasNextPage && !isFetchingNextPage) {
@@ -214,7 +211,10 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
           maxLength={1000}
         />
         <TouchableOpacity
-          style={[styles.sendButton, (!messageText.trim() || isSending) && styles.sendButtonDisabled]}
+          style={[
+            styles.sendButton,
+            (!messageText.trim() || isSending) && styles.sendButtonDisabled,
+          ]}
           onPress={handleSend}
           disabled={!messageText.trim() || isSending}
         >

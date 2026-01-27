@@ -11,6 +11,8 @@ import { LoginScreen } from './src/screens/LoginScreen'
 import { ProfileSetupScreen } from './src/screens/ProfileSetupScreen'
 import { RegisterScreen } from './src/screens/RegisterScreen'
 import { VerificationScreen } from './src/screens/VerificationScreen'
+import { VerificationChoiceScreen } from './src/screens/VerificationChoiceScreen'
+import { InvitationCodeScreen } from './src/screens/InvitationCodeScreen'
 import { colors } from './src/styles/theme'
 
 const queryClient = new QueryClient({
@@ -23,10 +25,12 @@ const queryClient = new QueryClient({
 })
 
 type Screen = 'login' | 'register'
+type VerificationFlow = 'choice' | 'invitation' | 'verification'
 
 // Composant pour les utilisateurs authentifiés
 function AuthenticatedApp() {
   const { data: profile, isLoading } = useMyProfile()
+  const [verificationFlow, setVerificationFlow] = useState<VerificationFlow>('choice')
 
   if (isLoading) {
     return (
@@ -36,12 +40,41 @@ function AuthenticatedApp() {
     )
   }
 
-  // Cas 1: Aucun profil → Vérification d'identité d'abord
-  if (!profile) {
+  // Déterminer si l'utilisateur a besoin de vérification
+  // Un profil peut exister (créé par use_invitation_code) mais sans vérification
+  const needsVerification = !profile || !profile.verification_status
+
+  // Cas 1: Pas de profil OU profil sans vérification → Flow de vérification
+  if (needsVerification) {
+    // Étape 1: Choix entre code d'invitation ou vérification classique
+    // On affiche le choix seulement si l'utilisateur n'a pas encore de parrain (invited_by)
+    // Si invited_by est déjà défini, c'est qu'il a déjà utilisé un code, on passe direct à la vérification
+    const hasUsedInvitationCode = profile?.invited_by != null
+
+    if (verificationFlow === 'choice' && !hasUsedInvitationCode) {
+      return (
+        <VerificationChoiceScreen
+          onChooseInvitation={() => setVerificationFlow('invitation')}
+          onChooseClassic={() => setVerificationFlow('verification')}
+        />
+      )
+    }
+
+    // Étape 2a: Saisie du code d'invitation
+    if (verificationFlow === 'invitation' && !hasUsedInvitationCode) {
+      return (
+        <InvitationCodeScreen
+          onSuccess={() => setVerificationFlow('verification')}
+          onBack={() => setVerificationFlow('choice')}
+        />
+      )
+    }
+
+    // Étape 2b/3: Vérification d'identité (même flow pour les deux chemins)
     return <VerificationScreen />
   }
 
-  // Cas 2: Profil existe mais pas de username → Profile Setup
+  // Cas 2: Profil vérifié mais pas de username → Profile Setup
   if (!profile.username) {
     return <ProfileSetupScreen />
   }

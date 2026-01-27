@@ -94,7 +94,7 @@ export function TripCard({ trip, onPress }: TripCardProps) {
       {/* Country flags */}
       {countryData.codes.length > 0 ? (
         <View style={styles.flagsRow}>
-          {countryData.codes.map((code) => (
+          {countryData.codes.map(code => (
             <View key={code} style={styles.flagContainer}>
               <CountryFlag isoCode={code} size={FLAG_IMAGE_SIZE} />
             </View>

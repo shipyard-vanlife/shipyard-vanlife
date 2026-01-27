@@ -37,7 +37,11 @@ export function TripStagesList({ stages, onStagePress }: TripStagesListProps) {
             isFirst={index === 0}
             isLast={index === stages.length - 1}
             showCountryFlag={shouldShowFlag(index)}
-            onPress={onStagePress ? () => onStagePress(stage, index > 0 ? stages[index - 1] : null) : undefined}
+            onPress={
+              onStagePress
+                ? () => onStagePress(stage, index > 0 ? stages[index - 1] : null)
+                : undefined
+            }
           />
         ))}
       </View>

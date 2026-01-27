@@ -23,7 +23,6 @@ export const MapView: React.FC<MapViewProps> = ({
 }) => {
   const { t } = useTranslation('home')
 
-
   if (latitude === null || longitude === null) {
     return (
       <View style={[styles.container, styles.noLocation]}>
@@ -31,7 +30,6 @@ export const MapView: React.FC<MapViewProps> = ({
       </View>
     )
   }
-
 
   const profilesData = otherProfiles
     .filter(p => p.location?.latitude && p.location?.longitude)
@@ -50,7 +48,6 @@ export const MapView: React.FC<MapViewProps> = ({
     console.log('🗺️ MapView - Exemple profil:', profilesData[0])
   }
 
-  
   const mapHTML = `
     <!DOCTYPE html>
     <html>

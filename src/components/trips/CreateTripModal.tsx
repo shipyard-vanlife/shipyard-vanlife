@@ -66,7 +66,7 @@ export function CreateTripModal({ visible, onClose, onSuccess }: CreateTripModal
 
   const clearFieldError = (field: keyof FieldErrors) => {
     if (fieldErrors[field]) {
-      setFieldErrors((prev) => ({ ...prev, [field]: undefined }))
+      setFieldErrors(prev => ({ ...prev, [field]: undefined }))
     }
   }
 
@@ -105,7 +105,7 @@ export function CreateTripModal({ visible, onClose, onSuccess }: CreateTripModal
         onSuccess?.()
         onClose()
       },
-      onError: (error) => {
+      onError: error => {
         const message = error.message.includes('active trip')
           ? t('errors.activeTripExists')
           : t('errors.createFailed')
@@ -117,7 +117,12 @@ export function CreateTripModal({ visible, onClose, onSuccess }: CreateTripModal
   const isProcessing = isCreating || locationLoading || isGettingLocation
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={onClose}
+    >
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         {/* Header */}
         <View style={styles.header}>
@@ -144,7 +149,7 @@ export function CreateTripModal({ visible, onClose, onSuccess }: CreateTripModal
               <TextInput
                 style={[styles.input, fieldErrors.name && styles.inputError]}
                 value={tripName}
-                onChangeText={(text) => {
+                onChangeText={text => {
                   setTripName(text)
                   clearFieldError('name')
                 }}

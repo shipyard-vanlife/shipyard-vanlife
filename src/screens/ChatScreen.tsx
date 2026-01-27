@@ -11,7 +11,13 @@ import {
   View,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { useMyFriends, useConnectionRequests, useAcceptConnection, useRejectConnection, useDeleteConnection } from '../hooks/useConnections'
+import {
+  useMyFriends,
+  useConnectionRequests,
+  useAcceptConnection,
+  useRejectConnection,
+  useDeleteConnection,
+} from '../hooks/useConnections'
 import { useMyProfile } from '../hooks/useProfiles'
 import { useRealtimeConnections } from '../hooks/useRealtimeConnections'
 import { Friend, ConnectionRequest } from '../types/chat'
@@ -24,7 +30,10 @@ type ChatTab = 'friends' | 'requests'
 export const ChatScreen: React.FC = () => {
   const { t } = useTranslation('common')
   const [activeTab, setActiveTab] = useState<ChatTab>('friends')
-  const [selectedFriend, setSelectedFriend] = useState<{ friendId: string; connectionId: string } | null>(null)
+  const [selectedFriend, setSelectedFriend] = useState<{
+    friendId: string
+    connectionId: string
+  } | null>(null)
   const [openConversation, setOpenConversation] = useState<{
     connectionId: string
     friendName: string
@@ -33,7 +42,11 @@ export const ChatScreen: React.FC = () => {
   } | null>(null)
 
   const { data: friends, isLoading: loadingFriends, refetch: refetchFriends } = useMyFriends()
-  const { data: requests, isLoading: loadingRequests, refetch: refetchRequests } = useConnectionRequests()
+  const {
+    data: requests,
+    isLoading: loadingRequests,
+    refetch: refetchRequests,
+  } = useConnectionRequests()
   const { mutate: acceptConnection } = useAcceptConnection()
   const { mutate: rejectConnection } = useRejectConnection()
   const { mutate: deleteConnection } = useDeleteConnection()
@@ -42,10 +55,7 @@ export const ChatScreen: React.FC = () => {
   const handleAcceptConnection = (connectionId: string) => {
     // Block if user is not verified
     if (myProfile?.verification_status !== 'approved') {
-      Alert.alert(
-        t('verification.requiredTitle'),
-        t('verification.requiredMessage')
-      )
+      Alert.alert(t('verification.requiredTitle'), t('verification.requiredMessage'))
       return
     }
     acceptConnection(connectionId)
@@ -186,9 +196,7 @@ export const ChatScreen: React.FC = () => {
           <View style={styles.centerContainer}>
             <Ionicons name="people-outline" size={64} color={colors.text.tertiary} />
             <Text style={styles.emptyTitle}>Aucun ami</Text>
-            <Text style={styles.emptyText}>
-              Envoie des demandes de connexion depuis la carte !
-            </Text>
+            <Text style={styles.emptyText}>Envoie des demandes de connexion depuis la carte !</Text>
           </View>
         )
       }
@@ -215,9 +223,7 @@ export const ChatScreen: React.FC = () => {
           <View style={styles.centerContainer}>
             <Ionicons name="mail-outline" size={64} color={colors.text.tertiary} />
             <Text style={styles.emptyTitle}>Aucune demande</Text>
-            <Text style={styles.emptyText}>
-              Tu n'as pas de demandes de connexion en attente
-            </Text>
+            <Text style={styles.emptyText}>Tu n'as pas de demandes de connexion en attente</Text>
           </View>
         )
       }
@@ -291,7 +297,7 @@ export const ChatScreen: React.FC = () => {
             connectionId,
             friendName,
             friendAvatar,
-            friendId: friend?.friend_id || ''
+            friendId: friend?.friend_id || '',
           })
         }}
       />

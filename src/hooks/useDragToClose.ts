@@ -21,10 +21,7 @@ interface UseDragToCloseReturn {
  * Hook for drag-to-close gesture on modals/viewers
  * Provides smooth animation when dragging down to dismiss
  */
-export function useDragToClose({
-  enabled,
-  onClose,
-}: UseDragToCloseOptions): UseDragToCloseReturn {
+export function useDragToClose({ enabled, onClose }: UseDragToCloseOptions): UseDragToCloseReturn {
   const translateY = useRef(new Animated.Value(0)).current
   const backgroundOpacity = useRef(new Animated.Value(1)).current
 

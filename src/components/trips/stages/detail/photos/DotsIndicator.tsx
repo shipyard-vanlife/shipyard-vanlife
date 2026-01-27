@@ -18,10 +18,7 @@ export function DotsIndicator({ count, activeIndex }: DotsIndicatorProps) {
   return (
     <View style={styles.container}>
       {Array.from({ length: count }, (_, index) => (
-        <View
-          key={index}
-          style={[styles.dot, index === activeIndex && styles.dotActive]}
-        />
+        <View key={index} style={[styles.dot, index === activeIndex && styles.dotActive]} />
       ))}
     </View>
   )

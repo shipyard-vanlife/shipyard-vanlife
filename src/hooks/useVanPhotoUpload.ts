@@ -170,10 +170,12 @@ export function useVanPhotoUpload(): UseVanPhotoUploadReturn {
         }
 
         // Upload to Supabase Storage
-        const { error: uploadError } = await supabase.storage.from(BUCKET_NAME).upload(fileName, bytes, {
-          contentType: 'image/jpeg',
-          upsert: true, // Replace existing van photo
-        })
+        const { error: uploadError } = await supabase.storage
+          .from(BUCKET_NAME)
+          .upload(fileName, bytes, {
+            contentType: 'image/jpeg',
+            upsert: true, // Replace existing van photo
+          })
 
         if (uploadError) {
           throw uploadError

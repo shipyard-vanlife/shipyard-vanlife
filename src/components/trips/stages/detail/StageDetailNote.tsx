@@ -52,11 +52,7 @@ export function StageDetailNote({ stageId, initialNote }: StageDetailNoteProps) 
           <Text style={styles.title}>{t('stageDetail.note')}</Text>
         </View>
         {hasChanges ? (
-          <TouchableOpacity
-            style={styles.saveButton}
-            onPress={handleSave}
-            disabled={isPending}
-          >
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={isPending}>
             {isPending ? (
               <ActivityIndicator size="small" color={colors.white} />
             ) : (

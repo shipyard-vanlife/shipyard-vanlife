@@ -21,27 +21,23 @@ export function StageDetailActions({ stageId, isFirstStage, onDeleted }: StageDe
       return
     }
 
-    Alert.alert(
-      t('stageDetail.confirmDeleteTitle'),
-      t('stageDetail.confirmDeleteMessage'),
-      [
-        { text: t('confirmations.cancel'), style: 'cancel' },
-        {
-          text: t('confirmations.deleteTripConfirm'),
-          style: 'destructive',
-          onPress: () => {
-            deleteStage(stageId, {
-              onSuccess: () => {
-                onDeleted()
-              },
-              onError: () => {
-                Alert.alert(t('stageDetail.deleteFailed'))
-              },
-            })
-          },
+    Alert.alert(t('stageDetail.confirmDeleteTitle'), t('stageDetail.confirmDeleteMessage'), [
+      { text: t('confirmations.cancel'), style: 'cancel' },
+      {
+        text: t('confirmations.deleteTripConfirm'),
+        style: 'destructive',
+        onPress: () => {
+          deleteStage(stageId, {
+            onSuccess: () => {
+              onDeleted()
+            },
+            onError: () => {
+              Alert.alert(t('stageDetail.deleteFailed'))
+            },
+          })
         },
-      ]
-    )
+      },
+    ])
   }
 
   return (

@@ -127,7 +127,9 @@ export const VerificationIdentityForm: React.FC<VerificationIdentityFormProps> =
           accessibilityRole="button"
           accessibilityLabel={t('form.dateOfBirth')}
           accessibilityHint={t('form.dateOfBirthPlaceholder')}
-          accessibilityValue={{ text: dateOfBirth ? formatDate(dateOfBirth) : t('form.dateOfBirthPlaceholder') }}
+          accessibilityValue={{
+            text: dateOfBirth ? formatDate(dateOfBirth) : t('form.dateOfBirthPlaceholder'),
+          }}
         >
           <Text style={[styles.dateText, !dateOfBirth && styles.datePlaceholder]}>
             {dateOfBirth ? formatDate(dateOfBirth) : t('form.dateOfBirthPlaceholder')}

@@ -1,0 +1,76 @@
+{
+  "choice": {
+    "title": "Rejoins la communauté",
+    "subtitle": "Comment souhaites-tu te vérifier ?",
+    "withCode": {
+      "title": "J'ai un code d'invitation",
+      "description": "Quelqu'un de la communauté m'a invité"
+    },
+    "classic": {
+      "title": "Vérification classique",
+      "description": "Je n'ai pas de code d'invitation"
+    }
+  },
+  "codeInput": {
+    "title": "Code d'invitation",
+    "subtitle": "Entre le code que tu as reçu",
+    "placeholder": "VAN-XXXX",
+    "hint": "Le code est au format VAN-XXXX",
+    "validate": "Valider le code",
+    "validating": "Vérification...",
+    "success": "Code valide !",
+    "continue": "Continuer"
+  },
+  "generate": {
+    "title": "Inviter un ami",
+    "subtitle": "Génère un code pour inviter quelqu'un à rejoindre la communauté",
+    "button": "Générer un code",
+    "generating": "Génération...",
+    "success": "Code généré !",
+    "copyHint": "Appuie sur le code pour le copier",
+    "copied": "Code copié !",
+    "share": "Partager",
+    "shareMessage": "Rejoins-moi sur Shipyard Vanlife ! Utilise mon code d'invitation : {{code}}"
+  },
+  "section": {
+    "title": "Parrainage",
+    "invitee": "invité",
+    "invitees": "invités",
+    "generateButton": "Inviter quelqu'un",
+    "generateHint": "Partage ton code unique",
+    "count": "{{count}} personne invitée",
+    "count_plural": "{{count}} personnes invitées",
+    "countZero": "Personne invitée pour l'instant",
+    "suspended": "Tu ne peux pas inviter jusqu'au {{date}}",
+    "notVerified": "Tu dois être vérifié pour inviter"
+  },
+  "milestones": {
+    "start": "Commence à inviter !",
+    "beginner": "Bien joué, continue !",
+    "growing": "Tu deviens un vrai ambassadeur !",
+    "ambassador": "Ambassadeur confirmé !",
+    "legend": "Tu es une légende !"
+  },
+  "history": {
+    "title": "Mes codes",
+    "emptyTitle": "Pas encore d'invitations",
+    "emptySubtitle": "Génère ton premier code et invite tes amis vanlifers !",
+    "inviteesTitle": "Tes filleuls",
+    "pendingTitle": "Code en attente",
+    "joinedOn": "A rejoint le {{date}}",
+    "waitingFor": "En attente depuis le {{date}}",
+    "empty": "Tu n'as pas encore généré de code",
+    "used": "Utilisé par {{username}}",
+    "unused": "Non utilisé",
+    "createdAt": "Créé le {{date}}"
+  },
+  "errors": {
+    "invalidCode": "Code d'invitation invalide",
+    "codeUsed": "Ce code a déjà été utilisé",
+    "ownCode": "Tu ne peux pas utiliser ton propre code",
+    "verificationRequired": "Tu dois être vérifié pour générer des codes",
+    "suspended": "Ta capacité d'invitation est suspendue",
+    "generateFailed": "Échec de la génération du code",
+    "useFailed": "Échec de l'utilisation du code"
+  }
+}

@@ -32,7 +32,7 @@ export const ProfileEditSkillSelector: React.FC<ProfileEditSkillSelectorProps> =
       <Text style={styles.label}>{label}</Text>
       {hint ? <Text style={styles.hint}>{hint}</Text> : null}
       <View style={styles.skillsGrid}>
-        {ALL_SKILLS.map((skill) => {
+        {ALL_SKILLS.map(skill => {
           const isSelected = selectedSkill === skill
           return (
             <TouchableOpacity
@@ -47,7 +47,10 @@ export const ProfileEditSkillSelector: React.FC<ProfileEditSkillSelectorProps> =
               activeOpacity={0.7}
             >
               <Text
-                style={[styles.skillButtonText, { color: isSelected ? colors.white : colors.text.secondary }]}
+                style={[
+                  styles.skillButtonText,
+                  { color: isSelected ? colors.white : colors.text.secondary },
+                ]}
               >
                 {t(skill)}
               </Text>

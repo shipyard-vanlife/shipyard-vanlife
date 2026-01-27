@@ -11,6 +11,7 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { PhotoSourceModal } from '../components/PhotoSourceModal'
+import { InvitationSection } from '../components/invitation'
 import {
   ProfileAboutSection,
   ProfileActionButton,
@@ -154,23 +155,27 @@ export const ProfileScreen: React.FC = () => {
   }, [deleteProfile, t])
 
   const handleDeleteAccount = useCallback(() => {
-    Alert.alert(t('common:profile.deleteAccountTitle'), t('common:profile.deleteAccountConfirmation'), [
-      { text: t('common:buttons.cancel'), style: 'cancel' },
-      {
-        text: t('common:buttons.delete'),
-        style: 'destructive',
-        onPress: () => {
-          deleteAccount(undefined, {
-            onSuccess: async () => {
-              await signOut()
-            },
-            onError: (error: Error) => {
-              Alert.alert(t('common:errors.generic'), error.message)
-            },
-          })
+    Alert.alert(
+      t('common:profile.deleteAccountTitle'),
+      t('common:profile.deleteAccountConfirmation'),
+      [
+        { text: t('common:buttons.cancel'), style: 'cancel' },
+        {
+          text: t('common:buttons.delete'),
+          style: 'destructive',
+          onPress: () => {
+            deleteAccount(undefined, {
+              onSuccess: async () => {
+                await signOut()
+              },
+              onError: (error: Error) => {
+                Alert.alert(t('common:errors.generic'), error.message)
+              },
+            })
+          },
         },
-      },
-    ])
+      ]
+    )
   }, [deleteAccount, signOut, t])
 
   const handleViewTrip = useCallback(() => {
@@ -306,6 +311,18 @@ export const ProfileScreen: React.FC = () => {
           isDeleting={isDeletingPhoto}
         />
 
+        {/* Invitation section - only for verified users */}
+        <View style={styles.invitationContainer}>
+          <InvitationSection
+            isVerified={profile.verification_status === 'approved'}
+            isSuspended={
+              Boolean(profile.invitation_suspended_until) &&
+              new Date(profile.invitation_suspended_until!) > new Date()
+            }
+            suspendedUntil={profile.invitation_suspended_until}
+          />
+        </View>
+
         {/* Main action button */}
         <ProfileActionButton isOwnProfile={true} onPress={handleViewTrip} />
 
@@ -395,6 +412,10 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: spacing.huge + spacing.xxxl,
+  },
+  invitationContainer: {
+    paddingHorizontal: spacing.xl,
+    marginTop: spacing.lg,
   },
   adminActions: {
     paddingHorizontal: spacing.xl,
