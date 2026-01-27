@@ -11,14 +11,9 @@ import {
   View,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import {
-  useMyFriends,
-  useConnectionRequests,
-  useAcceptConnection,
-  useRejectConnection,
-  useDeleteConnection,
-} from '../hooks/useConnections'
-import { useMyProfile } from '../hooks/useProfiles'
+import { useQueryClient } from '@tanstack/react-query'
+import { useMyFriends, useConnectionRequests, useAcceptConnection, useRejectConnection, useDeleteConnection } from '../hooks/useConnections'
+import { useMyProfile, profileKeys } from '../hooks/useProfiles'
 import { useRealtimeConnections } from '../hooks/useRealtimeConnections'
 import { Friend, ConnectionRequest } from '../types/chat'
 import { FriendProfileModal } from '../components/FriendProfileModal'
@@ -29,11 +24,15 @@ type ChatTab = 'friends' | 'requests'
 
 export const ChatScreen: React.FC = () => {
   const { t } = useTranslation('common')
+  const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState<ChatTab>('friends')
-  const [selectedFriend, setSelectedFriend] = useState<{
-    friendId: string
-    connectionId: string
-  } | null>(null)
+  const [selectedFriend, setSelectedFriend] = useState<{ friendId: string; connectionId: string } | null>(null)
+
+  const handleFriendSelect = async (friendId: string, connectionId: string) => {
+    // Invalider le cache pour avoir les dernières données du profil
+    await queryClient.invalidateQueries({ queryKey: profileKeys.byId(friendId) })
+    setSelectedFriend({ friendId, connectionId })
+  }
   const [openConversation, setOpenConversation] = useState<{
     connectionId: string
     friendName: string
@@ -78,7 +77,7 @@ export const ChatScreen: React.FC = () => {
       <TouchableOpacity
         onPress={() => {
           if (item.status === 'accepted') {
-            setSelectedFriend({ friendId: item.friend_id, connectionId: item.connection_id })
+            handleFriendSelect(item.friend_id, item.connection_id)
           }
         }}
       >
@@ -143,7 +142,7 @@ export const ChatScreen: React.FC = () => {
       {/* Avatar cliquable pour voir le profil */}
       <TouchableOpacity
         onPress={() => {
-          setSelectedFriend({ friendId: item.sender_id, connectionId: item.connection_id })
+          handleFriendSelect(item.sender_id, item.connection_id)
         }}
       >
         {item.sender_avatar_url ? (

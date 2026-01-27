@@ -199,20 +199,11 @@ export const FriendProfileModal: React.FC<FriendProfileModalProps> = ({
               </View>
             </View>
 
-            {/* Badge principal */}
-            {profile.main_specialty ? (
-              <View style={styles.mainBadgeContainer}>
-                <SkillBadge skill={profile.main_specialty} isMain />
-              </View>
-            ) : null}
-
-            {/* Autres badges */}
+            {/* Badges de compétences */}
             <View style={styles.skillsContainer}>
-              {profile.skills
-                .filter(skill => skill !== profile.main_specialty)
-                .map(skill => (
-                  <SkillBadge key={skill} skill={skill} />
-                ))}
+              {profile.skills.map(skill => (
+                <SkillBadge key={skill} skill={skill} />
+              ))}
             </View>
 
             {/* Stats */}

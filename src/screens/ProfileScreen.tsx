@@ -23,6 +23,7 @@ import {
   ProfileVanSection,
   VerificationPendingBanner,
 } from '../components/profile'
+import { UsernameEditModal } from '../components/profile/UsernameEditModal'
 import { useAuth } from '../contexts/AuthContext'
 import { useImagePicker } from '../hooks/useImagePicker'
 import { useProfilePhotosUpload } from '../hooks/useProfilePhotos'
@@ -60,6 +61,7 @@ export const ProfileScreen: React.FC = () => {
   const [pickerMode, setPickerMode] = useState<PickerMode>(null)
   const [showModal, setShowModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showUsernameModal, setShowUsernameModal] = useState(false)
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
   const isProcessingRef = useRef(false)
 
@@ -273,6 +275,7 @@ export const ProfileScreen: React.FC = () => {
           isOwnProfile={true}
           onAvatarPress={handleAvatarPress}
           onEditPress={handleEditPress}
+          onUsernamePress={() => setShowUsernameModal(true)}
           isUploadingAvatar={isUploadingAvatar}
         />
 
@@ -288,7 +291,7 @@ export const ProfileScreen: React.FC = () => {
         />
 
         {/* Skill badges */}
-        <ProfileSkillBadges skills={profile.skills} mainSpecialty={profile.main_specialty} />
+        <ProfileSkillBadges skills={profile.skills} />
 
         {/* Van section */}
         <ProfileVanSection
@@ -378,10 +381,18 @@ export const ProfileScreen: React.FC = () => {
           van_name: profile.van_name,
           van_photo_url: profile.van_photo_url,
           bio: profile.bio,
-          main_specialty: profile.main_specialty,
+          skills: profile.skills,
           is_visible: profile.is_visible,
           verification_status: profile.verification_status,
         }}
+      />
+
+      {/* Username edit modal */}
+      <UsernameEditModal
+        visible={showUsernameModal}
+        onClose={() => setShowUsernameModal(false)}
+        currentUsername={profile.username}
+        lastUpdated={profile.username_last_updated_at || null}
       />
     </SafeAreaView>
   )

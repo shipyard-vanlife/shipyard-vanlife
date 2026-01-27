@@ -26,7 +26,6 @@ export interface UserProfile {
   } | null
   city: string | null
   country: string | null
-  main_specialty: SkillType | null
   skills: SkillType[]
   days_on_road: number
   total_distance_km: number
@@ -58,7 +57,6 @@ export interface ProfileInput {
   longitude?: number
   city?: string
   country?: string | null
-  main_specialty?: SkillType | null
   skills?: SkillType[]
   days_on_road?: number
   is_visible?: boolean
@@ -80,7 +78,6 @@ export interface ProfileRow {
   location: string | null // PostGIS geography as string
   city: string | null
   country: string | null
-  main_specialty: SkillType | null
   skills: SkillType[] | null
   days_on_road: number
   total_distance_km: number

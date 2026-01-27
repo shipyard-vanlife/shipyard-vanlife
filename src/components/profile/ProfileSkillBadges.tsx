@@ -6,34 +6,19 @@ import { spacing } from '../../styles/theme'
 
 interface ProfileSkillBadgesProps {
   skills: SkillType[]
-  mainSpecialty: SkillType | null
 }
 
 export const ProfileSkillBadges: React.FC<ProfileSkillBadgesProps> = ({
   skills,
-  mainSpecialty,
 }) => {
-  if (skills.length === 0 && !mainSpecialty) {
+  if (skills.length === 0) {
     return null
   }
 
-  // Put main specialty first, then other skills (excluding main from list)
-  const orderedSkills: SkillType[] = []
-
-  if (mainSpecialty) {
-    orderedSkills.push(mainSpecialty)
-  }
-
-  skills.forEach(skill => {
-    if (skill !== mainSpecialty) {
-      orderedSkills.push(skill)
-    }
-  })
-
   return (
     <View style={styles.container}>
-      {orderedSkills.map((skill, index) => (
-        <SkillBadge key={skill} skill={skill} isMain={index === 0 && mainSpecialty !== null} />
+      {skills.map((skill) => (
+        <SkillBadge key={skill} skill={skill} />
       ))}
     </View>
   )

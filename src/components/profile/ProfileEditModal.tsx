@@ -36,7 +36,7 @@ interface ProfileEditModalProps {
     van_name: string | null
     van_photo_url: string | null
     bio: string | null
-    main_specialty: SkillType | null
+    skills: SkillType[]
     is_visible: boolean
     verification_status: VerificationStatus | null
   }
@@ -70,7 +70,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
   // Form state
   const [vanName, setVanName] = useState(initialData.van_name ?? '')
   const [bio, setBio] = useState(initialData.bio ?? '')
-  const [mainSpecialty, setMainSpecialty] = useState<SkillType | null>(initialData.main_specialty)
+  const [skills, setSkills] = useState<SkillType[]>(initialData.skills ?? [])
   const [isVisible, setIsVisible] = useState(initialData.is_visible)
 
   // UI state
@@ -82,7 +82,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
     if (visible) {
       setVanName(initialData.van_name ?? '')
       setBio(initialData.bio ?? '')
-      setMainSpecialty(initialData.main_specialty)
+      setSkills(initialData.skills ?? [])
       setIsVisible(initialData.is_visible)
       setImageFromUrl(initialData.van_photo_url)
       setFieldErrors({})
@@ -133,7 +133,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
     const result = updateProfileSchema.safeParse({
       van_name: vanName.trim(),
       bio: bio.trim(),
-      main_specialty: mainSpecialty,
+      skills,
       is_visible: isVisible,
     })
 
@@ -155,24 +155,33 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         vanPhotoUrl = uploadedUrl
       }
 
+      console.log('🟢 Updating profile with:', {
+        van_name: result.data.van_name,
+        bio: result.data.bio,
+        skills: result.data.skills,
+        is_visible: result.data.is_visible,
+      })
+
       // Update profile
       await updateProfile({
         van_name: result.data.van_name,
         van_photo_url: vanPhotoUrl,
         bio: result.data.bio,
-        main_specialty: result.data.main_specialty,
+        skills: result.data.skills,
         is_visible: result.data.is_visible,
       })
 
+      console.log('✅ Profile updated successfully')
       onClose()
-    } catch {
+    } catch (error) {
+      console.error('❌ Error updating profile:', error)
       Alert.alert(t('common:errors.generic'), t('edit.error'))
     }
   }, [
     user,
     vanName,
     bio,
-    mainSpecialty,
+    skills,
     isVisible,
     vanPhotoUri,
     uploadVanPhoto,
@@ -245,12 +254,17 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
               charMax={500}
             />
 
-            {/* Main Specialty */}
+            {/* Skills (max 3) */}
             <ProfileEditSkillSelector
-              label={t('edit.mainSpecialtyLabel')}
-              hint={t('edit.mainSpecialtyHint')}
-              selectedSkill={mainSpecialty}
-              onSelectSkill={setMainSpecialty}
+              label={t('edit.skillsLabel', { defaultValue: 'Compétences' })}
+              hint={t('edit.skillsHint', { defaultValue: 'Sélectionne jusqu\'à 3 compétences' })}
+              selectedSkills={skills}
+              onSelectSkills={(newSkills) => {
+                if (newSkills.length <= 3) {
+                  setSkills(newSkills)
+                }
+              }}
+              maxSkills={3}
               disabled={isProcessing}
             />
 

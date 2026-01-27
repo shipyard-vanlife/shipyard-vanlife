@@ -14,12 +14,16 @@ import {
   Alert,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
+import { useQueryClient } from '@tanstack/react-query'
 import { colors, spacing, borderRadius, fontSize } from '../styles/theme'
 import { useInfiniteMessages, useSendMessage, useMarkMessagesAsRead } from '../hooks/useMessages'
-import { useMyProfile } from '../hooks/useProfiles'
+import { useMyProfile, useProfileById, profileKeys } from '../hooks/useProfiles'
 import { useRealtimeMessages } from '../hooks/useRealtimeMessages'
 import { FriendProfileModal } from '../components/FriendProfileModal'
-import { Message } from '../types/chat'
+import { HelpRequestModal } from '../components/HelpRequestModal'
+import { HelpRequestCard } from '../components/HelpRequestCard'
+import { useHelpRequests, useRespondToHelpRequest, useCancelHelpRequest } from '../hooks/useHelpRequests'
+import { Message, HelpRequest } from '../types/chat'
 
 interface ConversationScreenProps {
   route: {
@@ -38,9 +42,12 @@ interface ConversationScreenProps {
 export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, navigation }) => {
   const { connectionId, friendName, friendAvatar, friendId } = route.params
   const { t } = useTranslation('common')
+  const queryClient = useQueryClient()
   const { data: myProfile } = useMyProfile()
+  const { data: friendProfile } = useProfileById(friendId || null)
 
   const [selectedFriend, setSelectedFriend] = useState<string | null>(null)
+  const [showHelpModal, setShowHelpModal] = useState(false)
 
   const [messageText, setMessageText] = useState('')
   const flatListRef = useRef<FlatList>(null)
@@ -50,9 +57,18 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
   const { mutate: sendMessage, isPending: isSending } = useSendMessage()
   const { mutate: markAsRead } = useMarkMessagesAsRead()
 
+  const { data: helpRequests } = useHelpRequests(connectionId)
+  const { mutate: respondToRequest, isPending: isResponding } = useRespondToHelpRequest()
+  const { mutate: cancelRequest, isPending: isCanceling } = useCancelHelpRequest()
+
   useRealtimeMessages(connectionId)
 
   const messages = data?.pages.flatMap(page => page) ?? []
+
+  const chatItems = [
+    ...messages.map(m => ({ type: 'message' as const, data: m, timestamp: m.created_at })),
+    ...(helpRequests || []).map(r => ({ type: 'help_request' as const, data: r, timestamp: r.created_at })),
+  ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
 
   useEffect(() => {
     if (connectionId) {
@@ -88,8 +104,45 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
     )
   }
 
-  const renderMessage = ({ item }: { item: Message }) => {
-    const isMyMessage = item.is_mine
+  const renderItem = ({ item }: { item: typeof chatItems[0] }) => {
+    if (item.type === 'help_request') {
+      const request = item.data as HelpRequest
+      const isMyRequest = request.requester_id === myProfile?.id
+
+      console.log('Help request:', {
+        requesterId: request.requester_id,
+        myProfileId: myProfile?.id,
+        isMyRequest,
+        status: request.status,
+      })
+
+      return (
+        <HelpRequestCard
+          request={request}
+          isMyRequest={isMyRequest}
+          requesterName={isMyRequest ? 'Tu' : friendName}
+          onAccept={() =>
+            respondToRequest({
+              requestId: request.id,
+              status: 'accepted',
+              connectionId,
+            })
+          }
+          onDecline={() =>
+            respondToRequest({
+              requestId: request.id,
+              status: 'declined',
+              connectionId,
+            })
+          }
+          onCancel={() => cancelRequest({ requestId: request.id, connectionId })}
+          isResponding={isResponding || isCanceling}
+        />
+      )
+    }
+
+    const message = item.data as Message
+    const isMyMessage = message.is_mine
 
     return (
       <View
@@ -104,21 +157,11 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
             isMyMessage ? styles.myMessageBubble : styles.theirMessageBubble,
           ]}
         >
-          <Text
-            style={[
-              styles.messageText,
-              isMyMessage ? styles.myMessageText : styles.theirMessageText,
-            ]}
-          >
-            {item.content}
+          <Text style={[styles.messageText, isMyMessage ? styles.myMessageText : styles.theirMessageText]}>
+            {message.content}
           </Text>
-          <Text
-            style={[
-              styles.messageTime,
-              isMyMessage ? styles.myMessageTime : styles.theirMessageTime,
-            ]}
-          >
-            {new Date(item.created_at).toLocaleTimeString('fr-FR', {
+          <Text style={[styles.messageTime, isMyMessage ? styles.myMessageTime : styles.theirMessageTime]}>
+            {new Date(message.created_at).toLocaleTimeString('fr-FR', {
               hour: '2-digit',
               minute: '2-digit',
             })}
@@ -142,8 +185,9 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
 
         <View style={styles.headerInfo}>
           <TouchableOpacity
-            onPress={() => {
+            onPress={async () => {
               if (friendId) {
+                await queryClient.invalidateQueries({ queryKey: profileKeys.byId(friendId) })
                 setSelectedFriend(friendId)
               }
             }}
@@ -160,7 +204,12 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
           <Text style={styles.headerTitle}>{friendName}</Text>
         </View>
 
-        <View style={styles.backButton} />
+        <TouchableOpacity
+          style={styles.helpButton}
+          onPress={() => setShowHelpModal(true)}
+        >
+          <Ionicons name="help-circle-outline" size={28} color={colors.secondary.main} />
+        </TouchableOpacity>
       </View>
 
       {isLoading ? (
@@ -170,9 +219,9 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
       ) : (
         <FlatList
           ref={flatListRef}
-          data={messages}
-          renderItem={renderMessage}
-          keyExtractor={item => item.id}
+          data={chatItems}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.type === 'message' ? item.data.id : item.data.id}
           contentContainerStyle={styles.messagesList}
           onEndReached={() => {
             if (hasNextPage && !isFetchingNextPage) {
@@ -226,7 +275,6 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
         </TouchableOpacity>
       </View>
 
-      {/* Modal de profil d'ami */}
       {friendId && (
         <FriendProfileModal
           friendId={selectedFriend}
@@ -234,6 +282,14 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
           onClose={() => setSelectedFriend(null)}
         />
       )}
+
+      <HelpRequestModal
+        visible={showHelpModal}
+        onClose={() => setShowHelpModal(false)}
+        connectionId={connectionId}
+        friendName={friendName}
+        friendSkills={friendProfile?.skills || []}
+      />
     </KeyboardAvoidingView>
   )
 }
@@ -271,6 +327,12 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     borderWidth: 2,
     borderColor: colors.secondary.main,
+  },
+  helpButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   avatarPlaceholder: {
     backgroundColor: colors.primary.main,
