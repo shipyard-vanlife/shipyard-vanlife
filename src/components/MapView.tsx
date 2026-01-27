@@ -1,8 +1,8 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef } from 'react'
 import { StyleSheet, Text, View, Image } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import RNMapView, { Marker, Circle, PROVIDER_GOOGLE } from 'react-native-maps'
-import { UserProfile } from '../types/user'
+import { NearbyProfile } from '../types/location'
 import { colors } from '../styles/theme'
 
 interface MapViewProps {
@@ -10,8 +10,8 @@ interface MapViewProps {
   longitude: number | null
   city: string | null
   myAvatarUrl: string | null
-  otherProfiles: UserProfile[]
-  onProfileSelect: (profile: UserProfile) => void
+  otherProfiles: NearbyProfile[] // BLURRED coordinates via zone_center
+  onProfileSelect: (profile: NearbyProfile) => void
 }
 
 export const MapView: React.FC<MapViewProps> = ({
@@ -32,23 +32,17 @@ export const MapView: React.FC<MapViewProps> = ({
     )
   }
 
+  // Use zone_center (BLURRED coordinates) for other users' markers
   const profilesData = otherProfiles
-    .filter(p => p.location?.latitude && p.location?.longitude)
+    .filter(p => p.zone_center?.latitude && p.zone_center?.longitude)
     .map(p => ({
       id: p.id,
       username: p.username,
-      lat: p.location!.latitude,
-      lng: p.location!.longitude,
+      lat: p.zone_center!.latitude,
+      lng: p.zone_center!.longitude,
       avatarUrl: p.avatar_url,
       profile: p,
     }))
-
-  // Debug
-  console.log('🗺️ MapView - Total autres profils:', otherProfiles.length)
-  console.log('🗺️ MapView - Profils avec coordonnées:', profilesData.length)
-  if (profilesData.length > 0) {
-    console.log('🗺️ MapView - Exemple profil:', profilesData[0])
-  }
 
   return (
     <View style={styles.container}>

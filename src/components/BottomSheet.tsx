@@ -14,7 +14,7 @@ import {
   View,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { UserProfile } from '../types/user'
+import { NearbyProfile } from '../types/location'
 import { SkillBadge } from './SkillBadge'
 import { ProfilePhotoGrid } from './profile/ProfilePhotoGrid'
 import { useSendConnectionRequest, useCheckConnection } from '../hooks/useConnections'
@@ -26,7 +26,7 @@ const MIN_HEIGHT = 120
 const MAX_HEIGHT = SCREEN_HEIGHT * 0.95
 
 interface BottomSheetProps {
-  profile: UserProfile
+  profile: NearbyProfile // Initial data from map (with BLURRED zone_center)
   onClose?: () => void
 }
 
@@ -44,8 +44,19 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
   const { data: myProfile } = useMyProfile()
   const { data: freshProfile } = useProfileById(profile.id)
 
-  // Utiliser les données fraîches si disponibles, sinon fallback sur le profile en props
-  const displayProfile = freshProfile || profile
+  // Use fresh profile data if available, otherwise use initial NearbyProfile as fallback
+  // Note: NearbyProfile has fewer fields, so some UI elements may not display until fresh data loads
+  const displayProfile = freshProfile ?? {
+    ...profile,
+    // Fill in missing fields with defaults for NearbyProfile
+    bio: null,
+    photos: [],
+    total_distance_km: 0,
+    is_visible: true,
+    created_at: '',
+    verification_status: null,
+    connections_count: profile.connections_count ?? 0,
+  }
 
   const handleConnect = async () => {
     // Block if user is not verified
