@@ -5,6 +5,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Keyboard,
   Platform,
   StyleSheet,
   Text,
@@ -54,6 +55,7 @@ export const VerificationPhotoInput: React.FC<VerificationPhotoInputProps> = ({
   const numericAspectRatio = ASPECT_RATIOS[aspectRatio]
 
   const handlePress = () => {
+    Keyboard.dismiss()
     if (Platform.OS === 'ios') {
       // Use native iOS ActionSheet - no Modal conflict
       ActionSheetIOS.showActionSheetWithOptions(

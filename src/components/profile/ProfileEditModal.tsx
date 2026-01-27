@@ -10,6 +10,7 @@ import {
   Text,
   ActivityIndicator,
   Alert,
+  Keyboard,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
@@ -103,6 +104,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
   }
 
   const handleVanPhotoPress = useCallback(() => {
+    Keyboard.dismiss()
     setShowPhotoModal(true)
   }, [])
 

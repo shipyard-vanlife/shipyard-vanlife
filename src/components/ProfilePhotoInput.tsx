@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Image, Keyboard, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { ImagePickerError } from '../hooks/useImagePicker'
 import { PhotoSourceModal } from './PhotoSourceModal'
 
@@ -33,6 +33,8 @@ export const ProfilePhotoInput: React.FC<ProfilePhotoInputProps> = ({
   const errorMessage = error ? ERROR_KEYS[error.code] : null
 
   const handlePress = () => {
+    // Dismiss keyboard before showing modal to prevent interaction issues
+    Keyboard.dismiss()
     setShowModal(true)
   }
 
