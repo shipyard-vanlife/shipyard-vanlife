@@ -3,8 +3,6 @@ import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -300,40 +298,36 @@ export const VerificationScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.content}>
-            {/* Header */}
-            <Text style={styles.title}>{t('verification:title')}</Text>
-            <Text style={styles.subtitle}>{t('verification:subtitle')}</Text>
+        <View style={styles.content}>
+          {/* Header */}
+          <Text style={styles.title}>{t('verification:title')}</Text>
+          <Text style={styles.subtitle}>{t('verification:subtitle')}</Text>
 
-            {/* Step Indicator */}
-            <VerificationStepIndicator
-              currentStep={currentStep}
-              totalSteps={TOTAL_STEPS}
-              stepNames={stepNames}
-            />
+          {/* Step Indicator */}
+          <VerificationStepIndicator
+            currentStep={currentStep}
+            totalSteps={TOTAL_STEPS}
+            stepNames={stepNames}
+          />
 
-            {/* Global Error */}
-            {globalError ? (
-              <View style={styles.errorBanner}>
-                <Text style={styles.errorBannerText}>{t(`verification:${globalError}`)}</Text>
-              </View>
-            ) : null}
+          {/* Global Error */}
+          {globalError ? (
+            <View style={styles.errorBanner}>
+              <Text style={styles.errorBannerText}>{t(`verification:${globalError}`)}</Text>
+            </View>
+          ) : null}
 
-            {/* Step Content */}
-            {renderStep()}
-          </View>
-        </ScrollView>
+          {/* Step Content */}
+          {renderStep()}
+        </View>
 
-        {/* Navigation Buttons */}
+        {/* Navigation Buttons - inside ScrollView so they don't float above keyboard */}
         <View style={styles.buttonsContainer}>
           <View style={styles.buttonsRow}>
             {currentStep > 1 ? (
@@ -406,7 +400,7 @@ export const VerificationScreen: React.FC = () => {
             </Text>
           </TouchableOpacity>
         </View>
-      </KeyboardAvoidingView>
+      </ScrollView>
     </SafeAreaView>
   )
 }
@@ -416,7 +410,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background.main,
   },
-  keyboardView: {
+  scrollView: {
     flex: 1,
   },
   scrollContent: {
@@ -455,13 +449,10 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.medium,
     fontSize: fontSize.sm,
   },
-  // Buttons container
+  // Buttons container - now inside scroll content
   buttonsContainer: {
     padding: spacing.xl,
-    paddingTop: spacing.md,
-    backgroundColor: colors.background.card,
-    borderTopWidth: 1,
-    borderTopColor: colors.border.light,
+    paddingTop: spacing.lg,
   },
   buttonsRow: {
     flexDirection: 'row',
