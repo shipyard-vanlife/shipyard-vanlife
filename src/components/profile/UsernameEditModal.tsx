@@ -17,8 +17,7 @@ import { colors, spacing, fontSize, fontWeight, borderRadius } from '../../style
 interface UsernameEditModalProps {
   visible: boolean
   onClose: () => void
-  currentFirstname: string | null
-  currentLastname: string | null
+  currentUsername: string
   lastUpdated: string | null
 }
 
@@ -61,7 +60,7 @@ export const UsernameEditModal: React.FC<UsernameEditModalProps> = ({
 
   const handleSave = () => {
     if (!newUsername.trim()) {
-      Alert.alert('Erreur', 'Le pseudo ne peut pas être vide')
+      Alert.alert(t('common:errors.error'), t('usernameEdit.emptyError'))
       return
     }
 
@@ -72,11 +71,11 @@ export const UsernameEditModal: React.FC<UsernameEditModalProps> = ({
 
     updateUsername(newUsername.trim(), {
       onSuccess: () => {
-        Alert.alert('Succès', 'Pseudo modifié !')
+        Alert.alert(t('common:success.title'), t('usernameEdit.success'))
         onClose()
       },
       onError: error => {
-        Alert.alert('Erreur', error.message)
+        Alert.alert(t('common:errors.error'), error.message)
       },
     })
   }
@@ -86,7 +85,7 @@ export const UsernameEditModal: React.FC<UsernameEditModalProps> = ({
       <View style={styles.overlay}>
         <View style={styles.modal}>
           <View style={styles.header}>
-            <Text style={styles.title}>Modifier le pseudo</Text>
+            <Text style={styles.title}>{t('usernameEdit.title')}</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <Ionicons name="close" size={24} color={colors.text.primary} />
             </TouchableOpacity>
@@ -97,7 +96,7 @@ export const UsernameEditModal: React.FC<UsernameEditModalProps> = ({
               <View style={styles.warningBox}>
                 <Ionicons name="time-outline" size={20} color={colors.text.tertiary} />
                 <Text style={styles.warningText}>
-                  Tu pourras changer ton pseudo dans {daysLeft} jour{daysLeft > 1 ? 's' : ''}
+                  {t('usernameEdit.cooldownWarning', { count: daysLeft })}
                 </Text>
               </View>
             )}
@@ -106,12 +105,12 @@ export const UsernameEditModal: React.FC<UsernameEditModalProps> = ({
               style={[styles.input, !canChange && styles.inputDisabled]}
               value={newUsername}
               onChangeText={setNewUsername}
-              placeholder="Ton pseudo"
+              placeholder={t('usernameEdit.placeholder')}
               editable={canChange && !isPending}
               maxLength={30}
             />
 
-            <Text style={styles.info}>Tu ne peux changer ton pseudo qu'une fois par mois</Text>
+            <Text style={styles.info}>{t('usernameEdit.info')}</Text>
 
             <TouchableOpacity
               style={[styles.saveButton, (!canChange || isPending) && styles.saveButtonDisabled]}
@@ -121,7 +120,7 @@ export const UsernameEditModal: React.FC<UsernameEditModalProps> = ({
               {isPending ? (
                 <ActivityIndicator size="small" color={colors.white} />
               ) : (
-                <Text style={styles.saveButtonText}>Enregistrer</Text>
+                <Text style={styles.saveButtonText}>{t('common:buttons.save')}</Text>
               )}
             </TouchableOpacity>
           </View>

@@ -119,6 +119,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ tripToShow, onClearTripT
             longitude={profile.location!.longitude}
             city={profile.city}
             myAvatarUrl={profile.avatar_url}
+            isProfileVisible={profile.is_visible}
             otherProfiles={otherProfiles ?? []}
             onProfileSelect={handleProfileSelect}
             tripOverlay={tripOverlay}

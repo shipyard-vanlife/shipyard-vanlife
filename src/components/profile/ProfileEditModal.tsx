@@ -1,33 +1,32 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
-  Modal,
-  View,
-  ScrollView,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  TouchableOpacity,
-  Text,
   ActivityIndicator,
   Alert,
   Keyboard,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useTranslation } from 'react-i18next'
-import { SkillType } from '../../types/user'
-import type { VerificationStatus } from '../../types/verification'
 import { useAuth } from '../../contexts/AuthContext'
 import { useUpdateProfile } from '../../hooks/useProfiles'
 import { useVanPhotoUpload } from '../../hooks/useVanPhotoUpload'
-import { updateProfileSchema, getFieldErrors } from '../../utils/validation'
-import { colors, spacing, fontSize, fontWeight, borderRadius } from '../../styles/theme'
+import { borderRadius, colors, fontSize, fontWeight, spacing } from '../../styles/theme'
+import { SkillType } from '../../types/user'
+import type { VerificationStatus } from '../../types/verification'
+import { getFieldErrors, updateProfileSchema } from '../../utils/validation'
 import { PhotoSourceModal } from '../PhotoSourceModal'
 import {
   ProfileEditHeader,
-  ProfileEditTextField,
   ProfileEditSkillSelector,
-  ProfileEditVisibilityToggle,
+  ProfileEditTextField,
   ProfileEditVanPhotoInput,
+  ProfileEditVisibilityToggle,
 } from './edit'
 
 interface ProfileEditModalProps {
@@ -39,6 +38,7 @@ interface ProfileEditModalProps {
     bio: string | null
     skills: SkillType[]
     is_visible: boolean
+    trips_visible: boolean
     verification_status: VerificationStatus | null
   }
 }
@@ -73,6 +73,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
   const [bio, setBio] = useState(initialData.bio ?? '')
   const [skills, setSkills] = useState<SkillType[]>(initialData.skills ?? [])
   const [isVisible, setIsVisible] = useState(initialData.is_visible)
+  const [tripsVisible, setTripsVisible] = useState(initialData.trips_visible)
 
   // UI state
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
@@ -85,6 +86,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
       setBio(initialData.bio ?? '')
       setSkills(initialData.skills ?? [])
       setIsVisible(initialData.is_visible)
+      setTripsVisible(initialData.trips_visible)
       setImageFromUrl(initialData.van_photo_url)
       setFieldErrors({})
     }
@@ -157,11 +159,15 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         vanPhotoUrl = uploadedUrl
       }
 
+      // If profile is not visible, trips should also not be visible
+      const finalTripsVisible = result.data.is_visible ? tripsVisible : false
+
       console.log('🟢 Updating profile with:', {
         van_name: result.data.van_name,
         bio: result.data.bio,
         skills: result.data.skills,
         is_visible: result.data.is_visible,
+        trips_visible: finalTripsVisible,
       })
 
       // Update profile
@@ -171,6 +177,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         bio: result.data.bio,
         skills: result.data.skills,
         is_visible: result.data.is_visible,
+        trips_visible: finalTripsVisible,
       })
 
       console.log('✅ Profile updated successfully')
@@ -185,6 +192,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
     bio,
     skills,
     isVisible,
+    tripsVisible,
     vanPhotoUri,
     uploadVanPhoto,
     updateProfile,
@@ -277,6 +285,22 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
               value={isVisible}
               onValueChange={setIsVisible}
               disabled={isProcessing}
+              verificationStatus={initialData.verification_status}
+              verificationPendingText={t('edit.visibilityWarningPending')}
+              verificationRequiredText={t('edit.visibilityWarningRequired')}
+            />
+
+            {/* Trips Visibility Toggle */}
+            <ProfileEditVisibilityToggle
+              label={t('edit.tripsVisibilityLabel')}
+              description={
+                !isVisible
+                  ? t('edit.tripsVisibilityDisabledDescription')
+                  : t('edit.tripsVisibilityDescription')
+              }
+              value={tripsVisible}
+              onValueChange={setTripsVisible}
+              disabled={isProcessing || !isVisible}
               verificationStatus={initialData.verification_status}
               verificationPendingText={t('edit.visibilityWarningPending')}
               verificationRequiredText={t('edit.visibilityWarningRequired')}

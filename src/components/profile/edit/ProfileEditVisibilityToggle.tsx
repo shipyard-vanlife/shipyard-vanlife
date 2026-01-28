@@ -1,7 +1,7 @@
-import React from 'react'
-import { View, Text, Switch, StyleSheet } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { colors, spacing, fontSize, fontWeight, borderRadius } from '../../../styles/theme'
+import React from 'react'
+import { StyleSheet, Switch, Text, View } from 'react-native'
+import { borderRadius, colors, fontSize, fontWeight, spacing } from '../../../styles/theme'
 import type { VerificationStatus } from '../../../types/verification'
 
 interface ProfileEditVisibilityToggleProps {
@@ -25,20 +25,22 @@ export const ProfileEditVisibilityToggle: React.FC<ProfileEditVisibilityTogglePr
   verificationPendingText,
   verificationRequiredText,
 }) => {
+  // Only check verification if verificationStatus is explicitly provided
+  const requiresVerification = verificationStatus !== undefined
   const isVerified = verificationStatus === 'approved'
   const isPending = verificationStatus === 'pending'
 
-  // Disable toggle completely if user is not verified
-  const isToggleDisabled = disabled || !isVerified
+  // Disable toggle if disabled prop is true, or if verification is required but not approved
+  const isToggleDisabled = disabled || (requiresVerification && !isVerified)
 
-  // Show warning if not verified
-  const showWarning = !isVerified
+  // Show warning only if verification is required but not verified
+  const showWarning = requiresVerification && !isVerified
   const warningText = isPending ? verificationPendingText : verificationRequiredText
 
-  // Handle value change - prevent turning ON if not verified
+  // Handle value change - prevent turning ON if verification required but not verified
   const handleValueChange = (newValue: boolean) => {
-    // If trying to turn ON but not verified, ignore
-    if (newValue && !isVerified) {
+    // If trying to turn ON but verification required and not verified, ignore
+    if (newValue && requiresVerification && !isVerified) {
       return
     }
     onValueChange(newValue)
@@ -49,7 +51,7 @@ export const ProfileEditVisibilityToggle: React.FC<ProfileEditVisibilityTogglePr
       <View style={[styles.container, isToggleDisabled && styles.containerDisabled]}>
         <View style={styles.textContainer}>
           <Text style={styles.label}>{label}</Text>
-          <Text style={[styles.description, !isVerified && styles.descriptionDisabled]}>
+          <Text style={[styles.description, isToggleDisabled && styles.descriptionDisabled]}>
             {description}
           </Text>
         </View>
