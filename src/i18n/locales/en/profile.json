@@ -21,6 +21,8 @@
     "visibilityDescription": "Other vanlifers can see you on the map",
     "visibilityWarningPending": "Your verification is pending. You'll be visible once approved.",
     "visibilityWarningRequired": "You need to verify your identity to be visible on the map.",
+    "tripsVisibilityLabel": "Visible trips",
+    "tripsVisibilityDescription": "Other vanlifers can see your trips and stages",
     "saveButton": "Save",
     "saving": "Saving...",
     "success": "Profile updated",
@@ -74,5 +76,14 @@
   "error": {
     "notFound": "Profile not found",
     "loadFailed": "Failed to load profile"
+  },
+  "usernameEdit": {
+    "title": "Edit username",
+    "placeholder": "Your username",
+    "info": "You can only change your username once a month",
+    "cooldownWarning_one": "You can change your username in {{count}} day",
+    "cooldownWarning_other": "You can change your username in {{count}} days",
+    "emptyError": "Username cannot be empty",
+    "success": "Username updated!"
   }
 }
