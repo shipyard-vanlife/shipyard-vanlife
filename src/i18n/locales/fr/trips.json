@@ -68,7 +68,7 @@
     "title": "Étape {{number}}",
     "arrivalDate": "Date d'arrivée",
     "fromPrevious": "Depuis l'étape précédente",
-    "distance": "{{km}} km",
+    "distance": "{{value}} {{unit}}",
     "duration": "{{days}}j {{hours}}h",
     "durationHoursOnly": "{{hours}}h",
     "note": "Note personnelle",
@@ -88,5 +88,18 @@
     "maxReached": "Maximum 4 photos",
     "deletePhoto": "Supprimer cette photo ?",
     "confirmDeletePhoto": "Supprimer cette photo ?"
+  },
+  "map": {
+    "viewOnMap": "Voir sur la carte",
+    "overlay": {
+      "stages_one": "{{count}} étape",
+      "stages_other": "{{count}} étapes"
+    },
+    "stageDetail": {
+      "title": "Étape {{number}}",
+      "arrivedAt": "Arrivée le",
+      "note": "Note",
+      "noNote": "Aucune note"
+    }
   }
 }
