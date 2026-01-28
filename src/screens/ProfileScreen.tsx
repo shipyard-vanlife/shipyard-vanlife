@@ -14,7 +14,6 @@ import { PhotoSourceModal } from '../components/PhotoSourceModal'
 import { InvitationSection } from '../components/invitation'
 import {
   ProfileAboutSection,
-  ProfileActionButton,
   ProfileEditModal,
   ProfileHeader,
   ProfilePhotoGrid,
@@ -180,10 +179,6 @@ export const ProfileScreen: React.FC = () => {
     )
   }, [deleteAccount, signOut, t])
 
-  const handleViewTrip = useCallback(() => {
-    // TODO: Navigate to trip screen when implemented
-  }, [])
-
   // Open edit modal
   const handleEditPress = useCallback(() => {
     setShowEditModal(true)
@@ -326,9 +321,6 @@ export const ProfileScreen: React.FC = () => {
           />
         </View>
 
-        {/* Main action button */}
-        <ProfileActionButton isOwnProfile={true} onPress={handleViewTrip} />
-
         {/* Admin actions */}
         <View style={styles.adminActions}>
           <TouchableOpacity
@@ -383,6 +375,7 @@ export const ProfileScreen: React.FC = () => {
           bio: profile.bio,
           skills: profile.skills,
           is_visible: profile.is_visible,
+          trips_visible: profile.trips_visible,
           verification_status: profile.verification_status,
         }}
       />

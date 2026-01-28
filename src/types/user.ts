@@ -31,6 +31,7 @@ export interface UserProfile {
   total_distance_km: number
   connections_count: number
   is_visible: boolean
+  trips_visible: boolean
   last_location_update: string | null
   created_at: string
   updated_at: string
@@ -62,6 +63,7 @@ export interface ProfileInput {
   skills?: SkillType[]
   days_on_road?: number
   is_visible?: boolean
+  trips_visible?: boolean
   tripName?: string
   // Profile enhancements
   firstname?: string | null
@@ -85,6 +87,7 @@ export interface ProfileRow {
   total_distance_km: number
   connections_count: number
   is_visible: boolean
+  trips_visible: boolean
   last_location_update: string | null
   created_at: string
   updated_at: string

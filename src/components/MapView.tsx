@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons'
 import React, { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Image, StyleSheet, Text, View } from 'react-native'
@@ -13,6 +14,7 @@ interface MapViewProps {
   longitude: number | null
   city: string | null
   myAvatarUrl: string | null
+  isProfileVisible?: boolean // Whether the user's profile is visible to others
   otherProfiles: NearbyProfile[] // BLURRED coordinates via zone_center
   onProfileSelect: (profile: NearbyProfile) => void
   // Trip overlay props
@@ -25,6 +27,7 @@ export const MapView: React.FC<MapViewProps> = ({
   latitude,
   longitude,
   myAvatarUrl,
+  isProfileVisible = true,
   otherProfiles,
   onProfileSelect,
   tripOverlay,
@@ -117,15 +120,25 @@ export const MapView: React.FC<MapViewProps> = ({
         {/* Mon marqueur (masqué quand un trip est affiché) */}
         {!tripOverlay && (
           <Marker coordinate={{ latitude, longitude }} anchor={{ x: 0.5, y: 0.5 }}>
-            <View style={styles.myMarker}>
-              {myAvatarUrl ? (
-                <Image
-                  source={{ uri: myAvatarUrl }}
-                  style={styles.markerImage}
-                  resizeMode="cover"
-                />
-              ) : (
-                <View style={styles.markerDot} />
+            <View style={styles.myMarkerContainer}>
+              <View style={[styles.myMarker, !isProfileVisible && styles.myMarkerInvisible]}>
+                {myAvatarUrl ? (
+                  <Image
+                    source={{ uri: myAvatarUrl }}
+                    style={[styles.markerImage, !isProfileVisible && styles.markerImageInvisible]}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View
+                    style={[styles.markerDot, !isProfileVisible && styles.markerDotInvisible]}
+                  />
+                )}
+              </View>
+              {/* Badge d'invisibilité */}
+              {!isProfileVisible && (
+                <View style={styles.invisibleBadge}>
+                  <Ionicons name="eye-off" size={12} color={colors.white} />
+                </View>
               )}
             </View>
           </Marker>
@@ -212,6 +225,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 40,
   },
+  myMarkerContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   myMarker: {
     width: 50,
     height: 50,
@@ -228,16 +245,40 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'hidden',
   },
+  myMarkerInvisible: {
+    backgroundColor: colors.text.tertiary,
+    borderColor: colors.border.main,
+    opacity: 0.7,
+  },
   markerImage: {
     width: '100%',
     height: '100%',
     borderRadius: 25,
+  },
+  markerImageInvisible: {
+    opacity: 0.5,
   },
   markerDot: {
     width: 12,
     height: 12,
     borderRadius: 6,
     backgroundColor: '#fff',
+  },
+  markerDotInvisible: {
+    backgroundColor: colors.border.main,
+  },
+  invisibleBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: colors.text.tertiary,
+    borderWidth: 2,
+    borderColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   otherMarker: {
     width: 40,

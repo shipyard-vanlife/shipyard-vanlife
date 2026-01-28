@@ -21,6 +21,9 @@
     "visibilityDescription": "Les autres vanlifers peuvent te voir sur la carte",
     "visibilityWarningPending": "Ta vérification est en cours. Tu seras visible une fois approuvé.",
     "visibilityWarningRequired": "Tu dois vérifier ton identité pour être visible sur la carte.",
+    "tripsVisibilityLabel": "Parcours visibles",
+    "tripsVisibilityDescription": "Les autres vanlifers peuvent voir tes parcours et étapes",
+    "tripsVisibilityDisabledDescription": "Active d'abord la visibilité de ton profil",
     "saveButton": "Enregistrer",
     "saving": "Enregistrement...",
     "success": "Profil mis à jour",
@@ -40,7 +43,6 @@
     "about": "À propos"
   },
   "actions": {
-    "viewTrip": "Voir le parcours",
     "sendMessage": "Envoyer un message",
     "addPhoto": "Ajouter",
     "addVan": "Ajouter mon van",
@@ -74,5 +76,14 @@
   "error": {
     "notFound": "Profil introuvable",
     "loadFailed": "Impossible de charger le profil"
+  },
+  "usernameEdit": {
+    "title": "Modifier le pseudo",
+    "placeholder": "Ton pseudo",
+    "info": "Tu ne peux changer ton pseudo qu'une fois par mois",
+    "cooldownWarning_one": "Tu pourras changer ton pseudo dans {{count}} jour",
+    "cooldownWarning_other": "Tu pourras changer ton pseudo dans {{count}} jours",
+    "emptyError": "Le pseudo ne peut pas être vide",
+    "success": "Pseudo modifié !"
   }
 }
