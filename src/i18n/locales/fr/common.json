@@ -6,9 +6,14 @@
     "back": "Retour",
     "delete": "Supprimer",
     "deleteProfile": "Supprimer le profil",
-    "createProfile": "Créer mon profil"
+    "createProfile": "Créer mon profil",
+    "save": "Enregistrer"
+  },
+  "success": {
+    "title": "Succès"
   },
   "errors": {
+    "error": "Erreur",
     "generic": "Une erreur est survenue",
     "network": "Erreur de connexion",
     "fillAllFields": "Veuillez remplir tous les champs",
