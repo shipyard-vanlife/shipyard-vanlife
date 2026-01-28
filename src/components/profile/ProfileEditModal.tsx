@@ -39,6 +39,7 @@ interface ProfileEditModalProps {
     bio: string | null
     skills: SkillType[]
     is_visible: boolean
+    trips_visible: boolean
     verification_status: VerificationStatus | null
   }
 }
@@ -73,6 +74,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
   const [bio, setBio] = useState(initialData.bio ?? '')
   const [skills, setSkills] = useState<SkillType[]>(initialData.skills ?? [])
   const [isVisible, setIsVisible] = useState(initialData.is_visible)
+  const [tripsVisible, setTripsVisible] = useState(initialData.trips_visible)
 
   // UI state
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
@@ -85,6 +87,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
       setBio(initialData.bio ?? '')
       setSkills(initialData.skills ?? [])
       setIsVisible(initialData.is_visible)
+      setTripsVisible(initialData.trips_visible)
       setImageFromUrl(initialData.van_photo_url)
       setFieldErrors({})
     }
@@ -162,6 +165,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         bio: result.data.bio,
         skills: result.data.skills,
         is_visible: result.data.is_visible,
+        trips_visible: tripsVisible,
       })
 
       // Update profile
@@ -171,6 +175,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         bio: result.data.bio,
         skills: result.data.skills,
         is_visible: result.data.is_visible,
+        trips_visible: tripsVisible,
       })
 
       console.log('✅ Profile updated successfully')
@@ -185,6 +190,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
     bio,
     skills,
     isVisible,
+    tripsVisible,
     vanPhotoUri,
     uploadVanPhoto,
     updateProfile,
@@ -280,6 +286,15 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
               verificationStatus={initialData.verification_status}
               verificationPendingText={t('edit.visibilityWarningPending')}
               verificationRequiredText={t('edit.visibilityWarningRequired')}
+            />
+
+            {/* Trips Visibility Toggle */}
+            <ProfileEditVisibilityToggle
+              label={t('edit.tripsVisibilityLabel')}
+              description={t('edit.tripsVisibilityDescription')}
+              value={tripsVisible}
+              onValueChange={setTripsVisible}
+              disabled={isProcessing}
             />
 
             {/* Save Button */}
