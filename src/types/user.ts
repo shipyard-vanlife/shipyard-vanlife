@@ -8,6 +8,11 @@ export type SkillType =
   | 'construction'
   | 'electricity'
   | 'carpentry'
+  | 'hiking'
+  | 'tech'
+  | 'cooking'
+  | 'languages'
+  | 'photo'
 
 // Legacy alias for backward compatibility
 export type SkillBadge = SkillType
@@ -111,6 +116,11 @@ export const SKILL_COLORS: Record<SkillType, string> = {
   construction: '#D4A373',
   electricity: '#F4A261',
   carpentry: '#8B4513',
+  hiking: '#E07A5F',
+  tech: '#F4C542',
+  cooking: '#D4A373',
+  languages: '#3B82F6',
+  photo: '#8B7355',
 }
 
 // All available skills (for forms/filters)
@@ -121,4 +131,9 @@ export const ALL_SKILLS: SkillType[] = [
   'construction',
   'electricity',
   'carpentry',
+  'hiking',
+  'tech',
+  'cooking',
+  'languages',
+  'photo',
 ]

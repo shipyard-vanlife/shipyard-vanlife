@@ -1,0 +1,30 @@
+{
+  "title": "Trouver des Amis",
+  "searchPlaceholder": "Rechercher par nom...",
+  "filters": {
+    "all": "Tous",
+    "activities": "Activités",
+    "help": "Aide"
+  },
+  "requestSent": "Demande envoyée",
+  "requestSentMessage": "Demande de connexion envoyée à {{name}} !",
+  "connectionExists": "Connexion existante",
+  "connectionExistsMessage": "Une connexion existe déjà avec cet utilisateur.",
+  "requestError": "Impossible d'envoyer la demande de connexion",
+  "empty": {
+    "title": "Aucun nomade trouvé",
+    "tryDifferentSearch": "Essaie une autre recherche",
+    "expandRadius": "Essaie d'élargir ton rayon de recherche"
+  },
+  "card": {
+    "lookingFor": "Recherche :",
+    "addFriend": "Ajouter",
+    "friend": "Ami",
+    "pending": "En attente",
+    "received": "Demande reçue"
+  },
+  "distance": {
+    "meters": "m",
+    "kilometers": "km"
+  }
+}

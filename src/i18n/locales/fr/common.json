@@ -115,6 +115,15 @@
     "mapBlockedMessage": "Ton compte est en cours de vérification. Tu pourras accéder à la carte et voir les autres vanlifers une fois vérifié.",
     "mapBlockedNote": "Cela prend généralement moins de 24h."
   },
+  "connection": {
+    "removeFriendTitle": "Retirer cet ami",
+    "removeFriendMessage": "Es-tu sûr de vouloir retirer {{username}} de tes amis ?",
+    "removeFriendButton": "Retirer",
+    "removedSuccess": "Ami retiré",
+    "removedMessage": "{{username}} a été retiré de tes amis",
+    "removedError": "Impossible de retirer cet ami",
+    "removing": "Suppression..."
+  },
   "search": {
     "title": "Rechercher"
   }

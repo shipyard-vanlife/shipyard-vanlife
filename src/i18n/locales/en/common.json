@@ -115,6 +115,15 @@
     "mapBlockedMessage": "Your account is being verified. You'll be able to access the map and see other vanlifers once verified.",
     "mapBlockedNote": "This usually takes less than 24 hours."
   },
+  "connection": {
+    "removeFriendTitle": "Remove friend",
+    "removeFriendMessage": "Are you sure you want to remove {{username}} from your friends?",
+    "removeFriendButton": "Remove",
+    "removedSuccess": "Friend removed",
+    "removedMessage": "{{username}} has been removed from your friends",
+    "removedError": "Unable to remove friend",
+    "removing": "Removing..."
+  },
   "search": {
     "title": "Search"
   }
