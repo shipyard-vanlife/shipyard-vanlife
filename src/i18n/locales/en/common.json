@@ -109,5 +109,8 @@
     "mapBlockedTitle": "Verification in progress",
     "mapBlockedMessage": "Your account is being verified. You'll be able to access the map and see other vanlifers once verified.",
     "mapBlockedNote": "This usually takes less than 24 hours."
+  },
+  "search": {
+    "title": "Search"
   }
 }

@@ -7,5 +7,10 @@
   "map": {
     "loading": "Chargement de la carte...",
     "noLocation": "Aucune localisation définie. Déclare ta position pour voir la carte."
+  },
+  "noLocation": {
+    "title": "Aucune localisation définie",
+    "message": "Active ta localisation pour voir les autres vanlifers sur la carte",
+    "enableButton": "Activer la localisation"
   }
 }

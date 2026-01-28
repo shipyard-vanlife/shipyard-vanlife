@@ -109,5 +109,8 @@
     "mapBlockedTitle": "Vérification en cours",
     "mapBlockedMessage": "Ton compte est en cours de vérification. Tu pourras accéder à la carte et voir les autres vanlifers une fois vérifié.",
     "mapBlockedNote": "Cela prend généralement moins de 24h."
+  },
+  "search": {
+    "title": "Rechercher"
   }
 }

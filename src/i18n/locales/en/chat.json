@@ -1,0 +1,29 @@
+{
+  "tabs": {
+    "friends": "Friends",
+    "requests": "Requests"
+  },
+  "status": {
+    "pending": "Pending",
+    "requestSent": "Request sent",
+    "noMessage": "No messages"
+  },
+  "empty": {
+    "friends": {
+      "title": "No friends",
+      "message": "Send connection requests from the map!"
+    },
+    "requests": {
+      "title": "No requests",
+      "message": "You have no pending connection requests"
+    },
+    "messages": {
+      "title": "No messages",
+      "subtitle": "Start the conversation!"
+    }
+  },
+  "conversation": {
+    "loading": "Loading...",
+    "inputPlaceholder": "Send a message..."
+  }
+}

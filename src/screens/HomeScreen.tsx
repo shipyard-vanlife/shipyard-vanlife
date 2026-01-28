@@ -24,7 +24,7 @@ interface HomeScreenProps {
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ tripToShow, onClearTripToShow }) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'home'])
   const queryClient = useQueryClient()
   const { data: profile, isLoading } = useMyProfile()
   const { data: otherProfiles } = useAllVisibleProfiles()
@@ -151,10 +151,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ tripToShow, onClearTripT
         // Pas de localisation : afficher le bouton
         <View style={styles.noLocationContainer}>
           <Ionicons name="location-outline" size={64} color={colors.text.tertiary} />
-          <Text style={styles.noLocationTitle}>Aucune localisation définie</Text>
-          <Text style={styles.noLocationText}>
-            Active ta localisation pour voir les autres vanlifers sur la carte
-          </Text>
+          <Text style={styles.noLocationTitle}>{t('home:noLocation.title')}</Text>
+          <Text style={styles.noLocationText}>{t('home:noLocation.message')}</Text>
           <TouchableOpacity
             style={styles.enableLocationButton}
             onPress={handleEnableLocation}
@@ -165,7 +163,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ tripToShow, onClearTripT
             ) : (
               <>
                 <Ionicons name="location" size={20} color={colors.white} />
-                <Text style={styles.enableLocationText}>Activer la localisation</Text>
+                <Text style={styles.enableLocationText}>{t('home:noLocation.enableButton')}</Text>
               </>
             )}
           </TouchableOpacity>

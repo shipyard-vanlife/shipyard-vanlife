@@ -45,7 +45,7 @@ interface ConversationScreenProps {
 
 export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, navigation }) => {
   const { connectionId, friendName, friendAvatar, friendId } = route.params
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'chat'])
   const queryClient = useQueryClient()
   const { data: myProfile } = useMyProfile()
   const { data: friendProfile } = useProfileById(friendId || null)
@@ -249,15 +249,15 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
             isFetchingNextPage ? (
               <View style={styles.loadMoreContainer}>
                 <ActivityIndicator size="small" color={colors.secondary.main} />
-                <Text style={styles.loadMoreText}>Chargement...</Text>
+                <Text style={styles.loadMoreText}>{t('chat:conversation.loading')}</Text>
               </View>
             ) : null
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="chatbubbles-outline" size={64} color={colors.text.tertiary} />
-              <Text style={styles.emptyText}>Aucun message</Text>
-              <Text style={styles.emptySubtext}>Commence la conversation !</Text>
+              <Text style={styles.emptyText}>{t('chat:empty.messages.title')}</Text>
+              <Text style={styles.emptySubtext}>{t('chat:empty.messages.subtitle')}</Text>
             </View>
           }
         />
@@ -267,7 +267,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Envoyer un message..."
+          placeholder={t('chat:conversation.inputPlaceholder')}
           placeholderTextColor={colors.text.muted}
           value={messageText}
           onChangeText={setMessageText}
