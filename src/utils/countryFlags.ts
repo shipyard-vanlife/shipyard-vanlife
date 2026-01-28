@@ -11,10 +11,7 @@ export function countryCodeToFlag(countryCode: string | null): string | null {
   const code = countryCode.toUpperCase()
   const OFFSET = 127397 // Regional Indicator Symbol offset
 
-  const flag = String.fromCodePoint(
-    code.charCodeAt(0) + OFFSET,
-    code.charCodeAt(1) + OFFSET
-  )
+  const flag = String.fromCodePoint(code.charCodeAt(0) + OFFSET, code.charCodeAt(1) + OFFSET)
 
   return flag
 }

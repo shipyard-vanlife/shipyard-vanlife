@@ -45,7 +45,7 @@ export function useRealtimeConnections() {
           schema: 'public',
           table: 'help_requests',
         },
-        (payload) => {
+        payload => {
           console.log('🔴 Help request détecté:', payload)
 
           queryClient.refetchQueries({ queryKey: connectionKeys.friends() })

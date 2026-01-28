@@ -254,7 +254,9 @@ export const ProfileSetupScreen: React.FC = () => {
 
           {/* Skills Selection (max 3) */}
           <View style={styles.skillsHeader}>
-            <Text style={styles.label}>{t('profile.skillsLabel', { defaultValue: 'Compétences (max 3)' })}</Text>
+            <Text style={styles.label}>
+              {t('profile.skillsLabel', { defaultValue: 'Compétences (max 3)' })}
+            </Text>
             <Text style={styles.skillCounter}>{skills.length}/3</Text>
           </View>
           <View style={styles.skillsGrid}>

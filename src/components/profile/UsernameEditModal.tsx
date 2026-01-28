@@ -75,7 +75,7 @@ export const UsernameEditModal: React.FC<UsernameEditModalProps> = ({
         Alert.alert('Succès', 'Pseudo modifié !')
         onClose()
       },
-      onError: (error) => {
+      onError: error => {
         Alert.alert('Erreur', error.message)
       },
     })
@@ -111,9 +111,7 @@ export const UsernameEditModal: React.FC<UsernameEditModalProps> = ({
               maxLength={30}
             />
 
-            <Text style={styles.info}>
-              Tu ne peux changer ton pseudo qu'une fois par mois
-            </Text>
+            <Text style={styles.info}>Tu ne peux changer ton pseudo qu'une fois par mois</Text>
 
             <TouchableOpacity
               style={[styles.saveButton, (!canChange || isPending) && styles.saveButtonDisabled]}

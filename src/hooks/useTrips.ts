@@ -1,6 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../services/supabase'
-import type { AddStageInput, CreateTripInput, Trip, PublicTrip, UpdateStageNoteInput } from '../types/trip'
+import type {
+  AddStageInput,
+  CreateTripInput,
+  Trip,
+  PublicTrip,
+  UpdateStageNoteInput,
+} from '../types/trip'
 
 // Query keys
 export const tripKeys = {

@@ -259,9 +259,9 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             {/* Skills (max 3) */}
             <ProfileEditSkillSelector
               label={t('edit.skillsLabel', { defaultValue: 'Compétences' })}
-              hint={t('edit.skillsHint', { defaultValue: 'Sélectionne jusqu\'à 3 compétences' })}
+              hint={t('edit.skillsHint', { defaultValue: "Sélectionne jusqu'à 3 compétences" })}
               selectedSkills={skills}
-              onSelectSkills={(newSkills) => {
+              onSelectSkills={newSkills => {
                 if (newSkills.length <= 3) {
                   setSkills(newSkills)
                 }

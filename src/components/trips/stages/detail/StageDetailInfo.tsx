@@ -36,7 +36,9 @@ export function StageDetailInfo({ stage, previousStage }: StageDetailInfoProps) 
       <View style={styles.statsRow}>
         <View style={styles.statItem}>
           <Ionicons name="navigate-outline" size={20} color={colors.secondary.main} />
-          <Text style={styles.statValue}>{t('stageDetail.distance', getDistanceParams(distance))}</Text>
+          <Text style={styles.statValue}>
+            {t('stageDetail.distance', getDistanceParams(distance))}
+          </Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.statItem}>

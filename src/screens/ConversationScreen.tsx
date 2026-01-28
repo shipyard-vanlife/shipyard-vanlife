@@ -22,7 +22,11 @@ import { useRealtimeMessages } from '../hooks/useRealtimeMessages'
 import { FriendProfileModal } from '../components/FriendProfileModal'
 import { HelpRequestModal } from '../components/HelpRequestModal'
 import { HelpRequestCard } from '../components/HelpRequestCard'
-import { useHelpRequests, useRespondToHelpRequest, useCancelHelpRequest } from '../hooks/useHelpRequests'
+import {
+  useHelpRequests,
+  useRespondToHelpRequest,
+  useCancelHelpRequest,
+} from '../hooks/useHelpRequests'
 import { Message, HelpRequest } from '../types/chat'
 
 interface ConversationScreenProps {
@@ -67,7 +71,11 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
 
   const chatItems = [
     ...messages.map(m => ({ type: 'message' as const, data: m, timestamp: m.created_at })),
-    ...(helpRequests || []).map(r => ({ type: 'help_request' as const, data: r, timestamp: r.created_at })),
+    ...(helpRequests || []).map(r => ({
+      type: 'help_request' as const,
+      data: r,
+      timestamp: r.created_at,
+    })),
   ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
 
   useEffect(() => {
@@ -104,7 +112,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
     )
   }
 
-  const renderItem = ({ item }: { item: typeof chatItems[0] }) => {
+  const renderItem = ({ item }: { item: (typeof chatItems)[0] }) => {
     if (item.type === 'help_request') {
       const request = item.data as HelpRequest
       const isMyRequest = request.requester_id === myProfile?.id
@@ -157,10 +165,20 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
             isMyMessage ? styles.myMessageBubble : styles.theirMessageBubble,
           ]}
         >
-          <Text style={[styles.messageText, isMyMessage ? styles.myMessageText : styles.theirMessageText]}>
+          <Text
+            style={[
+              styles.messageText,
+              isMyMessage ? styles.myMessageText : styles.theirMessageText,
+            ]}
+          >
             {message.content}
           </Text>
-          <Text style={[styles.messageTime, isMyMessage ? styles.myMessageTime : styles.theirMessageTime]}>
+          <Text
+            style={[
+              styles.messageTime,
+              isMyMessage ? styles.myMessageTime : styles.theirMessageTime,
+            ]}
+          >
             {new Date(message.created_at).toLocaleTimeString('fr-FR', {
               hour: '2-digit',
               minute: '2-digit',
@@ -204,10 +222,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
           <Text style={styles.headerTitle}>{friendName}</Text>
         </View>
 
-        <TouchableOpacity
-          style={styles.helpButton}
-          onPress={() => setShowHelpModal(true)}
-        >
+        <TouchableOpacity style={styles.helpButton} onPress={() => setShowHelpModal(true)}>
           <Ionicons name="help-circle-outline" size={28} color={colors.secondary.main} />
         </TouchableOpacity>
       </View>
@@ -221,7 +236,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
           ref={flatListRef}
           data={chatItems}
           renderItem={renderItem}
-          keyExtractor={(item) => item.type === 'message' ? item.data.id : item.data.id}
+          keyExtractor={item => (item.type === 'message' ? item.data.id : item.data.id)}
           contentContainerStyle={styles.messagesList}
           onEndReached={() => {
             if (hasNextPage && !isFetchingNextPage) {

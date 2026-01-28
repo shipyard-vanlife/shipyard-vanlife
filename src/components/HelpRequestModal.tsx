@@ -47,7 +47,7 @@ export const HelpRequestModal: React.FC<HelpRequestModalProps> = ({
           setSelectedSkill(null)
         },
         onError: () => {
-          Alert.alert('Erreur', 'Impossible d\'envoyer la demande')
+          Alert.alert('Erreur', "Impossible d'envoyer la demande")
         },
       }
     )
@@ -65,33 +65,24 @@ export const HelpRequestModal: React.FC<HelpRequestModalProps> = ({
           </View>
 
           <View style={styles.questionContainer}>
-            <Text style={styles.questionText}>
-              Pour quelle compétence as-tu besoin d'aide ?
-            </Text>
+            <Text style={styles.questionText}>Pour quelle compétence as-tu besoin d'aide ?</Text>
           </View>
 
           <View style={styles.divider} />
 
           <FlatList
             data={friendSkills}
-            keyExtractor={(item) => item}
+            keyExtractor={item => item}
             renderItem={({ item }) => (
               <TouchableOpacity
-                style={[
-                  styles.skillItem,
-                  selectedSkill === item && styles.skillItemSelected,
-                ]}
+                style={[styles.skillItem, selectedSkill === item && styles.skillItemSelected]}
                 onPress={() => setSelectedSkill(selectedSkill === item ? null : item)}
               >
-                <View style={[
-                  styles.skillBadge,
-                  selectedSkill === item && styles.skillBadgeSelected,
-                ]}>
+                <View
+                  style={[styles.skillBadge, selectedSkill === item && styles.skillBadgeSelected]}
+                >
                   <Text
-                    style={[
-                      styles.skillText,
-                      selectedSkill === item && styles.skillTextSelected,
-                    ]}
+                    style={[styles.skillText, selectedSkill === item && styles.skillTextSelected]}
                   >
                     {item}
                   </Text>

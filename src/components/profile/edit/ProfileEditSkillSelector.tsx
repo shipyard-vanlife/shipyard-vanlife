@@ -49,7 +49,7 @@ export const ProfileEditSkillSelector: React.FC<ProfileEditSkillSelectorProps> =
       </View>
       {hint ? <Text style={styles.hint}>{hint}</Text> : null}
       <View style={styles.skillsGrid}>
-        {ALL_SKILLS.map((skill) => {
+        {ALL_SKILLS.map(skill => {
           const isSelected = selectedSkills.includes(skill)
           const canSelect = selectedSkills.length < maxSkills || isSelected
 
@@ -72,7 +72,7 @@ export const ProfileEditSkillSelector: React.FC<ProfileEditSkillSelectorProps> =
               <Text
                 style={[
                   styles.skillButtonText,
-                  { color: isSelected ? colors.white : colors.text.secondary }
+                  { color: isSelected ? colors.white : colors.text.secondary },
                 ]}
               >
                 {t(skill)}

@@ -303,7 +303,7 @@ export function useUpdateUsername() {
 
       if (error) {
         if (error.message.includes('once per month')) {
-          throw new Error('Tu ne peux changer ton pseudo qu\'une fois par mois')
+          throw new Error("Tu ne peux changer ton pseudo qu'une fois par mois")
         }
         throw error
       }

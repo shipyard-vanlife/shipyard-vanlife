@@ -28,8 +28,16 @@ export function useCreateHelpRequest() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ connectionId, skill }: { connectionId: string; skill: string }): Promise<void> => {
-      const { data: { user } } = await supabase.auth.getUser()
+    mutationFn: async ({
+      connectionId,
+      skill,
+    }: {
+      connectionId: string
+      skill: string
+    }): Promise<void> => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
       // Vérifier s'il existe déjà une demande pending sur cette connection (peu importe qui l'a faite)
@@ -44,7 +52,7 @@ export function useCreateHelpRequest() {
         if (isMyRequest) {
           throw new Error('Tu as déjà une demande en attente')
         } else {
-          throw new Error('Une demande d\'aide est déjà en cours sur cette conversation')
+          throw new Error("Une demande d'aide est déjà en cours sur cette conversation")
         }
       }
 
@@ -69,7 +77,15 @@ export function useRespondToHelpRequest() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ requestId, status, connectionId }: { requestId: string; status: 'accepted' | 'declined'; connectionId: string }): Promise<void> => {
+    mutationFn: async ({
+      requestId,
+      status,
+      connectionId,
+    }: {
+      requestId: string
+      status: 'accepted' | 'declined'
+      connectionId: string
+    }): Promise<void> => {
       const { error } = await supabase
         .from('help_requests')
         .update({
@@ -92,7 +108,13 @@ export function useCancelHelpRequest() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ requestId, connectionId }: { requestId: string; connectionId: string }): Promise<void> => {
+    mutationFn: async ({
+      requestId,
+      connectionId,
+    }: {
+      requestId: string
+      connectionId: string
+    }): Promise<void> => {
       const { error } = await supabase
         .from('help_requests')
         .delete()

@@ -10,7 +10,10 @@ export function useRealtimeMessages(connectionId: string | null) {
   useEffect(() => {
     if (!connectionId) return
 
-    console.log('🔵 Setting up realtime for messages and help requests in connection:', connectionId)
+    console.log(
+      '🔵 Setting up realtime for messages and help requests in connection:',
+      connectionId
+    )
 
     const channel = supabase
       .channel(`conversation-${connectionId}`)
@@ -38,11 +41,11 @@ export function useRealtimeMessages(connectionId: string | null) {
           table: 'help_requests',
           filter: `connection_id=eq.${connectionId}`,
         },
-        (payload) => {
+        payload => {
           console.log('🔴 Help request change detected:', payload)
 
           queryClient.refetchQueries({
-            queryKey: helpRequestKeys.byConnection(connectionId)
+            queryKey: helpRequestKeys.byConnection(connectionId),
           })
         }
       )

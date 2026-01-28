@@ -12,7 +12,13 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useQueryClient } from '@tanstack/react-query'
-import { useMyFriends, useConnectionRequests, useAcceptConnection, useRejectConnection, useDeleteConnection } from '../hooks/useConnections'
+import {
+  useMyFriends,
+  useConnectionRequests,
+  useAcceptConnection,
+  useRejectConnection,
+  useDeleteConnection,
+} from '../hooks/useConnections'
 import { useMyProfile, profileKeys } from '../hooks/useProfiles'
 import { useRealtimeConnections } from '../hooks/useRealtimeConnections'
 import { Friend, ConnectionRequest } from '../types/chat'
@@ -26,7 +32,10 @@ export const ChatScreen: React.FC = () => {
   const { t } = useTranslation('common')
   const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState<ChatTab>('friends')
-  const [selectedFriend, setSelectedFriend] = useState<{ friendId: string; connectionId: string } | null>(null)
+  const [selectedFriend, setSelectedFriend] = useState<{
+    friendId: string
+    connectionId: string
+  } | null>(null)
 
   const handleFriendSelect = async (friendId: string, connectionId: string) => {
     // Invalider le cache pour avoir les dernières données du profil

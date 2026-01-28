@@ -8,16 +8,14 @@ interface ProfileSkillBadgesProps {
   skills: SkillType[]
 }
 
-export const ProfileSkillBadges: React.FC<ProfileSkillBadgesProps> = ({
-  skills,
-}) => {
+export const ProfileSkillBadges: React.FC<ProfileSkillBadgesProps> = ({ skills }) => {
   if (skills.length === 0) {
     return null
   }
 
   return (
     <View style={styles.container}>
-      {skills.map((skill) => (
+      {skills.map(skill => (
         <SkillBadge key={skill} skill={skill} />
       ))}
     </View>

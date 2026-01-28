@@ -85,7 +85,10 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
 
       sendRequest(profile.id, {
         onSuccess: () => {
-          Alert.alert('Demande envoyée', `Demande de connexion envoyée à ${displayProfile.username} !`)
+          Alert.alert(
+            'Demande envoyée',
+            `Demande de connexion envoyée à ${displayProfile.username} !`
+          )
           setTimeout(() => refetchConnectionStatus(), 300)
         },
         onError: (error: any) => {
@@ -183,7 +186,9 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
             )}
             <View style={styles.header}>
               <Text style={styles.username}>{displayProfile.username}</Text>
-              {displayProfile.van_name ? <Text style={styles.vanName}>{displayProfile.van_name}</Text> : null}
+              {displayProfile.van_name ? (
+                <Text style={styles.vanName}>{displayProfile.van_name}</Text>
+              ) : null}
             </View>
           </View>
 

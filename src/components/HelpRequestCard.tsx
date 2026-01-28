@@ -62,18 +62,12 @@ export const HelpRequestCard: React.FC<HelpRequestCardProps> = ({
       </View>
       <View style={styles.content}>
         <Text style={styles.title}>
-          {isMyRequest
-            ? `Tu as demandé de l'aide`
-            : `${requesterName} a besoin d'aide`}
+          {isMyRequest ? `Tu as demandé de l'aide` : `${requesterName} a besoin d'aide`}
         </Text>
         <Text style={styles.skill}>{request.skill_requested}</Text>
 
         {isMyRequest ? (
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={onCancel}
-            disabled={isResponding}
-          >
+          <TouchableOpacity style={styles.cancelButton} onPress={onCancel} disabled={isResponding}>
             {isResponding ? (
               <ActivityIndicator size="small" color={colors.text.tertiary} />
             ) : (

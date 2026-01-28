@@ -119,7 +119,11 @@ export const MapView: React.FC<MapViewProps> = ({
           <Marker coordinate={{ latitude, longitude }} anchor={{ x: 0.5, y: 0.5 }}>
             <View style={styles.myMarker}>
               {myAvatarUrl ? (
-                <Image source={{ uri: myAvatarUrl }} style={styles.markerImage} resizeMode="cover" />
+                <Image
+                  source={{ uri: myAvatarUrl }}
+                  style={styles.markerImage}
+                  resizeMode="cover"
+                />
               ) : (
                 <View style={styles.markerDot} />
               )}
