@@ -1,33 +1,36 @@
+import { Ionicons } from '@expo/vector-icons'
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
+  ActivityIndicator,
+  Alert,
   Modal,
-  View,
   ScrollView,
   StyleSheet,
-  TouchableOpacity,
   Text,
-  Alert,
-  ActivityIndicator,
+  TouchableOpacity,
+  View,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useTranslation } from 'react-i18next'
-import { Ionicons } from '@expo/vector-icons'
-import { colors, spacing, fontSize, fontWeight, borderRadius } from '../../styles/theme'
-import { useEndTrip, useDeleteTrip, useTripDetail } from '../../hooks/useTrips'
-import { TripStatusBadge } from './TripStatusBadge'
-import { TripStats } from './TripStats'
-import { TripStagesList } from './stages/TripStagesList'
+import { useDeleteTrip, useEndTrip, useTripDetail } from '../../hooks/useTrips'
+import { borderRadius, colors, fontSize, fontWeight, spacing } from '../../styles/theme'
+import type { Trip, TripStage } from '../../types/trip'
 import { AddStageButton } from './AddStageButton'
 import { TripStageDetailModal } from './stages/detail/TripStageDetailModal'
-import type { TripStage } from '../../types/trip'
+import { TripStagesList } from './stages/TripStagesList'
+import { TripCountryFlags } from './TripCountryFlags'
+import { TripStats } from './TripStats'
+import { TripStatusBadge } from './TripStatusBadge'
+import { ViewOnMapButton } from './ViewOnMapButton'
 
 interface TripDetailModalProps {
   visible: boolean
   tripId: string | null
   onClose: () => void
+  onViewOnMap?: (trip: Trip) => void
 }
 
-export function TripDetailModal({ visible, tripId, onClose }: TripDetailModalProps) {
+export function TripDetailModal({ visible, tripId, onClose, onViewOnMap }: TripDetailModalProps) {
   const { t } = useTranslation('trips')
   const { data: trip, isLoading } = useTripDetail(visible ? tripId : null)
   const { mutate: endTrip, isPending: isEnding } = useEndTrip()
@@ -157,7 +160,10 @@ export function TripDetailModal({ visible, tripId, onClose }: TripDetailModalPro
                 size={24}
                 color={trip.is_active ? colors.secondary.main : colors.text.muted}
               />
-              <TripStatusBadge isActive={trip.is_active} />
+              <View style={styles.statusContainer}>
+                <TripStatusBadge isActive={trip.is_active} />
+                <TripCountryFlags stages={trip.stages} />
+              </View>
             </View>
 
             {/* Stats */}
@@ -185,6 +191,13 @@ export function TripDetailModal({ visible, tripId, onClose }: TripDetailModalPro
               ) : null}
             </View>
           </View>
+
+          {/* View on Map Button */}
+          {onViewOnMap && trip.stages.length > 0 ? (
+            <View style={styles.viewOnMapContainer}>
+              <ViewOnMapButton onPress={() => onViewOnMap(trip)} />
+            </View>
+          ) : null}
 
           {/* Stages List */}
           <TripStagesList stages={trip.stages} onStagePress={handleStagePress} />
@@ -291,6 +304,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: spacing.md,
   },
+  statusContainer: {
+    alignItems: 'flex-end',
+    gap: spacing.xs,
+  },
   statsContainer: {
     paddingVertical: spacing.md,
     borderTopWidth: 1,
@@ -352,5 +369,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  viewOnMapContainer: {
+    marginTop: spacing.lg,
   },
 })
