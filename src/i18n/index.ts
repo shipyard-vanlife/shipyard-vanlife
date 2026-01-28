@@ -12,6 +12,7 @@ import frTrips from './locales/fr/trips.json'
 import frVerification from './locales/fr/verification.json'
 import frInvitation from './locales/fr/invitation.json'
 import frChat from './locales/fr/chat.json'
+import frSearch from './locales/fr/search.json'
 
 import enCommon from './locales/en/common.json'
 import enLogin from './locales/en/login.json'
@@ -23,6 +24,7 @@ import enTrips from './locales/en/trips.json'
 import enVerification from './locales/en/verification.json'
 import enInvitation from './locales/en/invitation.json'
 import enChat from './locales/en/chat.json'
+import enSearch from './locales/en/search.json'
 
 export const defaultNS = 'common'
 
@@ -38,6 +40,7 @@ export const resources = {
     verification: frVerification,
     invitation: frInvitation,
     chat: frChat,
+    search: frSearch,
   },
   en: {
     common: enCommon,
@@ -50,6 +53,7 @@ export const resources = {
     verification: enVerification,
     invitation: enInvitation,
     chat: enChat,
+    search: enSearch,
   },
 } as const
 
@@ -74,6 +78,7 @@ i18n.use(initReactI18next).init({
     'verification',
     'invitation',
     'chat',
+    'search',
   ],
   interpolation: {
     escapeValue: false,

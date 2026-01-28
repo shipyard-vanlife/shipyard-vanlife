@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { supabase } from '../services/supabase'
 import { Connection, ConnectionRequest, Friend } from '../types/chat'
 
@@ -38,6 +39,27 @@ export function useConnectionRequests() {
   })
 }
 
+// Get all my connections (including pending sent requests)
+export function useAllConnections() {
+  return useQuery({
+    queryKey: [...connectionKeys.all, 'all-status'] as const,
+    queryFn: async (): Promise<Connection[]> => {
+      const { data: user } = await supabase.auth.getUser()
+      if (!user.user) throw new Error('Not authenticated')
+
+      const { data, error } = await supabase
+        .from('connections')
+        .select('*')
+        .or(`sender_id.eq.${user.user.id},receiver_id.eq.${user.user.id}`)
+
+      if (error) throw error
+      return (data as Connection[]) ?? []
+    },
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+  })
+}
+
 // Send a connection request
 export function useSendConnectionRequest() {
   const queryClient = useQueryClient()
@@ -51,9 +73,8 @@ export function useSendConnectionRequest() {
       return data as string
     },
     onSuccess: async () => {
-      // Force refetch instead of just invalidate
-      await queryClient.refetchQueries({ queryKey: connectionKeys.friends() })
-      await queryClient.refetchQueries({ queryKey: connectionKeys.requests() })
+      // Invalidate all connection-related queries
+      await queryClient.invalidateQueries({ queryKey: connectionKeys.all })
     },
   })
 }
@@ -70,9 +91,8 @@ export function useAcceptConnection() {
       if (error) throw error
     },
     onSuccess: async () => {
-      // Force refetch instead of just invalidate
-      await queryClient.refetchQueries({ queryKey: connectionKeys.friends() })
-      await queryClient.refetchQueries({ queryKey: connectionKeys.requests() })
+      // Invalidate all connection-related queries
+      await queryClient.invalidateQueries({ queryKey: connectionKeys.all })
     },
   })
 }
@@ -89,16 +109,17 @@ export function useRejectConnection() {
       if (error) throw error
     },
     onSuccess: async () => {
-      // Force refetch instead of just invalidate
-      await queryClient.refetchQueries({ queryKey: connectionKeys.friends() })
-      await queryClient.refetchQueries({ queryKey: connectionKeys.requests() })
+      // Invalidate all connection-related queries
+      await queryClient.invalidateQueries({ queryKey: connectionKeys.all })
     },
   })
 }
 
 // Check if connection exists with a user
 export function useCheckConnection(userId: string) {
-  return useQuery({
+  const queryClient = useQueryClient()
+
+  const query = useQuery({
     queryKey: [...connectionKeys.all, 'check', userId],
     queryFn: async (): Promise<Connection | null> => {
       console.log('🔵 Checking connection status for userId:', userId)
@@ -123,6 +144,36 @@ export function useCheckConnection(userId: string) {
     refetchOnMount: 'always', // Refetch every time component mounts
     refetchOnWindowFocus: true, // Refetch when window gains focus
   })
+
+  // Subscribe to realtime changes on connections table
+  useEffect(() => {
+    if (!userId) return
+
+    const channel = supabase
+      .channel(`connection-changes-${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'connections',
+        },
+        (payload) => {
+          console.log('🟢 Connection change detected:', payload)
+          // Invalidate this specific connection check
+          queryClient.invalidateQueries({ queryKey: [...connectionKeys.all, 'check', userId] })
+          // Also invalidate all connection queries
+          queryClient.invalidateQueries({ queryKey: connectionKeys.all })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [userId, queryClient])
+
+  return query
 }
 
 // Delete a connection (cancel request or remove friend)
@@ -137,9 +188,8 @@ export function useDeleteConnection() {
       if (error) throw error
     },
     onSuccess: async () => {
-      // Force refetch instead of just invalidate
-      await queryClient.refetchQueries({ queryKey: connectionKeys.friends() })
-      await queryClient.refetchQueries({ queryKey: connectionKeys.requests() })
+      // Invalidate all connection-related queries
+      await queryClient.invalidateQueries({ queryKey: connectionKeys.all })
     },
   })
 }

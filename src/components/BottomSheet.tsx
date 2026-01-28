@@ -14,10 +14,11 @@ import {
   View,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
+import { useQueryClient } from '@tanstack/react-query'
 import { NearbyProfile } from '../types/location'
 import { SkillBadge } from './SkillBadge'
 import { ProfilePhotoGrid } from './profile/ProfilePhotoGrid'
-import { useSendConnectionRequest, useCheckConnection } from '../hooks/useConnections'
+import { useSendConnectionRequest, useCheckConnection, useDeleteConnection, useAcceptConnection, useRejectConnection } from '../hooks/useConnections'
 import { useMyProfile, useProfileById } from '../hooks/useProfiles'
 import { colors } from '../styles/theme'
 
@@ -32,6 +33,7 @@ interface BottomSheetProps {
 
 export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) => {
   const { t } = useTranslation(['home', 'common'])
+  const queryClient = useQueryClient()
   const scrollViewRef = useRef<ScrollView>(null)
   const [sheetHeight] = useState(new Animated.Value(MIN_HEIGHT))
   const [isClosing, setIsClosing] = useState(false)
@@ -41,8 +43,18 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
   const { data: connectionStatus, refetch: refetchConnectionStatus } = useCheckConnection(
     profile.id
   )
+  const { mutate: deleteConnection, isPending: isDeleting } = useDeleteConnection()
+  const { mutate: acceptConnection, isPending: isAccepting } = useAcceptConnection()
+  const { mutate: rejectConnection, isPending: isRejecting } = useRejectConnection()
   const { data: myProfile } = useMyProfile()
   const { data: freshProfile } = useProfileById(profile.id)
+
+  // Check if I received the request (not sent by me)
+  const isReceivedRequest =
+    connectionStatus?.status === 'pending' &&
+    connectionStatus?.sender_id &&
+    myProfile?.id &&
+    connectionStatus.sender_id !== myProfile.id
 
   // Use fresh profile data if available, otherwise use initial NearbyProfile as fallback
   // Note: NearbyProfile has fewer fields, so some UI elements may not display until fresh data loads
@@ -84,15 +96,18 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
       }
 
       sendRequest(profile.id, {
-        onSuccess: () => {
+        onSuccess: async () => {
+          // Invalidate all queries to force refresh
+          await queryClient.invalidateQueries({ queryKey: ['connections'] })
+          await refetchConnectionStatus()
+
           Alert.alert(
             'Demande envoyée',
             `Demande de connexion envoyée à ${displayProfile.username} !`
           )
-          setTimeout(() => refetchConnectionStatus(), 300)
         },
-        onError: (error: any) => {
-          refetchConnectionStatus()
+        onError: async (error: any) => {
+          await refetchConnectionStatus()
           if (error?.message?.includes('Connection already exists')) {
             Alert.alert('Connexion existante', 'Une connexion existe déjà avec cet utilisateur.')
           } else {
@@ -103,6 +118,82 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
     } catch (error) {
       Alert.alert('Erreur', 'Une erreur est survenue')
     }
+  }
+
+  const handleRemoveFriend = () => {
+    if (!connectionStatus?.id) return
+
+    Alert.alert(
+      t('common:connection.removeFriendTitle'),
+      t('common:connection.removeFriendMessage', { username: displayProfile.username }),
+      [
+        { text: t('common:buttons.cancel'), style: 'cancel' },
+        {
+          text: t('common:connection.removeFriendButton'),
+          style: 'destructive',
+          onPress: () => {
+            deleteConnection(connectionStatus.id, {
+              onSuccess: async () => {
+                // Invalidate all queries to force refresh
+                await queryClient.invalidateQueries({ queryKey: ['connections'] })
+                await refetchConnectionStatus()
+
+                Alert.alert(
+                  t('common:connection.removedSuccess'),
+                  t('common:connection.removedMessage', { username: displayProfile.username })
+                )
+              },
+              onError: () => {
+                Alert.alert(t('common:errors.generic'), t('common:connection.removedError'))
+              }
+            })
+          }
+        }
+      ]
+    )
+  }
+
+  const handleAccept = () => {
+    if (!connectionStatus?.id) return
+
+    acceptConnection(connectionStatus.id, {
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: ['connections'] })
+        await refetchConnectionStatus()
+        Alert.alert('Demande acceptée', `Tu es maintenant ami avec ${displayProfile.username}`)
+      },
+      onError: () => {
+        Alert.alert('Erreur', 'Impossible d\'accepter la demande')
+      }
+    })
+  }
+
+  const handleReject = () => {
+    if (!connectionStatus?.id) return
+
+    Alert.alert(
+      'Refuser la demande',
+      `Es-tu sûr de vouloir refuser la demande de ${displayProfile.username} ?`,
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Refuser',
+          style: 'destructive',
+          onPress: () => {
+            rejectConnection(connectionStatus.id, {
+              onSuccess: async () => {
+                await queryClient.invalidateQueries({ queryKey: ['connections'] })
+                await refetchConnectionStatus()
+                Alert.alert('Demande refusée')
+              },
+              onError: () => {
+                Alert.alert('Erreur', 'Impossible de refuser la demande')
+              }
+            })
+          }
+        }
+      ]
+    )
   }
 
   const handleClose = () => {
@@ -225,40 +316,81 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
           )}
 
           {/* Actions pour interagir avec ce vanlifer */}
-          <TouchableOpacity
-            style={[
-              styles.connectButton,
-              connectionStatus?.status === 'pending' && styles.connectButtonPending,
-              connectionStatus?.status === 'accepted' && styles.connectButtonAccepted,
-            ]}
-            onPress={handleConnect}
-            disabled={
-              sendingRequest ||
-              connectionStatus?.status === 'accepted' ||
-              connectionStatus?.status === 'pending'
-            }
-          >
-            <Ionicons
-              name={
-                connectionStatus?.status === 'accepted'
-                  ? 'checkmark-circle'
-                  : connectionStatus?.status === 'pending'
-                    ? 'time'
-                    : 'person-add'
+          {isReceivedRequest ? (
+            // Show Accept/Reject buttons when I received the request
+            <View style={styles.receivedRequestContainer}>
+              <TouchableOpacity
+                style={styles.acceptButton}
+                onPress={handleAccept}
+                disabled={isAccepting}
+              >
+                <Ionicons name="checkmark-circle" size={20} color={colors.white} />
+                <Text style={styles.acceptText}>
+                  {isAccepting ? 'Acceptation...' : 'Accepter'}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.rejectButton}
+                onPress={handleReject}
+                disabled={isRejecting}
+              >
+                <Ionicons name="close-circle" size={20} color={colors.white} />
+                <Text style={styles.rejectText}>
+                  {isRejecting ? 'Refus...' : 'Refuser'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            // Show normal connection button
+            <TouchableOpacity
+              style={[
+                styles.connectButton,
+                connectionStatus?.status === 'pending' && styles.connectButtonPending,
+                connectionStatus?.status === 'accepted' && styles.connectButtonAccepted,
+              ]}
+              onPress={handleConnect}
+              disabled={
+                sendingRequest ||
+                connectionStatus?.status === 'accepted' ||
+                connectionStatus?.status === 'pending'
               }
-              size={20}
-              color={colors.white}
-            />
-            <Text style={styles.connectText}>
-              {connectionStatus?.status === 'accepted'
-                ? 'Est votre ami'
-                : connectionStatus?.status === 'pending'
-                  ? 'Demande envoyée'
-                  : sendingRequest
-                    ? 'Envoi en cours...'
-                    : 'Se connecter'}
-            </Text>
-          </TouchableOpacity>
+            >
+              <Ionicons
+                name={
+                  connectionStatus?.status === 'accepted'
+                    ? 'checkmark-circle'
+                    : connectionStatus?.status === 'pending'
+                      ? 'time'
+                      : 'person-add'
+                }
+                size={20}
+                color={colors.white}
+              />
+              <Text style={styles.connectText}>
+                {connectionStatus?.status === 'accepted'
+                  ? 'Est votre ami'
+                  : connectionStatus?.status === 'pending'
+                    ? 'Demande envoyée'
+                    : sendingRequest
+                      ? 'Envoi en cours...'
+                      : 'Se connecter'}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Remove friend button - only visible when already friends */}
+          {connectionStatus?.status === 'accepted' && (
+            <TouchableOpacity
+              style={styles.removeButton}
+              onPress={handleRemoveFriend}
+              disabled={isDeleting}
+            >
+              <Ionicons name="person-remove" size={20} color={colors.white} />
+              <Text style={styles.removeText}>
+                {isDeleting ? t('common:connection.removing') : t('common:connection.removeFriendTitle')}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
 
@@ -471,6 +603,55 @@ const styles = StyleSheet.create({
   },
   messageText: {
     color: colors.secondary.main,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  removeButton: {
+    backgroundColor: colors.secondary.main,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 12,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  removeText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  receivedRequestContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  acceptButton: {
+    flex: 1,
+    backgroundColor: colors.secondary.main,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  acceptText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  rejectButton: {
+    flex: 1,
+    backgroundColor: '#6B7280',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  rejectText: {
+    color: colors.white,
     fontSize: 16,
     fontWeight: '600',
   },

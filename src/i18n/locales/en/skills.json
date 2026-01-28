@@ -4,5 +4,10 @@
   "decoration": "Decor/Design",
   "construction": "Construction",
   "electricity": "Electricity",
-  "carpentry": "Carpentry"
+  "carpentry": "Carpentry",
+  "hiking": "Hiking",
+  "tech": "Tech/IT",
+  "cooking": "Cooking",
+  "languages": "Languages",
+  "photo": "Photography"
 }

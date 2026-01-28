@@ -1,0 +1,30 @@
+{
+  "title": "Find Friends",
+  "searchPlaceholder": "Search by name...",
+  "filters": {
+    "all": "All",
+    "activities": "Activities",
+    "help": "Help"
+  },
+  "requestSent": "Request sent",
+  "requestSentMessage": "Connection request sent to {{name}}!",
+  "connectionExists": "Connection exists",
+  "connectionExistsMessage": "A connection already exists with this user.",
+  "requestError": "Unable to send connection request",
+  "empty": {
+    "title": "No nomads found",
+    "tryDifferentSearch": "Try a different search",
+    "expandRadius": "Try expanding your search radius"
+  },
+  "card": {
+    "lookingFor": "Looking for:",
+    "addFriend": "Add Friend",
+    "friend": "Friend",
+    "pending": "Pending",
+    "received": "Request received"
+  },
+  "distance": {
+    "meters": "m",
+    "kilometers": "km"
+  }
+}

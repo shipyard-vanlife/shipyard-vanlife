@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   removeButton: {
-    backgroundColor: colors.text.tertiary,
+    backgroundColor: colors.secondary.main,
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
