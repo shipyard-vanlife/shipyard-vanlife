@@ -383,6 +383,7 @@ export const ProfileScreen: React.FC = () => {
           bio: profile.bio,
           skills: profile.skills,
           is_visible: profile.is_visible,
+          trips_visible: profile.trips_visible,
           verification_status: profile.verification_status,
         }}
       />
