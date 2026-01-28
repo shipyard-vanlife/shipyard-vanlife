@@ -23,6 +23,7 @@
     "visibilityWarningRequired": "You need to verify your identity to be visible on the map.",
     "tripsVisibilityLabel": "Visible trips",
     "tripsVisibilityDescription": "Other vanlifers can see your trips and stages",
+    "tripsVisibilityDisabledDescription": "Enable profile visibility first",
     "saveButton": "Save",
     "saving": "Saving...",
     "success": "Profile updated",
@@ -42,7 +43,6 @@
     "about": "About"
   },
   "actions": {
-    "viewTrip": "View trip",
     "sendMessage": "Send message",
     "addPhoto": "Add",
     "addVan": "Add my van",

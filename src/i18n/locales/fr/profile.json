@@ -23,6 +23,7 @@
     "visibilityWarningRequired": "Tu dois vérifier ton identité pour être visible sur la carte.",
     "tripsVisibilityLabel": "Parcours visibles",
     "tripsVisibilityDescription": "Les autres vanlifers peuvent voir tes parcours et étapes",
+    "tripsVisibilityDisabledDescription": "Active d'abord la visibilité de ton profil",
     "saveButton": "Enregistrer",
     "saving": "Enregistrement...",
     "success": "Profil mis à jour",
@@ -42,7 +43,6 @@
     "about": "À propos"
   },
   "actions": {
-    "viewTrip": "Voir le parcours",
     "sendMessage": "Envoyer un message",
     "addPhoto": "Ajouter",
     "addVan": "Ajouter mon van",
