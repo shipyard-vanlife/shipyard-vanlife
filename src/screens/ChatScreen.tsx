@@ -29,7 +29,7 @@ import { colors } from '../styles/theme'
 type ChatTab = 'friends' | 'requests'
 
 export const ChatScreen: React.FC = () => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'chat'])
   const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState<ChatTab>('friends')
   const [selectedFriend, setSelectedFriend] = useState<{
@@ -116,7 +116,7 @@ export const ChatScreen: React.FC = () => {
           <Text style={styles.friendName}>{item.friend_username}</Text>
           {item.status === 'pending' && (
             <View style={styles.pendingBadge}>
-              <Text style={styles.pendingText}>En cours</Text>
+              <Text style={styles.pendingText}>{t('chat:status.pending')}</Text>
             </View>
           )}
         </View>
@@ -126,7 +126,7 @@ export const ChatScreen: React.FC = () => {
           </Text>
         ) : (
           <Text style={styles.noMessage}>
-            {item.status === 'pending' ? 'Demande envoyée' : 'Aucun message'}
+            {item.status === 'pending' ? t('chat:status.requestSent') : t('chat:status.noMessage')}
           </Text>
         )}
       </TouchableOpacity>
@@ -203,8 +203,8 @@ export const ChatScreen: React.FC = () => {
         return (
           <View style={styles.centerContainer}>
             <Ionicons name="people-outline" size={64} color={colors.text.tertiary} />
-            <Text style={styles.emptyTitle}>Aucun ami</Text>
-            <Text style={styles.emptyText}>Envoie des demandes de connexion depuis la carte !</Text>
+            <Text style={styles.emptyTitle}>{t('chat:empty.friends.title')}</Text>
+            <Text style={styles.emptyText}>{t('chat:empty.friends.message')}</Text>
           </View>
         )
       }
@@ -230,8 +230,8 @@ export const ChatScreen: React.FC = () => {
         return (
           <View style={styles.centerContainer}>
             <Ionicons name="mail-outline" size={64} color={colors.text.tertiary} />
-            <Text style={styles.emptyTitle}>Aucune demande</Text>
-            <Text style={styles.emptyText}>Tu n'as pas de demandes de connexion en attente</Text>
+            <Text style={styles.emptyTitle}>{t('chat:empty.requests.title')}</Text>
+            <Text style={styles.emptyText}>{t('chat:empty.requests.message')}</Text>
           </View>
         )
       }
@@ -273,7 +273,7 @@ export const ChatScreen: React.FC = () => {
           onPress={() => setActiveTab('friends')}
         >
           <Text style={[styles.tabText, activeTab === 'friends' && styles.tabTextActive]}>
-            Amis
+            {t('chat:tabs.friends')}
             {friends && friends.length > 0 && (
               <Text style={styles.tabBadge}> ({friends.length})</Text>
             )}
@@ -284,7 +284,7 @@ export const ChatScreen: React.FC = () => {
           onPress={() => setActiveTab('requests')}
         >
           <Text style={[styles.tabText, activeTab === 'requests' && styles.tabTextActive]}>
-            Demandes
+            {t('chat:tabs.requests')}
             {requests && requests.length > 0 && (
               <Text style={styles.tabBadge}> ({requests.length})</Text>
             )}

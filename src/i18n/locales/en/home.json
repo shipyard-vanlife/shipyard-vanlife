@@ -7,5 +7,10 @@
   "map": {
     "loading": "Loading map...",
     "noLocation": "No location set. Declare your position to see the map."
+  },
+  "noLocation": {
+    "title": "No location set",
+    "message": "Enable your location to see other vanlifers on the map",
+    "enableButton": "Enable location"
   }
 }

@@ -1,11 +1,14 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import { colors } from '../styles/theme'
 
 export const SearchScreen: React.FC = () => {
+  const { t } = useTranslation('common')
+
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Search</Text>
+      <Text style={styles.text}>{t('search.title')}</Text>
     </View>
   )
 }

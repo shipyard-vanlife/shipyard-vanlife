@@ -1,0 +1,29 @@
+{
+  "tabs": {
+    "friends": "Amis",
+    "requests": "Demandes"
+  },
+  "status": {
+    "pending": "En cours",
+    "requestSent": "Demande envoyée",
+    "noMessage": "Aucun message"
+  },
+  "empty": {
+    "friends": {
+      "title": "Aucun ami",
+      "message": "Envoie des demandes de connexion depuis la carte !"
+    },
+    "requests": {
+      "title": "Aucune demande",
+      "message": "Tu n'as pas de demandes de connexion en attente"
+    },
+    "messages": {
+      "title": "Aucun message",
+      "subtitle": "Commence la conversation !"
+    }
+  },
+  "conversation": {
+    "loading": "Chargement...",
+    "inputPlaceholder": "Envoyer un message..."
+  }
+}
