@@ -1,16 +1,29 @@
-import React, { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useQueryClient } from '@tanstack/react-query'
+import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { BottomSheet } from '../components/BottomSheet'
 import { MapView } from '../components/MapView'
-import { useAllVisibleProfiles, useMyProfile, useUpdateLocation, profileKeys } from '../hooks/useProfiles'
+import { StageDetailModal } from '../components/map/StageDetailModal'
 import { useLocation } from '../hooks/useLocation'
-import { NearbyProfile } from '../types/location'
+import {
+  profileKeys,
+  useAllVisibleProfiles,
+  useMyProfile,
+  useUpdateLocation,
+} from '../hooks/useProfiles'
 import { colors } from '../styles/theme'
+import { NearbyProfile } from '../types/location'
+import { TripOverlayData, TripOverlayStage, tripToOverlayData } from '../types/map'
+import type { Trip } from '../types/trip'
 
-export const HomeScreen: React.FC = () => {
+interface HomeScreenProps {
+  tripToShow?: Trip | null
+  onClearTripToShow?: () => void
+}
+
+export const HomeScreen: React.FC<HomeScreenProps> = ({ tripToShow, onClearTripToShow }) => {
   const { t } = useTranslation('common')
   const queryClient = useQueryClient()
   const { data: profile, isLoading } = useMyProfile()
@@ -18,6 +31,27 @@ export const HomeScreen: React.FC = () => {
   const [selectedProfile, setSelectedProfile] = useState<NearbyProfile | null>(null)
   const { mutate: updateLocation } = useUpdateLocation()
   const { isLoading: locationLoading, requestLocation } = useLocation()
+
+  // Trip overlay state
+  const [tripOverlay, setTripOverlay] = useState<TripOverlayData | null>(null)
+  const [selectedStage, setSelectedStage] = useState<TripOverlayStage | null>(null)
+
+  // Handle trip to show from navigation
+  useEffect(() => {
+    if (tripToShow) {
+      setTripOverlay(tripToOverlayData(tripToShow))
+      onClearTripToShow?.()
+    }
+  }, [tripToShow, onClearTripToShow])
+
+  const handleCloseTripOverlay = () => {
+    setTripOverlay(null)
+    setSelectedStage(null)
+  }
+
+  const handleStagePress = (stage: TripOverlayStage) => {
+    setSelectedStage(stage)
+  }
 
   const handleProfileSelect = async (selectedProf: NearbyProfile) => {
     // Invalider le cache pour avoir les dernières données du profil
@@ -79,7 +113,7 @@ export const HomeScreen: React.FC = () => {
     <View style={styles.container}>
       {hasLocation ? (
         <>
-          {/* Carte interactive avec Leaflet */}
+          {/* Carte interactive */}
           <MapView
             latitude={profile.location!.latitude}
             longitude={profile.location!.longitude}
@@ -87,6 +121,9 @@ export const HomeScreen: React.FC = () => {
             myAvatarUrl={profile.avatar_url}
             otherProfiles={otherProfiles ?? []}
             onProfileSelect={handleProfileSelect}
+            tripOverlay={tripOverlay}
+            onTripOverlayClose={handleCloseTripOverlay}
+            onStagePress={handleStagePress}
           />
 
           {/* Card overlay avec info ville */}
@@ -99,6 +136,15 @@ export const HomeScreen: React.FC = () => {
           {/* BottomSheet : s'affiche seulement si un profil est sélectionné */}
           {selectedProfile && (
             <BottomSheet profile={selectedProfile} onClose={() => setSelectedProfile(null)} />
+          )}
+
+          {/* StageDetailModal : s'affiche quand un marker d'étape est cliqué */}
+          {selectedStage && tripOverlay && (
+            <StageDetailModal
+              stage={selectedStage}
+              tripName={tripOverlay.tripName}
+              onClose={() => setSelectedStage(null)}
+            />
           )}
         </>
       ) : (

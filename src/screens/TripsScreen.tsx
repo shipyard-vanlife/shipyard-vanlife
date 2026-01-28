@@ -16,7 +16,11 @@ import { useActiveTrip, useMyTrips } from '../hooks/useTrips'
 import { colors, fontSize, fontWeight, spacing } from '../styles/theme'
 import type { Trip } from '../types/trip'
 
-export const TripsScreen: React.FC = () => {
+interface TripsScreenProps {
+  onViewTripOnMap?: (trip: Trip) => void
+}
+
+export const TripsScreen: React.FC<TripsScreenProps> = ({ onViewTripOnMap }) => {
   const { t } = useTranslation('trips')
   const { data: trips, isLoading, refetch, isRefetching } = useMyTrips()
   const { data: activeTrip } = useActiveTrip()
@@ -46,6 +50,17 @@ export const TripsScreen: React.FC = () => {
     setDetailModalVisible(false)
     setSelectedTripId(null)
   }, [])
+
+  const handleViewTripOnMap = useCallback(
+    (trip: Trip) => {
+      // Close the modal first
+      setDetailModalVisible(false)
+      setSelectedTripId(null)
+      // Then navigate to map with the trip
+      onViewTripOnMap?.(trip)
+    },
+    [onViewTripOnMap]
+  )
 
   const handleCreateClose = useCallback(() => {
     setCreateModalVisible(false)
@@ -128,6 +143,7 @@ export const TripsScreen: React.FC = () => {
         visible={detailModalVisible}
         tripId={selectedTripId}
         onClose={handleDetailClose}
+        onViewOnMap={handleViewTripOnMap}
       />
     </SafeAreaView>
   )
