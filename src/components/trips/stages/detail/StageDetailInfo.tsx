@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import { colors, fontSize, fontWeight, spacing, borderRadius } from '../../../../styles/theme'
-import { calculateDistance } from '../../../../utils/distance'
+import { calculateDistance, getDistanceParams } from '../../../../utils/distance'
 import { calculateDuration } from '../../../../utils/duration'
 import type { TripStage } from '../../../../types/trip'
 
@@ -36,7 +36,7 @@ export function StageDetailInfo({ stage, previousStage }: StageDetailInfoProps) 
       <View style={styles.statsRow}>
         <View style={styles.statItem}>
           <Ionicons name="navigate-outline" size={20} color={colors.secondary.main} />
-          <Text style={styles.statValue}>{t('stageDetail.distance', { km: distance })}</Text>
+          <Text style={styles.statValue}>{t('stageDetail.distance', getDistanceParams(distance))}</Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.statItem}>
