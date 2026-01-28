@@ -1,23 +1,34 @@
 import React, { useState } from 'react'
 import { StyleSheet, View } from 'react-native'
-import { HomeScreen } from '../screens/HomeScreen'
-import { TripsScreen } from '../screens/TripsScreen'
 import { ChatScreen } from '../screens/ChatScreen'
-import { SearchScreen } from '../screens/SearchScreen'
+import { HomeScreen } from '../screens/HomeScreen'
 import { ProfileScreen } from '../screens/ProfileScreen'
+import { SearchScreen } from '../screens/SearchScreen'
+import { TripsScreen } from '../screens/TripsScreen'
+import type { Trip } from '../types/trip'
 import { BottomTabNavigator } from './BottomTabNavigator'
 
 type TabName = 'trips' | 'home' | 'chat' | 'search' | 'profile'
 
 export const MainNavigator: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabName>('home')
+  const [tripToShow, setTripToShow] = useState<Trip | null>(null)
+
+  const handleViewTripOnMap = (trip: Trip) => {
+    setTripToShow(trip)
+    setActiveTab('home')
+  }
+
+  const handleClearTripToShow = () => {
+    setTripToShow(null)
+  }
 
   const renderScreen = () => {
     switch (activeTab) {
       case 'trips':
-        return <TripsScreen />
+        return <TripsScreen onViewTripOnMap={handleViewTripOnMap} />
       case 'home':
-        return <HomeScreen />
+        return <HomeScreen tripToShow={tripToShow} onClearTripToShow={handleClearTripToShow} />
       case 'chat':
         return <ChatScreen />
       case 'search':
@@ -25,7 +36,7 @@ export const MainNavigator: React.FC = () => {
       case 'profile':
         return <ProfileScreen />
       default:
-        return <HomeScreen />
+        return <HomeScreen tripToShow={tripToShow} onClearTripToShow={handleClearTripToShow} />
     }
   }
 

@@ -68,7 +68,7 @@
     "title": "Stage {{number}}",
     "arrivalDate": "Arrival date",
     "fromPrevious": "From previous stage",
-    "distance": "{{km}} km",
+    "distance": "{{value}} {{unit}}",
     "duration": "{{days}}d {{hours}}h",
     "durationHoursOnly": "{{hours}}h",
     "note": "Personal note",
@@ -88,5 +88,18 @@
     "maxReached": "Maximum 4 photos",
     "deletePhoto": "Delete this photo?",
     "confirmDeletePhoto": "Delete this photo?"
+  },
+  "map": {
+    "viewOnMap": "View on map",
+    "overlay": {
+      "stages_one": "{{count}} stage",
+      "stages_other": "{{count}} stages"
+    },
+    "stageDetail": {
+      "title": "Stage {{number}}",
+      "arrivedAt": "Arrived on",
+      "note": "Note",
+      "noNote": "No note"
+    }
   }
 }

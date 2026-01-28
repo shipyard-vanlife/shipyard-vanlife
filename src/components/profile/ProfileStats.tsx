@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import { colors, spacing, fontSize, fontWeight, borderRadius, shadows } from '../../styles/theme'
+import { convertDistance, getDistanceUnit } from '../../utils/distance'
 
 interface ProfileStatsProps {
   daysOnRoad: number
@@ -48,8 +49,8 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({
       <View style={styles.row}>
         <View style={[styles.card, styles.cardLeft]}>
           <Text style={styles.value}>
-            {formatNumber(distanceKm)}
-            <Text style={styles.unit}> km</Text>
+            {formatNumber(Math.round(convertDistance(distanceKm)))}
+            <Text style={styles.unit}> {getDistanceUnit()}</Text>
           </Text>
           <Text style={styles.label}>{t('stats.distance')}</Text>
         </View>

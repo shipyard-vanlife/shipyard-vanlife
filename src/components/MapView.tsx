@@ -1,9 +1,12 @@
-import React, { useRef } from 'react'
-import { StyleSheet, Text, View, Image } from 'react-native'
+import React, { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import RNMapView, { Marker, Circle, PROVIDER_GOOGLE } from 'react-native-maps'
-import { NearbyProfile } from '../types/location'
+import { Image, StyleSheet, Text, View } from 'react-native'
+import RNMapView, { Circle, Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps'
 import { colors } from '../styles/theme'
+import { NearbyProfile } from '../types/location'
+import { TripOverlayData, TripOverlayStage } from '../types/map'
+import { TripMapOverlay } from './map/TripMapOverlay'
+import { TripStageMarker } from './map/TripStageMarker'
 
 interface MapViewProps {
   latitude: number | null
@@ -12,6 +15,10 @@ interface MapViewProps {
   myAvatarUrl: string | null
   otherProfiles: NearbyProfile[] // BLURRED coordinates via zone_center
   onProfileSelect: (profile: NearbyProfile) => void
+  // Trip overlay props
+  tripOverlay?: TripOverlayData | null
+  onTripOverlayClose?: () => void
+  onStagePress?: (stage: TripOverlayStage) => void
 }
 
 export const MapView: React.FC<MapViewProps> = ({
@@ -20,9 +27,42 @@ export const MapView: React.FC<MapViewProps> = ({
   myAvatarUrl,
   otherProfiles,
   onProfileSelect,
+  tripOverlay,
+  onTripOverlayClose,
+  onStagePress,
 }) => {
   const { t } = useTranslation('home')
   const mapRef = useRef<RNMapView>(null)
+
+  // Zoom to fit trip stages when tripOverlay is set
+  useEffect(() => {
+    if (tripOverlay && mapRef.current && tripOverlay.stages.length > 0) {
+      const coordinates = tripOverlay.stages.map(s => ({
+        latitude: s.latitude,
+        longitude: s.longitude,
+      }))
+      mapRef.current.fitToCoordinates(coordinates, {
+        edgePadding: { top: 150, right: 50, bottom: 100, left: 50 },
+        animated: true,
+      })
+    }
+  }, [tripOverlay])
+
+  // Animate to a specific stage and open its detail
+  const handleStageSelect = (stage: TripOverlayStage) => {
+    // Animate map to the selected stage
+    mapRef.current?.animateToRegion(
+      {
+        latitude: stage.latitude,
+        longitude: stage.longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      },
+      300
+    )
+    // Then call the original callback to open the modal
+    onStagePress?.(stage)
+  }
 
   if (latitude === null || longitude === null) {
     return (
@@ -63,47 +103,89 @@ export const MapView: React.FC<MapViewProps> = ({
         showsCompass={false}
         toolbarEnabled={false}
       >
-        {/* Cercle autour de ma position */}
-        <Circle
-          center={{ latitude, longitude }}
-          radius={3000}
-          fillColor={`${colors.secondary.main}26`}
-          strokeColor={colors.secondary.main}
-          strokeWidth={0}
-        />
+        {/* Cercle autour de ma position (masqué quand un trip est affiché) */}
+        {!tripOverlay && (
+          <Circle
+            center={{ latitude, longitude }}
+            radius={3000}
+            fillColor={`${colors.secondary.main}26`}
+            strokeColor={colors.secondary.main}
+            strokeWidth={0}
+          />
+        )}
 
-        {/* Mon marqueur */}
-        <Marker
-          coordinate={{ latitude, longitude }}
-          anchor={{ x: 0.5, y: 0.5 }}
-        >
-          <View style={styles.myMarker}>
-            {myAvatarUrl ? (
-              <Image source={{ uri: myAvatarUrl }} style={styles.markerImage} resizeMode="cover" />
-            ) : (
-              <View style={styles.markerDot} />
-            )}
-          </View>
-        </Marker>
-
-        {/* Marqueurs des autres profils */}
-        {profilesData.map(profile => (
-          <Marker
-            key={profile.id}
-            coordinate={{ latitude: profile.lat, longitude: profile.lng }}
-            anchor={{ x: 0.5, y: 0.5 }}
-            onPress={() => onProfileSelect(profile.profile)}
-          >
-            <View style={styles.otherMarker}>
-              {profile.avatarUrl ? (
-                <Image source={{ uri: profile.avatarUrl }} style={styles.otherMarkerImage} resizeMode="cover" />
+        {/* Mon marqueur (masqué quand un trip est affiché) */}
+        {!tripOverlay && (
+          <Marker coordinate={{ latitude, longitude }} anchor={{ x: 0.5, y: 0.5 }}>
+            <View style={styles.myMarker}>
+              {myAvatarUrl ? (
+                <Image source={{ uri: myAvatarUrl }} style={styles.markerImage} resizeMode="cover" />
               ) : (
-                <View style={styles.otherMarkerDot} />
+                <View style={styles.markerDot} />
               )}
             </View>
           </Marker>
+        )}
+
+        {/* Marqueurs des autres profils (masqués quand un trip est affiché) */}
+        {!tripOverlay &&
+          profilesData.map(profile => (
+            <Marker
+              key={profile.id}
+              coordinate={{ latitude: profile.lat, longitude: profile.lng }}
+              anchor={{ x: 0.5, y: 0.5 }}
+              onPress={() => onProfileSelect(profile.profile)}
+            >
+              <View style={styles.otherMarker}>
+                {profile.avatarUrl ? (
+                  <Image
+                    source={{ uri: profile.avatarUrl }}
+                    style={styles.otherMarkerImage}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={styles.otherMarkerDot} />
+                )}
+              </View>
+            </Marker>
+          ))}
+
+        {/* Trip Polyline - ligne connectant les étapes */}
+        {tripOverlay && tripOverlay.stages.length > 1 && (
+          <Polyline
+            coordinates={tripOverlay.stages.map(s => ({
+              latitude: s.latitude,
+              longitude: s.longitude,
+            }))}
+            strokeColor={colors.secondary.main}
+            strokeWidth={3}
+          />
+        )}
+
+        {/* Trip Stage Markers - marqueurs numérotés pour chaque étape */}
+        {tripOverlay?.stages.map((stage, index) => (
+          <TripStageMarker
+            key={stage.id}
+            coordinate={{ latitude: stage.latitude, longitude: stage.longitude }}
+            stageNumber={stage.stageOrder}
+            isFirst={index === 0}
+            isLast={index === tripOverlay.stages.length - 1}
+            onPress={() => onStagePress?.(stage)}
+          />
         ))}
       </RNMapView>
+
+      {/* Trip Map Overlay - card info flottante avec liste déroulante */}
+      {tripOverlay && (
+        <TripMapOverlay
+          tripName={tripOverlay.tripName}
+          stagesCount={tripOverlay.stagesCount}
+          totalDistanceKm={tripOverlay.totalDistanceKm}
+          stages={tripOverlay.stages}
+          onStageSelect={handleStageSelect}
+          onClose={onTripOverlayClose}
+        />
+      )}
     </View>
   )
 }

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import { colors, fontSize, fontWeight, spacing } from '../../styles/theme'
+import { formatDistance } from '../../utils/distance'
 
 interface TripStatsProps {
   daysCount: number
@@ -12,12 +13,6 @@ interface TripStatsProps {
 
 export function TripStats({ daysCount, stagesCount, distanceKm }: TripStatsProps) {
   const { t } = useTranslation('trips')
-
-  // Format distance (show as integer if >= 10, otherwise show 1 decimal)
-  const formatDistance = (km: number) => {
-    if (km >= 10) return Math.round(km).toString()
-    return km.toFixed(1)
-  }
 
   return (
     <View style={styles.container}>
@@ -35,7 +30,7 @@ export function TripStats({ daysCount, stagesCount, distanceKm }: TripStatsProps
           <View style={styles.separator} />
           <View style={styles.stat}>
             <Ionicons name="speedometer-outline" size={16} color={colors.text.tertiary} />
-            <Text style={styles.value}>{formatDistance(distanceKm)} km</Text>
+            <Text style={styles.value}>{formatDistance(distanceKm, true)}</Text>
           </View>
         </>
       ) : null}
