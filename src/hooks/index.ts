@@ -7,6 +7,14 @@ export {
 } from './useImagePicker'
 export { useLocation } from './useLocation'
 export {
+  moderationKeys,
+  useBlockedUsers,
+  useBlockUser,
+  useIsUserBlocked,
+  useReportUser,
+  useUnblockUser,
+} from './useModeration'
+export {
   profileKeys,
   useAllVisibleProfiles,
   useCreateProfile,
