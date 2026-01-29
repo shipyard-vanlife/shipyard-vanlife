@@ -6,6 +6,7 @@ import RNMapView, { Circle, Marker, Polyline, PROVIDER_GOOGLE } from 'react-nati
 import { colors } from '../styles/theme'
 import { NearbyProfile } from '../types/location'
 import { TripOverlayData, TripOverlayStage } from '../types/map'
+import { Activity, ACTIVITY_TYPE_COLORS } from '../types/activity'
 import { TripMapOverlay } from './map/TripMapOverlay'
 import { TripStageMarker } from './map/TripStageMarker'
 
@@ -17,6 +18,9 @@ interface MapViewProps {
   isProfileVisible?: boolean // Whether the user's profile is visible to others
   otherProfiles: NearbyProfile[] // BLURRED coordinates via zone_center
   onProfileSelect: (profile: NearbyProfile) => void
+  // Activities props
+  nearbyActivities?: Activity[]
+  onActivitySelect?: (activity: Activity) => void
   // Trip overlay props
   tripOverlay?: TripOverlayData | null
   onTripOverlayClose?: () => void
@@ -30,6 +34,8 @@ export const MapView: React.FC<MapViewProps> = ({
   isProfileVisible = true,
   otherProfiles,
   onProfileSelect,
+  nearbyActivities = [],
+  onActivitySelect,
   tripOverlay,
   onTripOverlayClose,
   onStagePress,
@@ -163,6 +169,29 @@ export const MapView: React.FC<MapViewProps> = ({
                 ) : (
                   <View style={styles.otherMarkerDot} />
                 )}
+              </View>
+            </Marker>
+          ))}
+
+        {/* Marqueurs des activités (masqués quand un trip est affiché) */}
+        {!tripOverlay &&
+          nearbyActivities.map(activity => (
+            <Marker
+              key={activity.id}
+              coordinate={{
+                latitude: activity.location.latitude,
+                longitude: activity.location.longitude,
+              }}
+              anchor={{ x: 0.5, y: 0.5 }}
+              onPress={() => onActivitySelect?.(activity)}
+            >
+              <View
+                style={[
+                  styles.activityMarker,
+                  { backgroundColor: ACTIVITY_TYPE_COLORS[activity.activity_type] },
+                ]}
+              >
+                <Ionicons name="calendar" size={16} color={colors.white} />
               </View>
             </Marker>
           ))}
@@ -306,5 +335,19 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     backgroundColor: '#fff',
+  },
+  activityMarker: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
 })

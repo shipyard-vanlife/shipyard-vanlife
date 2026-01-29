@@ -17,6 +17,7 @@
     "@react-native-community/datetimepicker": "github:react-native-community/datetimepicker",
     "@supabase/supabase-js": "^2.90.1",
     "@tanstack/react-query": "^5.90.18",
+    "date-fns": "^4.1.0",
     "expo": "~54.0.31",
     "expo-clipboard": "~8.0.8",
     "expo-image-manipulator": "~14.0.3",
