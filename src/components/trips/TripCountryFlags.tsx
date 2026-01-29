@@ -1,11 +1,11 @@
 import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { spacing } from '../../styles/theme'
-import type { TripStage } from '../../types/trip'
+import type { TripStage, PublicTripStage } from '../../types/trip'
 import { getUniqueCountryFlags } from '../../utils/countryFlags'
 
 interface TripCountryFlagsProps {
-  stages: TripStage[]
+  stages: TripStage[] | PublicTripStage[]
 }
 
 export const TripCountryFlags: React.FC<TripCountryFlagsProps> = ({ stages }) => {
