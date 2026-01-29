@@ -1,0 +1,19 @@
+{
+  "requestAccepted": "Request accepted!",
+  "requestAcceptedByMe": "You accepted to help {{name}}",
+  "requestDeclined": "Request declined",
+  "requestDeclinedByMe": "You declined to help {{name}}",
+  "requestedHelp": "You requested help",
+  "needsHelp": "{{name}} needs help",
+  "cancel": "Cancel",
+  "accept": "Accept",
+  "decline": "Decline",
+  "requestTitle": "Request help",
+  "questionText": "What skill do you need help with?",
+  "noSkills": "{{name}} hasn't added any skills yet",
+  "sendButton": "Send request",
+  "selectSkillError": "Select a skill",
+  "requestSentTitle": "Request sent",
+  "requestSentMessage": "{{name}} has been notified",
+  "sendError": "Unable to send request"
+}

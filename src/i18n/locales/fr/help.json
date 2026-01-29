@@ -1,0 +1,19 @@
+{
+  "requestAccepted": "Demande acceptée !",
+  "requestAcceptedByMe": "Tu as accepté d'aider {{name}}",
+  "requestDeclined": "Demande refusée",
+  "requestDeclinedByMe": "Tu as refusé d'aider {{name}}",
+  "requestedHelp": "Tu as demandé de l'aide",
+  "needsHelp": "{{name}} a besoin d'aide",
+  "cancel": "Annuler",
+  "accept": "Accepter",
+  "decline": "Refuser",
+  "requestTitle": "Demander de l'aide",
+  "questionText": "Pour quelle compétence as-tu besoin d'aide ?",
+  "noSkills": "{{name}} n'a pas encore ajouté de compétences",
+  "sendButton": "Envoyer la demande",
+  "selectSkillError": "Sélectionne une compétence",
+  "requestSentTitle": "Demande envoyée",
+  "requestSentMessage": "{{name}} a été notifié",
+  "sendError": "Impossible d'envoyer la demande"
+}
