@@ -17,6 +17,8 @@
     "bioCharCount": "{{count}}/500",
     "mainSpecialtyLabel": "Your main specialty",
     "mainSpecialtyHint": "Select your main skill",
+    "skillsLabel": "Your skills",
+    "skillsHint": "Select all your skills",
     "visibilityLabel": "Visible profile",
     "visibilityDescription": "Other vanlifers can see you on the map",
     "visibilityWarningPending": "Your verification is pending. You'll be visible once approved.",
