@@ -7,7 +7,7 @@ import { convertDistance, getDistanceUnit } from '../../utils/distance'
 
 interface ProfileStatsProps {
   daysOnRoad: number
-  distanceKm: number
+  distanceKm?: number // Optional - not available for visitor profiles
   connectionsCount: number
   city: string | null
 }
@@ -49,8 +49,14 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({
       <View style={styles.row}>
         <View style={[styles.card, styles.cardLeft]}>
           <Text style={styles.value}>
-            {formatNumber(Math.round(convertDistance(distanceKm)))}
-            <Text style={styles.unit}> {getDistanceUnit()}</Text>
+            {distanceKm !== undefined ? (
+              <>
+                {formatNumber(Math.round(convertDistance(distanceKm)))}
+                <Text style={styles.unit}> {getDistanceUnit()}</Text>
+              </>
+            ) : (
+              '—'
+            )}
           </Text>
           <Text style={styles.label}>{t('stats.distance')}</Text>
         </View>

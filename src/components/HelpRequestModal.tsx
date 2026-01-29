@@ -10,6 +10,7 @@ import {
   Alert,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
+import { useTranslation } from 'react-i18next'
 import { colors, spacing, fontSize, fontWeight, borderRadius } from '../styles/theme'
 import { useCreateHelpRequest } from '../hooks/useHelpRequests'
 import { SkillType } from '../types/user'
@@ -29,12 +30,13 @@ export const HelpRequestModal: React.FC<HelpRequestModalProps> = ({
   friendName,
   friendSkills,
 }) => {
+  const { t } = useTranslation(['help', 'common'])
   const { mutate: createRequest, isPending } = useCreateHelpRequest()
   const [selectedSkill, setSelectedSkill] = useState<SkillType | null>(null)
 
   const handleSend = () => {
     if (!selectedSkill) {
-      Alert.alert('Erreur', 'Sélectionne une compétence')
+      Alert.alert(t('common:errors.error'), t('help:selectSkillError'))
       return
     }
 
@@ -42,12 +44,12 @@ export const HelpRequestModal: React.FC<HelpRequestModalProps> = ({
       { connectionId, skill: selectedSkill },
       {
         onSuccess: () => {
-          Alert.alert('Demande envoyée', `${friendName} a été notifié`)
+          Alert.alert(t('help:requestSentTitle'), t('help:requestSentMessage', { name: friendName }))
           onClose()
           setSelectedSkill(null)
         },
         onError: () => {
-          Alert.alert('Erreur', "Impossible d'envoyer la demande")
+          Alert.alert(t('common:errors.error'), t('help:sendError'))
         },
       }
     )
@@ -58,14 +60,14 @@ export const HelpRequestModal: React.FC<HelpRequestModalProps> = ({
       <View style={styles.overlay}>
         <View style={styles.modal}>
           <View style={styles.header}>
-            <Text style={styles.title}>Demander de l'aide</Text>
+            <Text style={styles.title}>{t('help:requestTitle')}</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <Ionicons name="close" size={24} color={colors.text.primary} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.questionContainer}>
-            <Text style={styles.questionText}>Pour quelle compétence as-tu besoin d'aide ?</Text>
+            <Text style={styles.questionText}>{t('help:questionText')}</Text>
           </View>
 
           <View style={styles.divider} />
@@ -94,7 +96,7 @@ export const HelpRequestModal: React.FC<HelpRequestModalProps> = ({
             )}
             ListEmptyComponent={
               <Text style={styles.emptyText}>
-                {friendName} n'a pas encore ajouté de compétences
+                {t('help:noSkills', { name: friendName })}
               </Text>
             }
           />
@@ -107,7 +109,7 @@ export const HelpRequestModal: React.FC<HelpRequestModalProps> = ({
             {isPending ? (
               <ActivityIndicator size="small" color={colors.white} />
             ) : (
-              <Text style={styles.sendButtonText}>Envoyer la demande</Text>
+              <Text style={styles.sendButtonText}>{t('help:sendButton')}</Text>
             )}
           </TouchableOpacity>
         </View>

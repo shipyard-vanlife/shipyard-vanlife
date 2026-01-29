@@ -101,5 +101,14 @@
       "note": "Note",
       "noNote": "Aucune note"
     }
+  },
+  "visitor": {
+    "tripsTitle": "Ses voyages",
+    "ongoing": "En cours",
+    "viewAllOnMap": "Voir tout sur la carte",
+    "startDate": "Début",
+    "endDate": "Fin",
+    "gpsPosition": "Position GPS",
+    "viewOnMap": "Voir sur la carte"
   }
 }

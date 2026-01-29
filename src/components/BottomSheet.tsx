@@ -1,3 +1,5 @@
+import { Ionicons } from '@expo/vector-icons'
+import { useQueryClient } from '@tanstack/react-query'
 import React, { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -13,14 +15,18 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
-import { useQueryClient } from '@tanstack/react-query'
+import {
+  useAcceptConnection,
+  useCheckConnection,
+  useDeleteConnection,
+  useRejectConnection,
+  useSendConnectionRequest,
+} from '../hooks/useConnections'
+import { useMyProfile, useProfileById } from '../hooks/useProfiles'
+import { colors } from '../styles/theme'
 import { NearbyProfile } from '../types/location'
 import { SkillBadge } from './SkillBadge'
 import { ProfilePhotoGrid } from './profile/ProfilePhotoGrid'
-import { useSendConnectionRequest, useCheckConnection, useDeleteConnection, useAcceptConnection, useRejectConnection } from '../hooks/useConnections'
-import { useMyProfile, useProfileById } from '../hooks/useProfiles'
-import { colors } from '../styles/theme'
 
 const SCREEN_HEIGHT = Dimensions.get('window').height
 const MIN_HEIGHT = 120
@@ -48,6 +54,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
   const { mutate: rejectConnection, isPending: isRejecting } = useRejectConnection()
   const { data: myProfile } = useMyProfile()
   const { data: freshProfile } = useProfileById(profile.id)
+
+  //TODO: make custom hooks for API calls and handlers
 
   // Check if I received the request (not sent by me)
   const isReceivedRequest =
@@ -86,11 +94,20 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
         const status = Array.isArray(freshStatus) ? freshStatus[0]?.status : freshStatus.status
 
         if (status === 'pending') {
-          Alert.alert('Demande en attente', 'Une demande de connexion est déjà en attente')
+          Alert.alert(
+            t('common:connection.pendingAlertTitle'),
+            t('common:connection.pendingAlertMessage')
+          )
         } else if (status === 'accepted') {
-          Alert.alert('Déjà connecté', `Tu es déjà connecté avec ${profile.username}`)
+          Alert.alert(
+            t('common:connection.alreadyConnectedTitle'),
+            t('common:connection.alreadyConnectedMessage', { username: profile.username })
+          )
         } else if (status === 'rejected') {
-          Alert.alert('Demande refusée', 'Cette personne a refusé ta demande de connexion')
+          Alert.alert(
+            t('common:connection.rejectedAlertTitle'),
+            t('common:connection.rejectedAlertMessage')
+          )
         }
         return
       }
@@ -102,21 +119,24 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
           await refetchConnectionStatus()
 
           Alert.alert(
-            'Demande envoyée',
-            `Demande de connexion envoyée à ${displayProfile.username} !`
+            t('common:connection.requestSentTitle'),
+            t('common:connection.requestSentMessage', { username: displayProfile.username })
           )
         },
         onError: async (error: any) => {
           await refetchConnectionStatus()
           if (error?.message?.includes('Connection already exists')) {
-            Alert.alert('Connexion existante', 'Une connexion existe déjà avec cet utilisateur.')
+            Alert.alert(
+              t('common:connection.existingConnectionTitle'),
+              t('common:connection.existingConnectionMessage')
+            )
           } else {
-            Alert.alert('Erreur', "Impossible d'envoyer la demande de connexion")
+            Alert.alert(t('common:errors.error'), t('common:connection.sendError'))
           }
         },
       })
     } catch (error) {
-      Alert.alert('Erreur', 'Une erreur est survenue')
+      Alert.alert(t('common:errors.error'), t('common:connection.unknownError'))
     }
   }
 
@@ -145,10 +165,10 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
               },
               onError: () => {
                 Alert.alert(t('common:errors.generic'), t('common:connection.removedError'))
-              }
+              },
             })
-          }
-        }
+          },
+        },
       ]
     )
   }
@@ -160,11 +180,14 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
       onSuccess: async () => {
         await queryClient.invalidateQueries({ queryKey: ['connections'] })
         await refetchConnectionStatus()
-        Alert.alert('Demande acceptée', `Tu es maintenant ami avec ${displayProfile.username}`)
+        Alert.alert(
+          t('common:connection.acceptedTitle'),
+          t('common:connection.acceptedMessage', { username: displayProfile.username })
+        )
       },
       onError: () => {
-        Alert.alert('Erreur', 'Impossible d\'accepter la demande')
-      }
+        Alert.alert(t('common:errors.error'), t('common:connection.acceptError'))
+      },
     })
   }
 
@@ -172,26 +195,26 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
     if (!connectionStatus?.id) return
 
     Alert.alert(
-      'Refuser la demande',
-      `Es-tu sûr de vouloir refuser la demande de ${displayProfile.username} ?`,
+      t('common:connection.rejectTitle'),
+      t('common:connection.rejectMessage', { username: displayProfile.username }),
       [
-        { text: 'Annuler', style: 'cancel' },
+        { text: t('common:buttons.cancel'), style: 'cancel' },
         {
-          text: 'Refuser',
+          text: t('common:connection.reject'),
           style: 'destructive',
           onPress: () => {
             rejectConnection(connectionStatus.id, {
               onSuccess: async () => {
                 await queryClient.invalidateQueries({ queryKey: ['connections'] })
                 await refetchConnectionStatus()
-                Alert.alert('Demande refusée')
+                Alert.alert(t('common:connection.rejectConfirmed'))
               },
               onError: () => {
-                Alert.alert('Erreur', 'Impossible de refuser la demande')
-              }
+                Alert.alert(t('common:errors.error'), t('common:connection.rejectError'))
+              },
             })
-          }
-        }
+          },
+        },
       ]
     )
   }
@@ -326,7 +349,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
               >
                 <Ionicons name="checkmark-circle" size={20} color={colors.white} />
                 <Text style={styles.acceptText}>
-                  {isAccepting ? 'Acceptation...' : 'Accepter'}
+                  {isAccepting ? t('common:connection.accepting') : t('common:connection.accept')}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -336,7 +359,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
               >
                 <Ionicons name="close-circle" size={20} color={colors.white} />
                 <Text style={styles.rejectText}>
-                  {isRejecting ? 'Refus...' : 'Refuser'}
+                  {isRejecting ? t('common:connection.rejecting') : t('common:connection.reject')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -368,12 +391,12 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
               />
               <Text style={styles.connectText}>
                 {connectionStatus?.status === 'accepted'
-                  ? 'Est votre ami'
+                  ? t('common:connection.friend')
                   : connectionStatus?.status === 'pending'
-                    ? 'Demande envoyée'
+                    ? t('common:connection.pendingSent')
                     : sendingRequest
-                      ? 'Envoi en cours...'
-                      : 'Se connecter'}
+                      ? t('common:connection.sending')
+                      : t('common:connection.connect')}
               </Text>
             </TouchableOpacity>
           )}
@@ -387,7 +410,9 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
             >
               <Ionicons name="person-remove" size={20} color={colors.white} />
               <Text style={styles.removeText}>
-                {isDeleting ? t('common:connection.removing') : t('common:connection.removeFriendTitle')}
+                {isDeleting
+                  ? t('common:connection.removing')
+                  : t('common:connection.removeFriendTitle')}
               </Text>
             </TouchableOpacity>
           )}

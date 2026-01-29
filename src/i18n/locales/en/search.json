@@ -26,5 +26,16 @@
   "distance": {
     "meters": "m",
     "kilometers": "km"
+  },
+  "skillModal": {
+    "title": "Select a skill"
+  },
+  "card": {
+    "lookingFor": "Looking for:",
+    "addFriend": "Add Friend",
+    "friend": "Friend",
+    "pending": "Pending",
+    "received": "Request received",
+    "defaultBio": "Vanlife enthusiast"
   }
 }

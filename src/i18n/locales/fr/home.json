@@ -13,5 +13,8 @@
     "title": "Aucune localisation définie",
     "message": "Active ta localisation pour voir les autres vanlifers sur la carte",
     "enableButton": "Activer la localisation"
+  },
+  "errors": {
+    "profileNotFound": "Profil introuvable"
   }
 }

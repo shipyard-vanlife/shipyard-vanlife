@@ -13,5 +13,8 @@
     "title": "No location set",
     "message": "Enable your location to see other vanlifers on the map",
     "enableButton": "Enable location"
+  },
+  "errors": {
+    "profileNotFound": "Profile not found"
   }
 }

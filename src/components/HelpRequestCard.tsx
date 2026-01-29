@@ -1,6 +1,7 @@
 import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
+import { useTranslation } from 'react-i18next'
 import { colors, spacing, fontSize, fontWeight, borderRadius } from '../styles/theme'
 import { HelpRequest } from '../types/chat'
 
@@ -23,6 +24,8 @@ export const HelpRequestCard: React.FC<HelpRequestCardProps> = ({
   onCancel,
   isResponding = false,
 }) => {
+  const { t } = useTranslation('help')
+
   if (request.status === 'accepted') {
     return (
       <View style={[styles.card, styles.cardAccepted]}>
@@ -31,7 +34,7 @@ export const HelpRequestCard: React.FC<HelpRequestCardProps> = ({
         </View>
         <View style={styles.content}>
           <Text style={styles.title}>
-            {isMyRequest ? 'Demande acceptée !' : `Tu as accepté d'aider ${requesterName}`}
+            {isMyRequest ? t('requestAccepted') : t('requestAcceptedByMe', { name: requesterName })}
           </Text>
           <Text style={styles.skill}>{request.skill_requested}</Text>
         </View>
@@ -47,7 +50,7 @@ export const HelpRequestCard: React.FC<HelpRequestCardProps> = ({
         </View>
         <View style={styles.content}>
           <Text style={styles.title}>
-            {isMyRequest ? 'Demande refusée' : `Tu as refusé d'aider ${requesterName}`}
+            {isMyRequest ? t('requestDeclined') : t('requestDeclinedByMe', { name: requesterName })}
           </Text>
           <Text style={styles.skill}>{request.skill_requested}</Text>
         </View>
@@ -62,7 +65,7 @@ export const HelpRequestCard: React.FC<HelpRequestCardProps> = ({
       </View>
       <View style={styles.content}>
         <Text style={styles.title}>
-          {isMyRequest ? `Tu as demandé de l'aide` : `${requesterName} a besoin d'aide`}
+          {isMyRequest ? t('requestedHelp') : t('needsHelp', { name: requesterName })}
         </Text>
         <Text style={styles.skill}>{request.skill_requested}</Text>
 
@@ -71,7 +74,7 @@ export const HelpRequestCard: React.FC<HelpRequestCardProps> = ({
             {isResponding ? (
               <ActivityIndicator size="small" color={colors.text.tertiary} />
             ) : (
-              <Text style={styles.cancelText}>Annuler</Text>
+              <Text style={styles.cancelText}>{t('cancel')}</Text>
             )}
           </TouchableOpacity>
         ) : (
@@ -86,7 +89,7 @@ export const HelpRequestCard: React.FC<HelpRequestCardProps> = ({
               ) : (
                 <>
                   <Ionicons name="checkmark" size={18} color={colors.white} />
-                  <Text style={styles.buttonText}>Accepter</Text>
+                  <Text style={styles.buttonText}>{t('accept')}</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -97,7 +100,7 @@ export const HelpRequestCard: React.FC<HelpRequestCardProps> = ({
               disabled={isResponding}
             >
               <Ionicons name="close" size={18} color={colors.text.secondary} />
-              <Text style={styles.declineText}>Refuser</Text>
+              <Text style={styles.declineText}>{t('decline')}</Text>
             </TouchableOpacity>
           </View>
         )}

@@ -3,8 +3,8 @@ import { useQueryClient } from '@tanstack/react-query'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { BottomSheet } from '../components/BottomSheet'
 import { MapView } from '../components/MapView'
+import { VisitorProfileSheet } from '../components/visitor'
 import { StageDetailModal } from '../components/map/StageDetailModal'
 import { useLocation } from '../hooks/useLocation'
 import {
@@ -23,9 +23,10 @@ import type { Activity } from '../types/activity'
 interface HomeScreenProps {
   tripToShow?: Trip | null
   onClearTripToShow?: () => void
+  onNavigateToChat?: () => void
 }
 
-export const HomeScreen: React.FC<HomeScreenProps> = ({ tripToShow, onClearTripToShow }) => {
+export const HomeScreen: React.FC<HomeScreenProps> = ({ tripToShow, onClearTripToShow, onNavigateToChat }) => {
   const { t } = useTranslation(['common', 'home'])
   const queryClient = useQueryClient()
   const { data: profile, isLoading } = useMyProfile()
@@ -172,10 +173,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ tripToShow, onClearTripT
             </View>
           ) : null}
 
-          {/* BottomSheet : s'affiche seulement si un profil est sélectionné */}
-          {selectedProfile && (
-            <BottomSheet profile={selectedProfile} onClose={() => setSelectedProfile(null)} />
-          )}
+          {/* VisitorProfileSheet : s'affiche seulement si un profil est sélectionné */}
+          {selectedProfile ? (
+            <VisitorProfileSheet
+              profile={selectedProfile}
+              onClose={() => setSelectedProfile(null)}
+              onMessage={() => {
+                setSelectedProfile(null)
+                onNavigateToChat?.()
+              }}
+            />
+          ) : null}
 
           {/* StageDetailModal : s'affiche quand un marker d'étape est cliqué */}
           {selectedStage && tripOverlay && (

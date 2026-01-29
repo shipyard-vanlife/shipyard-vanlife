@@ -29,7 +29,13 @@ export const MainNavigator: React.FC = () => {
       case 'trips':
         return <TripsScreen onViewTripOnMap={handleViewTripOnMap} />
       case 'home':
-        return <HomeScreen tripToShow={tripToShow} onClearTripToShow={handleClearTripToShow} />
+        return (
+          <HomeScreen
+            tripToShow={tripToShow}
+            onClearTripToShow={handleClearTripToShow}
+            onNavigateToChat={() => setActiveTab('chat')}
+          />
+        )
       case 'activities':
         return <ActivitiesScreen />
       case 'chat':
@@ -39,7 +45,13 @@ export const MainNavigator: React.FC = () => {
       case 'profile':
         return <ProfileScreen />
       default:
-        return <HomeScreen tripToShow={tripToShow} onClearTripToShow={handleClearTripToShow} />
+        return (
+          <HomeScreen
+            tripToShow={tripToShow}
+            onClearTripToShow={handleClearTripToShow}
+            onNavigateToChat={() => setActiveTab('chat')}
+          />
+        )
     }
   }
 
