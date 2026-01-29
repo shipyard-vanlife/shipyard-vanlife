@@ -101,5 +101,14 @@
       "note": "Note",
       "noNote": "No note"
     }
+  },
+  "visitor": {
+    "tripsTitle": "Their trips",
+    "ongoing": "Ongoing",
+    "viewAllOnMap": "View all on map",
+    "startDate": "Start",
+    "endDate": "End",
+    "gpsPosition": "GPS Position",
+    "viewOnMap": "View on map"
   }
 }
