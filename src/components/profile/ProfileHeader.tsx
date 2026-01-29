@@ -86,7 +86,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     <View style={styles.container}>
       {/* Top bar */}
       <View style={styles.topBar}>
-        {!isOwnProfile ? (
+        {!isOwnProfile && onBackPress ? (
           <TouchableOpacity style={styles.topBarButton} onPress={onBackPress} activeOpacity={0.7}>
             <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
           </TouchableOpacity>
