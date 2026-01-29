@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { StyleSheet, View } from 'react-native'
+import { ActivitiesScreen } from '../screens/ActivitiesScreen'
 import { ChatScreen } from '../screens/ChatScreen'
 import { HomeScreen } from '../screens/HomeScreen'
 import { ProfileScreen } from '../screens/ProfileScreen'
@@ -8,7 +9,7 @@ import { TripsScreen } from '../screens/TripsScreen'
 import type { Trip } from '../types/trip'
 import { BottomTabNavigator } from './BottomTabNavigator'
 
-type TabName = 'trips' | 'home' | 'chat' | 'search' | 'profile'
+type TabName = 'trips' | 'home' | 'activities' | 'chat' | 'search' | 'profile'
 
 export const MainNavigator: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabName>('home')
@@ -35,6 +36,8 @@ export const MainNavigator: React.FC = () => {
             onNavigateToChat={() => setActiveTab('chat')}
           />
         )
+      case 'activities':
+        return <ActivitiesScreen />
       case 'chat':
         return <ChatScreen />
       case 'search':

@@ -13,10 +13,12 @@ import {
   useMyProfile,
   useUpdateLocation,
 } from '../hooks/useProfiles'
+import { useNearbyActivities } from '../hooks/useActivities'
 import { colors } from '../styles/theme'
 import { NearbyProfile } from '../types/location'
 import { TripOverlayData, TripOverlayStage, tripToOverlayData } from '../types/map'
 import type { Trip } from '../types/trip'
+import type { Activity } from '../types/activity'
 
 interface HomeScreenProps {
   tripToShow?: Trip | null
@@ -32,6 +34,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ tripToShow, onClearTripT
   const [selectedProfile, setSelectedProfile] = useState<NearbyProfile | null>(null)
   const { mutate: updateLocation } = useUpdateLocation()
   const { isLoading: locationLoading, requestLocation } = useLocation()
+
+  // Activities state
+  const { data: nearbyActivities } = useNearbyActivities(
+    profile?.location?.latitude ?? null,
+    profile?.location?.longitude ?? null,
+    100 // 100km radius for map view
+  )
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null)
+  const [showActivities, setShowActivities] = useState(true)
 
   // Trip overlay state
   const [tripOverlay, setTripOverlay] = useState<TripOverlayData | null>(null)
@@ -123,10 +134,37 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ tripToShow, onClearTripT
             isProfileVisible={profile.is_visible}
             otherProfiles={otherProfiles ?? []}
             onProfileSelect={handleProfileSelect}
+            nearbyActivities={showActivities ? nearbyActivities ?? [] : []}
+            onActivitySelect={setSelectedActivity}
             tripOverlay={tripOverlay}
             onTripOverlayClose={handleCloseTripOverlay}
             onStagePress={handleStagePress}
           />
+
+          {/* Toggle Activities Button */}
+          <View style={styles.toggleActivitiesButton}>
+            <TouchableOpacity
+              style={[
+                styles.toggleButton,
+                { backgroundColor: showActivities ? colors.secondary.main : colors.white },
+              ]}
+              onPress={() => setShowActivities(!showActivities)}
+            >
+              <Ionicons
+                name="calendar"
+                size={20}
+                color={showActivities ? colors.white : colors.text.primary}
+              />
+              <Text
+                style={[
+                  styles.toggleButtonText,
+                  { color: showActivities ? colors.white : colors.text.primary },
+                ]}
+              >
+                {t('home:map.activities')}
+              </Text>
+            </TouchableOpacity>
+          </View>
 
           {/* Card overlay avec info ville */}
           {profile.city ? (
@@ -154,6 +192,30 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ tripToShow, onClearTripT
               tripName={tripOverlay.tripName}
               onClose={() => setSelectedStage(null)}
             />
+          )}
+
+          {/* ActivityDetailModal : s'affiche quand un marker d'activité est cliqué */}
+          {selectedActivity && (
+            <View style={styles.activityModalContainer}>
+              <TouchableOpacity
+                style={styles.activityModalBackdrop}
+                onPress={() => setSelectedActivity(null)}
+                activeOpacity={1}
+              />
+              <View style={styles.activityModalContent}>
+                <TouchableOpacity
+                  style={styles.closeActivityButton}
+                  onPress={() => setSelectedActivity(null)}
+                >
+                  <Ionicons name="close" size={24} color={colors.text.primary} />
+                </TouchableOpacity>
+                <Text style={styles.activityModalTitle}>{selectedActivity.title}</Text>
+                <Text style={styles.activityModalLocation}>{selectedActivity.location_name}</Text>
+                <Text style={styles.activityModalCreator}>
+                  {t('activities:card.by')} {selectedActivity.creator_username}
+                </Text>
+              </View>
+            </View>
           )}
         </>
       ) : (
@@ -291,5 +353,73 @@ const styles = StyleSheet.create({
     color: colors.text.tertiary,
     textAlign: 'center',
     fontStyle: 'italic',
+  },
+  toggleActivitiesButton: {
+    position: 'absolute',
+    top: 60,
+    right: 20,
+  },
+  toggleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    gap: 6,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  toggleButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  activityModalContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    top: 0,
+  },
+  activityModalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  activityModalContent: {
+    position: 'absolute',
+    bottom: 100,
+    left: 20,
+    right: 20,
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  closeActivityButton: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+  },
+  activityModalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.text.primary,
+    marginBottom: 8,
+    paddingRight: 30,
+  },
+  activityModalLocation: {
+    fontSize: 14,
+    color: colors.text.secondary,
+    marginBottom: 4,
+  },
+  activityModalCreator: {
+    fontSize: 14,
+    color: colors.text.tertiary,
   },
 })

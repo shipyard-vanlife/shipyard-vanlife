@@ -6,7 +6,8 @@
   },
   "map": {
     "loading": "Loading map...",
-    "noLocation": "No location set. Declare your position to see the map."
+    "noLocation": "No location set. Declare your position to see the map.",
+    "activities": "Activities"
   },
   "noLocation": {
     "title": "No location set",

@@ -5,7 +5,7 @@ import { colors, shadows } from '../styles/theme'
 import { useMyFriends } from '../hooks/useConnections'
 import { useRealtimeConnections } from '../hooks/useRealtimeConnections'
 
-type TabName = 'trips' | 'home' | 'chat' | 'search' | 'profile'
+type TabName = 'trips' | 'home' | 'activities' | 'chat' | 'search' | 'profile'
 
 interface BottomTabNavigatorProps {
   activeTab: TabName
@@ -21,6 +21,7 @@ interface TabConfig {
 const tabs: TabConfig[] = [
   { name: 'trips', icon: 'map-outline', iconActive: 'map' },
   { name: 'home', icon: 'home-outline', iconActive: 'home' },
+  { name: 'activities', icon: 'calendar-outline', iconActive: 'calendar' },
   { name: 'chat', icon: 'chatbubbles-outline', iconActive: 'chatbubbles' },
   { name: 'search', icon: 'search-outline', iconActive: 'search' },
   { name: 'profile', icon: 'person-outline', iconActive: 'person' },

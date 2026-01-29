@@ -1,0 +1,117 @@
+{
+  "title": "Activities",
+  "tabs": {
+    "nearby": "Nearby",
+    "my": "My activities",
+    "invitations": "Invitations"
+  },
+  "card": {
+    "by": "By",
+    "participants": "participants",
+    "creator": "Creator",
+    "participating": "Participating"
+  },
+  "status": {
+    "open": "Open",
+    "full": "Full",
+    "cancelled": "Cancelled",
+    "finished": "Finished"
+  },
+  "types": {
+    "outdoor": "Outdoor",
+    "food": "Food",
+    "skills": "Skills",
+    "social": "Social",
+    "sport": "Sport",
+    "culture": "Culture",
+    "other": "Other"
+  },
+  "visibility": {
+    "public": "Public",
+    "friends": "Friends only",
+    "private": "Private"
+  },
+  "detail": {
+    "description": "Description",
+    "location": "Location",
+    "when": "When",
+    "participants": "Participants",
+    "organizer": "Organizer",
+    "noDescription": "No description",
+    "unlimitedParticipants": "Unlimited spots"
+  },
+  "actions": {
+    "join": "Join",
+    "leave": "Leave",
+    "edit": "Edit",
+    "cancel": "Cancel activity",
+    "invite": "Invite friends",
+    "openChat": "Open chat"
+  },
+  "create": {
+    "title": "Create activity",
+    "titleField": "Title",
+    "titlePlaceholder": "e.g. Hiking at Mont Blanc",
+    "titleRequired": "Title is required",
+    "description": "Description",
+    "descriptionPlaceholder": "Describe your activity...",
+    "type": "Activity type",
+    "location": "Location",
+    "locationPlaceholder": "e.g. Chamonix",
+    "locationRequired": "Location is required",
+    "locationGpsRequired": "Your GPS position is required to create an activity",
+    "startDate": "Start date and time",
+    "endDate": "End date and time (optional)",
+    "endDateOptional": "Optional",
+    "maxParticipants": "Max participants",
+    "maxParticipantsPlaceholder": "Leave empty = unlimited",
+    "visibility": "Visibility",
+    "submit": "Create activity",
+    "updating": "Updating...",
+    "creating": "Creating..."
+  },
+  "search": {
+    "placeholder": "Search by title or location..."
+  },
+  "filters": {
+    "type": "Type",
+    "status": "Status",
+    "all": "All",
+    "today": "Today",
+    "thisWeek": "This week",
+    "byType": "By type"
+  },
+  "empty": {
+    "nearby": "No activities nearby",
+    "my": "You don't have any activities yet",
+    "invitations": "No invitations",
+    "create": "Create your first activity!"
+  },
+  "invitations": {
+    "title": "Invite friends",
+    "selectFriends": "Select friends to invite",
+    "message": "Message (optional)",
+    "messagePlaceholder": "Add a message...",
+    "send": "Send invitations",
+    "sending": "Sending...",
+    "noFriends": "You don't have any friends yet",
+    "invitedBy": "Invited by",
+    "respondBy": "Respond by",
+    "accept": "Accept",
+    "decline": "Decline"
+  },
+  "alerts": {
+    "joinSuccess": "You're now participating!",
+    "leaveSuccess": "You've left the activity",
+    "createSuccess": "Activity created successfully!",
+    "updateSuccess": "Activity updated",
+    "cancelConfirm": "Are you sure you want to cancel this activity?",
+    "cancelSuccess": "Activity cancelled",
+    "leaveConfirm": "Are you sure you want to leave?",
+    "invitationSent": "Invitation sent!",
+    "invitationAccepted": "Invitation accepted",
+    "invitationDeclined": "Invitation declined",
+    "activityFull": "Activity is full",
+    "error": "An error occurred"
+  }
+}
