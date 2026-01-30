@@ -31,9 +31,7 @@ export function useNearbyActivities(
 ) {
   return useQuery({
     queryKey:
-      latitude && longitude
-        ? activityKeys.nearby(latitude, longitude, radiusKm)
-        : ['disabled'],
+      latitude && longitude ? activityKeys.nearby(latitude, longitude, radiusKm) : ['disabled'],
     queryFn: async (): Promise<Activity[]> => {
       if (!latitude || !longitude) return []
 

@@ -178,19 +178,19 @@ export const ActivitiesScreen: React.FC = () => {
         <View style={styles.filterRow}>
           <Text style={styles.filterLabel}>{t('filters.type')}:</Text>
           <View style={styles.filterChips}>
-            {(['outdoor', 'food', 'skills', 'social', 'sport', 'culture', 'other'] as ActivityType[]).map(
-              type => (
-                <TouchableOpacity
-                  key={type}
-                  style={[styles.chip, selectedType === type && styles.chipActive]}
-                  onPress={() => setSelectedType(selectedType === type ? null : type)}
-                >
-                  <Text style={[styles.chipText, selectedType === type && styles.chipTextActive]}>
-                    {t(`types.${type}`)}
-                  </Text>
-                </TouchableOpacity>
-              )
-            )}
+            {(
+              ['outdoor', 'food', 'skills', 'social', 'sport', 'culture', 'other'] as ActivityType[]
+            ).map(type => (
+              <TouchableOpacity
+                key={type}
+                style={[styles.chip, selectedType === type && styles.chipActive]}
+                onPress={() => setSelectedType(selectedType === type ? null : type)}
+              >
+                <Text style={[styles.chipText, selectedType === type && styles.chipTextActive]}>
+                  {t(`types.${type}`)}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
@@ -236,10 +236,7 @@ export const ActivitiesScreen: React.FC = () => {
       </TouchableOpacity>
 
       {/* Create Activity Modal */}
-      <CreateActivityModal
-        visible={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-      />
+      <CreateActivityModal visible={showCreateModal} onClose={() => setShowCreateModal(false)} />
 
       {/* Activity Detail Modal */}
       <ActivityDetailModal

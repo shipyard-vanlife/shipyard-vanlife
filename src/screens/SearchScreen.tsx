@@ -71,9 +71,8 @@ export const SearchScreen: React.FC = () => {
     // Recherche par nom
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim()
-      result = result.filter(p =>
-        p.username.toLowerCase().includes(query) ||
-        p.van_name?.toLowerCase().includes(query)
+      result = result.filter(
+        p => p.username.toLowerCase().includes(query) || p.van_name?.toLowerCase().includes(query)
       )
     }
 
@@ -94,10 +93,7 @@ export const SearchScreen: React.FC = () => {
 
   const handleAddFriend = async (profileId: string, username: string) => {
     if (myProfile?.verification_status !== 'approved') {
-      Alert.alert(
-        t('common:verification.requiredTitle'),
-        t('common:verification.requiredMessage')
-      )
+      Alert.alert(t('common:verification.requiredTitle'), t('common:verification.requiredMessage'))
       return
     }
 
@@ -123,7 +119,12 @@ export const SearchScreen: React.FC = () => {
 
     if (!myProfile || !allConnections) {
       console.log('❌ Pas de myProfile ou allConnections')
-      return { isAlreadyFriend: false, isPending: false, isReceived: false, connectionId: undefined }
+      return {
+        isAlreadyFriend: false,
+        isPending: false,
+        isReceived: false,
+        connectionId: undefined,
+      }
     }
 
     // Trouver la connexion avec ce profil
@@ -137,7 +138,12 @@ export const SearchScreen: React.FC = () => {
 
     if (!connection) {
       console.log('❌ Aucune connexion trouvée')
-      return { isAlreadyFriend: false, isPending: false, isReceived: false, connectionId: undefined }
+      return {
+        isAlreadyFriend: false,
+        isPending: false,
+        isReceived: false,
+        connectionId: undefined,
+      }
     }
 
     // Si status = 'accepted' → Ami
@@ -149,7 +155,7 @@ export const SearchScreen: React.FC = () => {
       isAlreadyFriend: connection.status === 'accepted',
       isPending: isPending && isSentByMe, // En attente seulement si J'AI envoyé
       isReceived: isPending && !isSentByMe, // Demande reçue si L'AUTRE a envoyé
-      connectionId: connection.id
+      connectionId: connection.id,
     }
 
     console.log('✅ Résultat:', result)
@@ -222,10 +228,7 @@ export const SearchScreen: React.FC = () => {
             color={activeFilter === 'all' ? colors.white : colors.text.primary}
           />
           <Text
-            style={[
-              styles.filterPillText,
-              activeFilter === 'all' && styles.filterPillTextActive,
-            ]}
+            style={[styles.filterPillText, activeFilter === 'all' && styles.filterPillTextActive]}
           >
             {t('filters.all')}
           </Text>
@@ -265,10 +268,7 @@ export const SearchScreen: React.FC = () => {
             color={activeFilter === 'help' ? colors.white : colors.text.primary}
           />
           <Text
-            style={[
-              styles.filterPillText,
-              activeFilter === 'help' && styles.filterPillTextActive,
-            ]}
+            style={[styles.filterPillText, activeFilter === 'help' && styles.filterPillTextActive]}
           >
             {t('filters.help')}
           </Text>
@@ -307,7 +307,9 @@ export const SearchScreen: React.FC = () => {
       <Modal visible={showSkillModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{t('skillModal.title', { defaultValue: 'Choisir une compétence' })}</Text>
+            <Text style={styles.modalTitle}>
+              {t('skillModal.title', { defaultValue: 'Choisir une compétence' })}
+            </Text>
             <FlatList
               data={ALL_SKILLS}
               keyExtractor={item => item}
@@ -331,7 +333,9 @@ export const SearchScreen: React.FC = () => {
                 setSelectedSkill(null)
               }}
             >
-              <Text style={styles.modalCloseText}>{t('common:cancel', { defaultValue: 'Annuler' })}</Text>
+              <Text style={styles.modalCloseText}>
+                {t('common:cancel', { defaultValue: 'Annuler' })}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

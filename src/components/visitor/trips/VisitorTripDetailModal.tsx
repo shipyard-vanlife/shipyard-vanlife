@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { colors, fontSize, fontWeight, spacing, borderRadius, shadows } from '../../../styles/theme'
+import { formatDateLong } from '../../../utils/formatDate'
 import type { PublicTrip, PublicTripStage } from '../../../types/trip'
 import { VisitorTripStageItem } from './VisitorTripStageItem'
 import { TripStats } from '../../trips/TripStats'
@@ -40,22 +41,10 @@ export function VisitorTripDetailModal({
   // Format dates
   const { startDate, endDate } = useMemo(() => {
     if (!trip) return { startDate: '', endDate: null }
-
-    const start = new Date(trip.start_date).toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    })
-
-    const end = trip.end_date
-      ? new Date(trip.end_date).toLocaleDateString('fr-FR', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-        })
-      : null
-
-    return { startDate: start, endDate: end }
+    return {
+      startDate: formatDateLong(trip.start_date),
+      endDate: trip.end_date ? formatDateLong(trip.end_date) : null,
+    }
   }, [trip])
 
   // Determine when to show country flag (first stage or country changed)
@@ -72,7 +61,12 @@ export function VisitorTripDetailModal({
 
   if (isLoading) {
     return (
-      <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+      <Modal
+        visible={visible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={onClose}
+      >
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.secondary.main} />
@@ -85,7 +79,12 @@ export function VisitorTripDetailModal({
   if (!trip) return null
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={onClose}
+    >
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         {/* Header */}
         <View style={styles.header}>

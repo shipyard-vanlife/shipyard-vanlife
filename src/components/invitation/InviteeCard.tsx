@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import { UserCheck, Clock, Sparkles } from 'lucide-react-native'
 import { colors, fontSize, fontWeight, spacing, borderRadius, shadows } from '../../styles/theme'
+import { formatDateCompact } from '../../utils/formatDate'
 
 interface InviteeCardProps {
   code: string
@@ -20,14 +21,6 @@ export const InviteeCard: React.FC<InviteeCardProps> = ({
   isUsed,
 }) => {
   const { t } = useTranslation(['invitation'])
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'short',
-    })
-  }
 
   const getInitials = (username: string) => {
     return username.slice(0, 2).toUpperCase()
@@ -51,7 +44,7 @@ export const InviteeCard: React.FC<InviteeCardProps> = ({
             <Sparkles size={14} color={colors.secondary.main} />
           </View>
           <Text style={styles.joinedText}>
-            {t('invitation:history.joinedOn', { date: formatDate(usedAt ?? createdAt) })}
+            {t('invitation:history.joinedOn', { date: formatDateCompact(usedAt ?? createdAt) })}
           </Text>
         </View>
 
@@ -75,7 +68,7 @@ export const InviteeCard: React.FC<InviteeCardProps> = ({
       <View style={styles.pendingInfo}>
         <Text style={styles.pendingTitle}>{t('invitation:history.waitingTitle')}</Text>
         <Text style={styles.pendingSubtitle}>
-          {t('invitation:history.createdAt', { date: formatDate(createdAt) })}
+          {t('invitation:history.createdAt', { date: formatDateCompact(createdAt) })}
         </Text>
       </View>
 

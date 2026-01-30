@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo } from 'react'
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
@@ -24,7 +24,7 @@ const formatDistance = (meters: number, t: any): string => {
   return `${(meters / 1000).toFixed(1)}${t('distance.kilometers')}`
 }
 
-export const NomadProfileCard: React.FC<NomadProfileCardProps> = ({
+export const NomadProfileCard = memo(function NomadProfileCard({
   profile,
   distance,
   onAddFriend,
@@ -33,15 +33,11 @@ export const NomadProfileCard: React.FC<NomadProfileCardProps> = ({
   isAlreadyFriend = false,
   isReceived = false,
   connectionId,
-}) => {
+}: NomadProfileCardProps) {
   const { t } = useTranslation('search')
 
   return (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
       {/* Section supérieure */}
       <View style={styles.header}>
         {/* Avatar */}
@@ -76,7 +72,7 @@ export const NomadProfileCard: React.FC<NomadProfileCardProps> = ({
       {/* Badges de compétences */}
       {profile.skills.length > 0 && (
         <View style={styles.tagsContainer}>
-          {profile.skills.slice(0, 3).map((skill) => (
+          {profile.skills.slice(0, 3).map(skill => (
             <SkillBadge key={skill} skill={skill} />
           ))}
         </View>
@@ -86,11 +82,7 @@ export const NomadProfileCard: React.FC<NomadProfileCardProps> = ({
       <View style={styles.footer}>
         {isReceived ? (
           // Demande reçue → Afficher texte "Demande reçue" et renvoyer vers le profil
-          <TouchableOpacity
-            style={styles.receivedButton}
-            onPress={onPress}
-            activeOpacity={0.8}
-          >
+          <TouchableOpacity style={styles.receivedButton} onPress={onPress} activeOpacity={0.8}>
             <Ionicons name="mail" size={14} color={colors.secondary.main} />
             <Text style={styles.receivedButtonText}>
               {t('card.received', { defaultValue: 'Demande reçue' })}
@@ -114,14 +106,18 @@ export const NomadProfileCard: React.FC<NomadProfileCardProps> = ({
               color={colors.white}
             />
             <Text style={styles.addButtonText}>
-              {isAlreadyFriend ? t('card.friend') : isPending ? t('card.pending') : t('card.addFriend')}
+              {isAlreadyFriend
+                ? t('card.friend')
+                : isPending
+                  ? t('card.pending')
+                  : t('card.addFriend')}
             </Text>
           </TouchableOpacity>
         )}
       </View>
     </TouchableOpacity>
   )
-}
+})
 
 const styles = StyleSheet.create({
   card: {

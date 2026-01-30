@@ -1,6 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../services/supabase'
 import { HelpRequest } from '../types/chat'
+import { useQueryMutation } from './useQueryMutation'
 
 export const helpRequestKeys = {
   all: ['help_requests'] as const,
@@ -24,17 +25,14 @@ export function useHelpRequests(connectionId: string) {
   })
 }
 
-export function useCreateHelpRequest() {
-  const queryClient = useQueryClient()
+interface CreateHelpRequestInput {
+  connectionId: string
+  skill: string
+}
 
-  return useMutation({
-    mutationFn: async ({
-      connectionId,
-      skill,
-    }: {
-      connectionId: string
-      skill: string
-    }): Promise<void> => {
+export function useCreateHelpRequest() {
+  return useQueryMutation({
+    mutationFn: async ({ connectionId, skill }: CreateHelpRequestInput): Promise<void> => {
       const {
         data: { user },
       } = await supabase.auth.getUser()
@@ -65,27 +63,21 @@ export function useCreateHelpRequest() {
 
       if (error) throw error
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: helpRequestKeys.byConnection(variables.connectionId),
-      })
-    },
+    invalidateKeys: [
+      (vars: CreateHelpRequestInput) => helpRequestKeys.byConnection(vars.connectionId),
+    ],
   })
 }
 
-export function useRespondToHelpRequest() {
-  const queryClient = useQueryClient()
+interface RespondToHelpRequestInput {
+  requestId: string
+  status: 'accepted' | 'declined'
+  connectionId: string
+}
 
-  return useMutation({
-    mutationFn: async ({
-      requestId,
-      status,
-      connectionId,
-    }: {
-      requestId: string
-      status: 'accepted' | 'declined'
-      connectionId: string
-    }): Promise<void> => {
+export function useRespondToHelpRequest() {
+  return useQueryMutation({
+    mutationFn: async ({ requestId, status }: RespondToHelpRequestInput): Promise<void> => {
       const { error } = await supabase
         .from('help_requests')
         .update({
@@ -96,25 +88,20 @@ export function useRespondToHelpRequest() {
 
       if (error) throw error
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: helpRequestKeys.byConnection(variables.connectionId),
-      })
-    },
+    invalidateKeys: [
+      (vars: RespondToHelpRequestInput) => helpRequestKeys.byConnection(vars.connectionId),
+    ],
   })
 }
 
-export function useCancelHelpRequest() {
-  const queryClient = useQueryClient()
+interface CancelHelpRequestInput {
+  requestId: string
+  connectionId: string
+}
 
-  return useMutation({
-    mutationFn: async ({
-      requestId,
-      connectionId,
-    }: {
-      requestId: string
-      connectionId: string
-    }): Promise<void> => {
+export function useCancelHelpRequest() {
+  return useQueryMutation({
+    mutationFn: async ({ requestId }: CancelHelpRequestInput): Promise<void> => {
       const { error } = await supabase
         .from('help_requests')
         .delete()
@@ -123,10 +110,8 @@ export function useCancelHelpRequest() {
 
       if (error) throw error
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: helpRequestKeys.byConnection(variables.connectionId),
-      })
-    },
+    invalidateKeys: [
+      (vars: CancelHelpRequestInput) => helpRequestKeys.byConnection(vars.connectionId),
+    ],
   })
 }

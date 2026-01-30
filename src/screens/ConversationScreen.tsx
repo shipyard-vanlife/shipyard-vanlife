@@ -16,6 +16,7 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import { useQueryClient } from '@tanstack/react-query'
 import { colors, spacing, borderRadius, fontSize } from '../styles/theme'
+import { formatTime } from '../utils/formatDate'
 import { useInfiniteMessages, useSendMessage, useMarkMessagesAsRead } from '../hooks/useMessages'
 import { useMyProfile, useProfileById, profileKeys } from '../hooks/useProfiles'
 import { useRealtimeMessages } from '../hooks/useRealtimeMessages'
@@ -179,10 +180,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
               isMyMessage ? styles.myMessageTime : styles.theirMessageTime,
             ]}
           >
-            {new Date(message.created_at).toLocaleTimeString('fr-FR', {
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
+            {formatTime(message.created_at)}
           </Text>
         </View>
       </View>

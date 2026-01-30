@@ -11,7 +11,8 @@ import {
   View,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { CreateTripModal, TripCard, TripDetailModal, TripEmptyState } from '../components/trips'
+import { CreateTripModal, TripCard, TripDetailModal } from '../components/trips'
+import { EmptyState } from '../components/ui'
 import { useActiveTrip, useMyTrips } from '../hooks/useTrips'
 import { colors, fontSize, fontWeight, spacing } from '../styles/theme'
 import type { Trip } from '../types/trip'
@@ -104,7 +105,16 @@ export const TripsScreen: React.FC<TripsScreenProps> = ({ onViewTripOnMap }) => 
     }
 
     if (!trips || trips.length === 0) {
-      return <TripEmptyState onCreatePress={handleCreatePress} disabled={hasActiveTrip} />
+      return (
+        <EmptyState
+          icon="map-outline"
+          title={t('emptyState.title')}
+          description={t('emptyState.description')}
+          actionLabel={t('emptyState.createButton')}
+          onAction={handleCreatePress}
+          actionDisabled={hasActiveTrip}
+        />
+      )
     }
 
     return (

@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { colors, spacing, borderRadius, fontSize } from '../../styles/theme'
 import { useSendInvitation } from '../../hooks/useActivities'
-import { useMyConnections } from '../../hooks/useConnections'
+import { useMyFriends } from '../../hooks/useConnections'
 
 interface InviteFriendsModalProps {
   visible: boolean
@@ -32,10 +32,8 @@ export const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
   const [selectedFriends, setSelectedFriends] = useState<string[]>([])
   const [message, setMessage] = useState('')
 
-  const { data: connections } = useMyConnections()
+  const { data: friends = [] } = useMyFriends()
   const { mutate: sendInvitation, isPending } = useSendInvitation()
-
-  const friends = connections?.filter(c => c.status === 'accepted') ?? []
 
   const toggleFriend = (friendId: string) => {
     setSelectedFriends(prev =>
@@ -89,6 +87,7 @@ export const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
               <Text style={styles.emptyText}>{t('invitations.noFriends')}</Text>
             </View>
           ) : (
+<<<<<<< HEAD
             <View style={styles.friendsList}>
               <FlatList
                 data={friends}
@@ -129,6 +128,36 @@ export const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
                 showsVerticalScrollIndicator={true}
               />
             </View>
+=======
+            <FlatList
+              data={friends}
+              keyExtractor={item => item.friend_id}
+              renderItem={({ item }) => {
+                const isSelected = selectedFriends.includes(item.friend_id)
+
+                return (
+                  <TouchableOpacity
+                    style={[styles.friendItem, isSelected && styles.friendItemSelected]}
+                    onPress={() => toggleFriend(item.friend_id)}
+                  >
+                    <Image
+                      source={
+                        item.friend_avatar_url
+                          ? { uri: item.friend_avatar_url }
+                          : require('../../assets/default-avatar.png')
+                      }
+                      style={styles.avatar}
+                    />
+                    <Text style={styles.friendName}>{item.friend_username}</Text>
+                    {isSelected && (
+                      <Ionicons name="checkmark-circle" size={24} color={colors.secondary.main} />
+                    )}
+                  </TouchableOpacity>
+                )
+              }}
+              contentContainerStyle={styles.listContent}
+            />
+>>>>>>> dev
           )}
 
           {/* Message */}

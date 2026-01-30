@@ -11,22 +11,16 @@ import {
 } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
-import { useQueryClient } from '@tanstack/react-query'
 
 import { NearbyProfile } from '../../types/location'
+import type { PublicTrip, PublicTripStage } from '../../types/trip'
 import { ProfileContentView, ImageZoomModal } from '../shared'
 import { ConnectionActionButtons } from './ConnectionActionButtons'
 import { ModerationActions } from './ModerationActions'
 import { ReportModal } from './ReportModal'
 
+import { useConnectionHandlers } from '../../hooks'
 import { useMyProfile, useProfileById } from '../../hooks/useProfiles'
-import {
-  useCheckConnection,
-  useSendConnectionRequest,
-  useAcceptConnection,
-  useRejectConnection,
-  useDeleteConnection,
-} from '../../hooks/useConnections'
 import { useBlockUser } from '../../hooks/useModeration'
 
 import { colors, spacing } from '../../styles/theme'
@@ -47,15 +41,20 @@ interface VisitorProfileSheetProps {
   onClose?: () => void
   /** Callback to navigate to conversation */
   onMessage?: (connectionId: string) => void
+  /** Callback when user wants to view a trip stage on map */
+  onViewStageOnMap?: (stage: PublicTripStage) => void
+  /** Callback when user wants to view all trip stages on map */
+  onViewTripOnMap?: (trip: PublicTrip) => void
 }
 
 export const VisitorProfileSheet: React.FC<VisitorProfileSheetProps> = ({
   profile,
   onClose,
   onMessage,
+  onViewStageOnMap,
+  onViewTripOnMap,
 }) => {
   const { t } = useTranslation(['common', 'home'])
-  const queryClient = useQueryClient()
 
   // Sheet animation - starts at 0 and animates to HALF on mount
   const [sheetHeight] = useState(new Animated.Value(0))
@@ -77,19 +76,25 @@ export const VisitorProfileSheet: React.FC<VisitorProfileSheetProps> = ({
   // Data hooks
   const { data: myProfile } = useMyProfile()
   const { data: fullProfile, isLoading: isLoadingProfile } = useProfileById(profile.id)
-  const { data: connectionStatus, refetch: refetchConnection } = useCheckConnection(profile.id)
-
-  // Mutation hooks
-  const { mutate: sendRequest, isPending: isSending } = useSendConnectionRequest()
-  const { mutate: acceptConnection, isPending: isAccepting } = useAcceptConnection()
-  const { mutate: rejectConnection, isPending: isRejecting } = useRejectConnection()
-  const { mutate: deleteConnection, isPending: isRemoving } = useDeleteConnection()
   const { mutate: blockUser } = useBlockUser()
 
   // Use full profile if available, otherwise use initial NearbyProfile
   const displayProfile = fullProfile ?? profile
 
   const isVerified = myProfile?.verification_status === 'approved'
+
+  // Use centralized connection handlers
+  const {
+    handleConnect,
+    handleAccept,
+    handleReject,
+    handleRemoveFriend,
+    connectionStatus,
+    isLoading: connectionLoading,
+  } = useConnectionHandlers({
+    profileId: profile.id,
+    username: displayProfile.username,
+  })
 
   // Handlers
   const handleClose = useCallback(() => {
@@ -103,113 +108,6 @@ export const VisitorProfileSheet: React.FC<VisitorProfileSheetProps> = ({
       onClose()
     })
   }, [isClosing, onClose, sheetHeight])
-
-  const handleConnect = useCallback(async () => {
-    if (!isVerified) {
-      Alert.alert(t('verification.requiredTitle'), t('verification.requiredMessage'))
-      return
-    }
-
-    const { data: freshStatus } = await refetchConnection()
-    const hasConnection =
-      freshStatus && (Array.isArray(freshStatus) ? freshStatus.length > 0 : freshStatus?.status)
-
-    if (hasConnection) {
-      const status = Array.isArray(freshStatus) ? freshStatus[0]?.status : freshStatus?.status
-      if (status === 'pending') {
-        Alert.alert(t('connection.alreadyPendingTitle'), t('connection.alreadyPendingMessage'))
-      } else if (status === 'accepted') {
-        Alert.alert(
-          t('connection.alreadyConnectedTitle'),
-          t('connection.alreadyConnectedMessage', { username: profile.username })
-        )
-      }
-      return
-    }
-
-    sendRequest(profile.id, {
-      onSuccess: async () => {
-        await queryClient.invalidateQueries({ queryKey: ['connections'] })
-        await refetchConnection()
-        Alert.alert(t('connection.requestSentTitle'), t('connection.requestSentMessage'))
-      },
-      onError: () => {
-        Alert.alert(t('errors.generic'), t('connection.requestError'))
-      },
-    })
-  }, [isVerified, refetchConnection, sendRequest, profile.id, profile.username, queryClient, t])
-
-  const handleAccept = useCallback(() => {
-    if (!connectionStatus?.id) return
-
-    acceptConnection(connectionStatus.id, {
-      onSuccess: async () => {
-        await queryClient.invalidateQueries({ queryKey: ['connections'] })
-        await refetchConnection()
-        Alert.alert(
-          t('connection.acceptedTitle'),
-          t('connection.acceptedMessage', { username: displayProfile.username })
-        )
-      },
-      onError: () => {
-        Alert.alert(t('errors.generic'), t('connection.acceptError'))
-      },
-    })
-  }, [connectionStatus?.id, acceptConnection, queryClient, refetchConnection, displayProfile.username, t])
-
-  const handleReject = useCallback(() => {
-    if (!connectionStatus?.id) return
-
-    Alert.alert(t('connection.rejectTitle'), t('connection.rejectMessage', { username: displayProfile.username }), [
-      { text: t('buttons.cancel'), style: 'cancel' },
-      {
-        text: t('connection.reject'),
-        style: 'destructive',
-        onPress: () => {
-          rejectConnection(connectionStatus.id, {
-            onSuccess: async () => {
-              await queryClient.invalidateQueries({ queryKey: ['connections'] })
-              await refetchConnection()
-            },
-            onError: () => {
-              Alert.alert(t('errors.generic'), t('connection.rejectError'))
-            },
-          })
-        },
-      },
-    ])
-  }, [connectionStatus?.id, rejectConnection, queryClient, refetchConnection, displayProfile.username, t])
-
-  const handleRemoveFriend = useCallback(() => {
-    if (!connectionStatus?.id) return
-
-    Alert.alert(
-      t('connection.removeFriendTitle'),
-      t('connection.removeFriendMessage', { username: displayProfile.username }),
-      [
-        { text: t('buttons.cancel'), style: 'cancel' },
-        {
-          text: t('connection.removeFriendButton'),
-          style: 'destructive',
-          onPress: () => {
-            deleteConnection(connectionStatus.id, {
-              onSuccess: async () => {
-                await queryClient.invalidateQueries({ queryKey: ['connections'] })
-                await refetchConnection()
-                Alert.alert(
-                  t('connection.removedSuccess'),
-                  t('connection.removedMessage', { username: displayProfile.username })
-                )
-              },
-              onError: () => {
-                Alert.alert(t('errors.generic'), t('connection.removedError'))
-              },
-            })
-          },
-        },
-      ]
-    )
-  }, [connectionStatus?.id, deleteConnection, queryClient, refetchConnection, displayProfile.username, t])
 
   const handleMessage = useCallback(() => {
     if (connectionStatus?.id && onMessage) {
@@ -359,6 +257,8 @@ export const VisitorProfileSheet: React.FC<VisitorProfileSheetProps> = ({
             profile={displayProfile}
             isLoading={isLoadingProfile}
             onPhotoPress={setZoomedImage}
+            onViewStageOnMap={onViewStageOnMap}
+            onViewTripOnMap={onViewTripOnMap}
             renderActions={() => (
               <ConnectionActionButtons
                 connectionStatus={connectionStatus ?? null}
@@ -370,10 +270,10 @@ export const VisitorProfileSheet: React.FC<VisitorProfileSheetProps> = ({
                 onReject={handleReject}
                 onRemoveFriend={handleRemoveFriend}
                 onMessage={handleMessage}
-                isSending={isSending}
-                isAccepting={isAccepting}
-                isRejecting={isRejecting}
-                isRemoving={isRemoving}
+                isSending={connectionLoading.sending}
+                isAccepting={connectionLoading.accepting}
+                isRejecting={connectionLoading.rejecting}
+                isRemoving={connectionLoading.removing}
               />
             )}
             renderModerationActions={() => (

@@ -15,10 +15,10 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import { ProfilePhotoInput } from '../components/ProfilePhotoInput'
 import { useAuth } from '../contexts/AuthContext'
+import { useSignOut } from '../hooks'
 import { useImagePicker } from '../hooks/useImagePicker'
 import { useLocation, LocationErrorCode } from '../hooks/useLocation'
 import { useCompleteProfile, useMyProfile } from '../hooks/useProfiles'
-import { supabase } from '../services/supabase'
 import { ALL_SKILLS, SKILL_COLORS, SkillType } from '../types/user'
 import { completeProfileSchema, getFieldErrors, parseSupabaseError } from '../utils/validation'
 import { colors, spacing, borderRadius, fontSize, fontWeight } from '../styles/theme'
@@ -35,7 +35,8 @@ const locationErrorKeys: Record<LocationErrorCode, string> = {
 
 export const ProfileSetupScreen: React.FC = () => {
   const { t } = useTranslation(['common', 'skills', 'profile', 'verification'])
-  const { signOut } = useAuth()
+  const { user } = useAuth()
+  const { mutate: signOut } = useSignOut()
   const { data: profile } = useMyProfile()
   const { mutate: completeProfile, isPending } = useCompleteProfile()
   const {
@@ -85,15 +86,10 @@ export const ProfileSetupScreen: React.FC = () => {
   }
 
   const performProfileCreation = async () => {
-    // Upload avatar if selected (get user ID first)
+    // Upload avatar if selected
     let avatarUrl: string | null = null
-    if (imageUri) {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (user) {
-        avatarUrl = await uploadImage(user.id)
-      }
+    if (imageUri && user) {
+      avatarUrl = await uploadImage(user.id)
     }
 
     const result = completeProfileSchema.safeParse({
@@ -338,7 +334,11 @@ export const ProfileSetupScreen: React.FC = () => {
           </TouchableOpacity>
 
           {/* Sign out link */}
-          <TouchableOpacity style={styles.signOutLink} onPress={signOut} disabled={isPending}>
+          <TouchableOpacity
+            style={styles.signOutLink}
+            onPress={() => signOut()}
+            disabled={isPending}
+          >
             <Text style={styles.signOutLinkText}>{t('profile:actions.signOut')}</Text>
           </TouchableOpacity>
         </View>

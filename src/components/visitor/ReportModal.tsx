@@ -96,7 +96,10 @@ export function ReportModal({ visible, onClose, userId, username }: ReportModalP
               {REPORT_REASONS.map(reason => (
                 <TouchableOpacity
                   key={reason}
-                  style={[styles.reasonChip, selectedReason === reason && styles.reasonChipSelected]}
+                  style={[
+                    styles.reasonChip,
+                    selectedReason === reason && styles.reasonChipSelected,
+                  ]}
                   onPress={() => setSelectedReason(selectedReason === reason ? null : reason)}
                 >
                   <Text
@@ -136,7 +139,10 @@ export function ReportModal({ visible, onClose, userId, username }: ReportModalP
           </ScrollView>
 
           <TouchableOpacity
-            style={[styles.submitButton, (!selectedReason || isPending) && styles.submitButtonDisabled]}
+            style={[
+              styles.submitButton,
+              (!selectedReason || isPending) && styles.submitButtonDisabled,
+            ]}
             onPress={handleSubmit}
             disabled={!selectedReason || isPending}
           >

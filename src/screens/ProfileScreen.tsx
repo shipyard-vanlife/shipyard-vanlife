@@ -24,6 +24,7 @@ import {
 } from '../components/profile'
 import { UsernameEditModal } from '../components/profile/UsernameEditModal'
 import { useAuth } from '../contexts/AuthContext'
+import { useSignOut } from '../hooks'
 import { useImagePicker } from '../hooks/useImagePicker'
 import { useProfilePhotosUpload } from '../hooks/useProfilePhotos'
 import {
@@ -38,7 +39,8 @@ type PickerMode = 'avatar' | 'profile-photo' | null
 
 export const ProfileScreen: React.FC = () => {
   const { t } = useTranslation(['profile', 'common'])
-  const { signOut, user } = useAuth()
+  const { user } = useAuth()
+  const { mutateAsync: signOut } = useSignOut()
   const { data: profile, isLoading } = useMyProfile()
   const { mutate: deleteProfile, isPending: isDeletingProfile } = useDeleteProfile()
   const { mutate: deleteAccount, isPending: isDeletingAccount } = useDeleteAccount()

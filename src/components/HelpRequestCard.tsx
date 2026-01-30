@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     borderColor: colors.secondary.main,
   },
   cardAccepted: {
-    backgroundColor: '#e8f5e9',
+    backgroundColor: `${colors.success}15`,
     borderWidth: 1,
     borderColor: colors.success,
   },

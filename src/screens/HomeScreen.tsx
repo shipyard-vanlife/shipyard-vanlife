@@ -16,8 +16,8 @@ import {
 import { useNearbyActivities } from '../hooks/useActivities'
 import { colors } from '../styles/theme'
 import { NearbyProfile } from '../types/location'
-import { TripOverlayData, TripOverlayStage, tripToOverlayData } from '../types/map'
-import type { Trip } from '../types/trip'
+import { TripOverlayData, TripOverlayStage, tripToOverlayData, publicTripToOverlayData } from '../types/map'
+import type { Trip, PublicTrip, PublicTripStage } from '../types/trip'
 import type { Activity } from '../types/activity'
 
 interface HomeScreenProps {
@@ -26,7 +26,11 @@ interface HomeScreenProps {
   onNavigateToChat?: () => void
 }
 
-export const HomeScreen: React.FC<HomeScreenProps> = ({ tripToShow, onClearTripToShow, onNavigateToChat }) => {
+export const HomeScreen: React.FC<HomeScreenProps> = ({
+  tripToShow,
+  onClearTripToShow,
+  onNavigateToChat,
+}) => {
   const { t } = useTranslation(['common', 'home'])
   const queryClient = useQueryClient()
   const { data: profile, isLoading } = useMyProfile()
@@ -82,6 +86,36 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ tripToShow, onClearTripT
     }
   }
 
+  // Handler to view a public trip on the map
+  const handleViewTripOnMap = (trip: PublicTrip) => {
+    setSelectedProfile(null) // Close the profile sheet
+    setTripOverlay(publicTripToOverlayData(trip))
+  }
+
+  // Handler to view a single stage on the map
+  const handleViewStageOnMap = (stage: PublicTripStage) => {
+    setSelectedProfile(null) // Close the profile sheet
+    // Create a minimal overlay with just this stage
+    setTripOverlay({
+      tripId: 'single-stage',
+      tripName: stage.city ?? 'Stage',
+      stages: [
+        {
+          id: stage.id,
+          latitude: stage.location.latitude,
+          longitude: stage.location.longitude,
+          city: stage.city,
+          country: stage.country,
+          arrivedAt: stage.arrived_at,
+          stageOrder: stage.stage_order,
+          note: null,
+        },
+      ],
+      totalDistanceKm: 0,
+      stagesCount: 1,
+    })
+  }
+
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -134,7 +168,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ tripToShow, onClearTripT
             isProfileVisible={profile.is_visible}
             otherProfiles={otherProfiles ?? []}
             onProfileSelect={handleProfileSelect}
-            nearbyActivities={showActivities ? nearbyActivities ?? [] : []}
+            nearbyActivities={showActivities ? (nearbyActivities ?? []) : []}
             onActivitySelect={setSelectedActivity}
             tripOverlay={tripOverlay}
             onTripOverlayClose={handleCloseTripOverlay}
@@ -182,6 +216,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ tripToShow, onClearTripT
                 setSelectedProfile(null)
                 onNavigateToChat?.()
               }}
+              onViewStageOnMap={handleViewStageOnMap}
+              onViewTripOnMap={handleViewTripOnMap}
             />
           ) : null}
 

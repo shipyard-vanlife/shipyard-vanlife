@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import { colors, spacing, fontSize, fontWeight, borderRadius, shadows } from '../../styles/theme'
 import { convertDistance, getDistanceUnit } from '../../utils/distance'
+import { formatNumber } from '../../utils/formatting'
 
 interface ProfileStatsProps {
   daysOnRoad: number
@@ -19,13 +20,6 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({
   city,
 }) => {
   const { t } = useTranslation('profile')
-
-  const formatNumber = (num: number): string => {
-    if (num >= 1000) {
-      return num.toLocaleString('fr-FR')
-    }
-    return num.toString()
-  }
 
   return (
     <View style={styles.container}>
