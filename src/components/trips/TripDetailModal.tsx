@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useDeleteTrip, useEndTrip, useTripDetail } from '../../hooks/useTrips'
 import { borderRadius, colors, fontSize, fontWeight, spacing } from '../../styles/theme'
+import { formatDateLong } from '../../utils/formatDate'
 import type { Trip, TripStage } from '../../types/trip'
 import { AddStageButton } from './AddStageButton'
 import { TripStageDetailModal } from './stages/detail/TripStageDetailModal'
@@ -73,19 +74,8 @@ export function TripDetailModal({ visible, tripId, onClose, onViewOnMap }: TripD
     return null
   }
 
-  const startDate = new Date(trip.start_date).toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-
-  const endDate = trip.end_date
-    ? new Date(trip.end_date).toLocaleDateString('fr-FR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })
-    : null
+  const startDate = formatDateLong(trip.start_date)
+  const endDate = trip.end_date ? formatDateLong(trip.end_date) : null
 
   const handleEndTrip = () => {
     Alert.alert(t('confirmations.endTripTitle'), t('confirmations.endTripMessage'), [

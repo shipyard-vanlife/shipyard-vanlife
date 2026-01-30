@@ -66,3 +66,56 @@ export function formatDateCompact(date: Date | string | null, fallback = '-'): s
     month: 'short',
   })
 }
+
+/**
+ * Formats a date with only short month and year.
+ * Example: "janv. 2000" (FR) or "Jan 2000" (EN)
+ */
+export function formatMonthYear(date: Date | string | null, fallback = '-'): string {
+  if (!date) return fallback
+
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US'
+
+  return dateObj.toLocaleDateString(locale, {
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
+/**
+ * Formats a time in HH:MM format.
+ * Example: "14:30"
+ */
+export function formatTime(date: Date | string | null, fallback = '-'): string {
+  if (!date) return fallback
+
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US'
+
+  return dateObj.toLocaleTimeString(locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+/**
+ * Formats a date range.
+ * Example: "janv. 2024 → mars 2024" or "janv. 2024 → en cours"
+ */
+export function formatDateRange(
+  startDate: Date | string | null,
+  endDate: Date | string | null,
+  ongoingLabel = 'en cours'
+): string {
+  if (!startDate) return '-'
+
+  const startStr = formatMonthYear(startDate)
+
+  if (!endDate) {
+    return `${startStr} → ${ongoingLabel}`
+  }
+
+  const endStr = formatMonthYear(endDate)
+  return startStr === endStr ? startStr : `${startStr} → ${endStr}`
+}

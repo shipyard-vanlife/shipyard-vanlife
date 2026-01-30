@@ -13,16 +13,23 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
-import { useAuth } from '../contexts/AuthContext'
 import { TermsModal } from '../components/TermsModal'
+import { useSignUp } from '../hooks'
 import {
-  sanitizeInput,
   sanitizeEmail,
   validatePasswordStrength,
   passwordsMatch,
   isValidEmail,
   containsSuspiciousCharacters,
 } from '../utils/security/validation'
+import {
+  colors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  shadows,
+} from '../styles/theme'
 
 interface RegisterScreenProps {
   onNavigateToLogin: () => void
@@ -33,12 +40,11 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [showTermsModal, setShowTermsModal] = useState(false)
-  const { signUp } = useAuth()
+  const { mutateAsync: signUp, isPending: loading } = useSignUp()
 
   const handleRegister = async () => {
     // Vérification des champs requis
@@ -79,16 +85,13 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
       return
     }
 
-    setLoading(true)
     try {
-      await signUp(cleanEmail, password)
+      await signUp({ email: cleanEmail, password })
       Alert.alert(t('success.title'), t('success.message'), [
         { text: 'OK', onPress: onNavigateToLogin },
       ])
     } catch (error: any) {
       Alert.alert(t('errors.title'), error.message)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -104,6 +107,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
           <TextInput
             style={styles.input}
             placeholder={t('email')}
+            placeholderTextColor={colors.text.muted}
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
@@ -117,6 +121,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
             <TextInput
               style={styles.passwordInput}
               placeholder={t('password')}
+              placeholderTextColor={colors.text.muted}
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
@@ -128,7 +133,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
               style={styles.eyeButton}
               onPress={() => setShowPassword(!showPassword)}
             >
-              <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color="#666" />
+              <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color={colors.text.tertiary} />
             </TouchableOpacity>
           </View>
 
@@ -136,6 +141,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
             <TextInput
               style={styles.passwordInput}
               placeholder={t('confirmPassword')}
+              placeholderTextColor={colors.text.muted}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               secureTextEntry={!showConfirmPassword}
@@ -147,7 +153,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
               style={styles.eyeButton}
               onPress={() => setShowConfirmPassword(!showConfirmPassword)}
             >
-              <Ionicons name={showConfirmPassword ? 'eye-off' : 'eye'} size={24} color="#666" />
+              <Ionicons name={showConfirmPassword ? 'eye-off' : 'eye'} size={24} color={colors.text.tertiary} />
             </TouchableOpacity>
           </View>
 
@@ -160,7 +166,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
               disabled={loading}
             >
               <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}>
-                {acceptedTerms && <Ionicons name="checkmark" size={18} color="#fff" />}
+                {acceptedTerms && <Ionicons name="checkmark" size={18} color={colors.white} />}
               </View>
             </TouchableOpacity>
             <Text style={styles.termsText}>
@@ -177,7 +183,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={colors.white} />
             ) : (
               <Text style={styles.buttonText}>{t('submit')}</Text>
             )}
@@ -205,116 +211,112 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F1E8',
+    backgroundColor: colors.primary.main,
   },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
   },
   content: {
-    padding: 20,
+    padding: spacing.xl,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 40,
+    fontSize: fontSize.display,
+    fontWeight: fontWeight.bold,
+    marginBottom: spacing.huge,
     textAlign: 'center',
-    color: '#2C2C2C',
+    color: colors.text.primary,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#D4C5B9',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 15,
-    fontSize: 16,
-    color: '#2C2C2C',
+    borderColor: colors.border.main,
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+    fontSize: fontSize.lg,
+    color: colors.text.primary,
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#D4C5B9',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    marginBottom: 15,
-    paddingRight: 10,
+    borderColor: colors.border.main,
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.lg,
+    marginBottom: spacing.lg,
+    paddingRight: spacing.sm,
   },
   passwordInput: {
     flex: 1,
-    padding: 15,
-    fontSize: 16,
-    color: '#2C2C2C',
+    padding: spacing.lg,
+    fontSize: fontSize.lg,
+    color: colors.text.primary,
   },
   eyeButton: {
-    padding: 5,
+    padding: spacing.xs,
   },
   passwordRequirements: {
-    fontSize: 12,
-    color: '#8B7355',
-    marginBottom: 15,
-    marginTop: -5,
+    fontSize: fontSize.xs,
+    color: colors.text.muted,
+    marginBottom: spacing.lg,
+    marginTop: -spacing.xs,
   },
   termsContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 20,
-    marginTop: 5,
+    marginBottom: spacing.xl,
+    marginTop: spacing.xs,
   },
   checkboxTouchable: {
-    marginRight: 10,
+    marginRight: spacing.sm,
   },
   checkbox: {
     width: 24,
     height: 24,
     borderWidth: 2,
-    borderColor: '#E07A5F',
-    borderRadius: 6,
+    borderColor: colors.secondary.main,
+    borderRadius: borderRadius.sm,
     justifyContent: 'center',
     alignItems: 'center',
   },
   checkboxChecked: {
-    backgroundColor: '#E07A5F',
+    backgroundColor: colors.secondary.main,
   },
   termsText: {
     flex: 1,
-    fontSize: 14,
-    color: '#4A4A4A',
+    fontSize: fontSize.base,
+    color: colors.text.secondary,
     lineHeight: 20,
   },
   termsLink: {
-    color: '#E07A5F',
-    fontWeight: '600',
+    color: colors.secondary.main,
+    fontWeight: fontWeight.semibold,
     textDecorationLine: 'underline',
   },
   button: {
-    backgroundColor: '#E07A5F',
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: colors.secondary.main,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
     alignItems: 'center',
-    marginTop: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    marginTop: spacing.md,
+    ...shadows.medium,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: colors.white,
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
   },
   linkContainer: {
-    marginTop: 20,
+    marginTop: spacing.xl,
     alignItems: 'center',
   },
   linkText: {
-    color: '#E07A5F',
-    fontSize: 14,
-    fontWeight: '500',
+    color: colors.secondary.main,
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.medium,
   },
 })

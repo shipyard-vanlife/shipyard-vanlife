@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
@@ -37,11 +37,14 @@ export const ChatScreen: React.FC = () => {
     connectionId: string
   } | null>(null)
 
-  const handleFriendSelect = async (friendId: string, connectionId: string) => {
-    // Invalider le cache pour avoir les dernières données du profil
-    await queryClient.invalidateQueries({ queryKey: profileKeys.byId(friendId) })
-    setSelectedFriend({ friendId, connectionId })
-  }
+  const handleFriendSelect = useCallback(
+    async (friendId: string, connectionId: string) => {
+      // Invalider le cache pour avoir les dernières données du profil
+      await queryClient.invalidateQueries({ queryKey: profileKeys.byId(friendId) })
+      setSelectedFriend({ friendId, connectionId })
+    },
+    [queryClient]
+  )
   const [openConversation, setOpenConversation] = useState<{
     connectionId: string
     friendName: string
@@ -60,14 +63,23 @@ export const ChatScreen: React.FC = () => {
   const { mutate: deleteConnection } = useDeleteConnection()
   const { data: myProfile } = useMyProfile()
 
-  const handleAcceptConnection = (connectionId: string) => {
-    // Block if user is not verified
-    if (myProfile?.verification_status !== 'approved') {
-      Alert.alert(t('verification.requiredTitle'), t('verification.requiredMessage'))
-      return
-    }
-    acceptConnection(connectionId)
-  }
+  const handleAcceptConnection = useCallback(
+    (connectionId: string) => {
+      // Block if user is not verified
+      if (myProfile?.verification_status !== 'approved') {
+        Alert.alert(t('verification.requiredTitle'), t('verification.requiredMessage'))
+        return
+      }
+      acceptConnection(connectionId)
+    },
+    [myProfile?.verification_status, t, acceptConnection]
+  )
+
+  // Build lookup map for O(1) friend access by connectionId
+  const friendsByConnectionId = useMemo(
+    () => new Map(friends?.map(f => [f.connection_id, f]) ?? []),
+    [friends]
+  )
 
   // le realtime pour les connexions
   useRealtimeConnections()
@@ -81,112 +93,118 @@ export const ChatScreen: React.FC = () => {
     }
   }, [activeTab])
 
-  const renderFriendItem = ({ item }: { item: Friend }) => (
-    <View style={styles.friendCard}>
-      <TouchableOpacity
-        onPress={() => {
-          if (item.status === 'accepted') {
-            handleFriendSelect(item.friend_id, item.connection_id)
-          }
-        }}
-      >
-        {item.friend_avatar_url ? (
-          <Image source={{ uri: item.friend_avatar_url }} style={styles.avatar} />
-        ) : (
-          <View style={[styles.avatar, styles.avatarPlaceholder]}>
-            <Ionicons name="person" size={24} color={colors.text.tertiary} />
-          </View>
-        )}
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.friendText}
-        onPress={() => {
-          if (item.status === 'accepted') {
-            setOpenConversation({
-              connectionId: item.connection_id,
-              friendName: item.friend_username,
-              friendAvatar: item.friend_avatar_url,
-              friendId: item.friend_id,
-            })
-          }
-        }}
-      >
-        <View style={styles.friendNameRow}>
-          <Text style={styles.friendName}>{item.friend_username}</Text>
-          {item.status === 'pending' && (
-            <View style={styles.pendingBadge}>
-              <Text style={styles.pendingText}>{t('chat:status.pending')}</Text>
+  const renderFriendItem = useCallback(
+    ({ item }: { item: Friend }) => (
+      <View style={styles.friendCard}>
+        <TouchableOpacity
+          onPress={() => {
+            if (item.status === 'accepted') {
+              handleFriendSelect(item.friend_id, item.connection_id)
+            }
+          }}
+        >
+          {item.friend_avatar_url ? (
+            <Image source={{ uri: item.friend_avatar_url }} style={styles.avatar} />
+          ) : (
+            <View style={[styles.avatar, styles.avatarPlaceholder]}>
+              <Ionicons name="person" size={24} color={colors.text.tertiary} />
             </View>
           )}
-        </View>
-        {item.last_message ? (
-          <Text style={styles.lastMessage} numberOfLines={1}>
-            {item.last_message}
-          </Text>
-        ) : (
-          <Text style={styles.noMessage}>
-            {item.status === 'pending' ? t('chat:status.requestSent') : t('chat:status.noMessage')}
-          </Text>
-        )}
-      </TouchableOpacity>
-
-      {item.status === 'pending' ? (
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={() => deleteConnection(item.connection_id)}
-        >
-          <Ionicons name="close" size={18} color={colors.text.tertiary} />
         </TouchableOpacity>
-      ) : item.unread_count > 0 ? (
-        <View style={styles.unreadBadge}>
-          <Text style={styles.unreadText}>{item.unread_count}</Text>
-        </View>
-      ) : null}
-    </View>
+
+        <TouchableOpacity
+          style={styles.friendText}
+          onPress={() => {
+            if (item.status === 'accepted') {
+              setOpenConversation({
+                connectionId: item.connection_id,
+                friendName: item.friend_username,
+                friendAvatar: item.friend_avatar_url,
+                friendId: item.friend_id,
+              })
+            }
+          }}
+        >
+          <View style={styles.friendNameRow}>
+            <Text style={styles.friendName}>{item.friend_username}</Text>
+            {item.status === 'pending' && (
+              <View style={styles.pendingBadge}>
+                <Text style={styles.pendingText}>{t('chat:status.pending')}</Text>
+              </View>
+            )}
+          </View>
+          {item.last_message ? (
+            <Text style={styles.lastMessage} numberOfLines={1}>
+              {item.last_message}
+            </Text>
+          ) : (
+            <Text style={styles.noMessage}>
+              {item.status === 'pending' ? t('chat:status.requestSent') : t('chat:status.noMessage')}
+            </Text>
+          )}
+        </TouchableOpacity>
+
+        {item.status === 'pending' ? (
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => deleteConnection(item.connection_id)}
+          >
+            <Ionicons name="close" size={18} color={colors.text.tertiary} />
+          </TouchableOpacity>
+        ) : item.unread_count > 0 ? (
+          <View style={styles.unreadBadge}>
+            <Text style={styles.unreadText}>{item.unread_count}</Text>
+          </View>
+        ) : null}
+      </View>
+    ),
+    [t, handleFriendSelect, deleteConnection]
   )
 
-  const renderRequestItem = ({ item }: { item: ConnectionRequest }) => (
-    <View style={styles.requestCard}>
-      {/* Avatar cliquable pour voir le profil */}
-      <TouchableOpacity
-        onPress={() => {
-          handleFriendSelect(item.sender_id, item.connection_id)
-        }}
-      >
-        {item.sender_avatar_url ? (
-          <Image source={{ uri: item.sender_avatar_url }} style={styles.avatar} />
-        ) : (
-          <View style={[styles.avatar, styles.avatarPlaceholder]}>
-            <Ionicons name="person" size={24} color={colors.text.tertiary} />
-          </View>
-        )}
-      </TouchableOpacity>
-
-      {/* Info de la demande */}
-      <View style={styles.requestText}>
-        <Text style={styles.requestName}>{item.sender_username}</Text>
-        <Text style={styles.requestDate}>
-          {new Date(item.created_at).toLocaleDateString('fr-FR')}
-        </Text>
-      </View>
-
-      {/* Boutons d'action */}
-      <View style={styles.requestActions}>
+  const renderRequestItem = useCallback(
+    ({ item }: { item: ConnectionRequest }) => (
+      <View style={styles.requestCard}>
+        {/* Avatar cliquable pour voir le profil */}
         <TouchableOpacity
-          style={styles.acceptButton}
-          onPress={() => handleAcceptConnection(item.connection_id)}
+          onPress={() => {
+            handleFriendSelect(item.sender_id, item.connection_id)
+          }}
         >
-          <Ionicons name="checkmark" size={20} color={colors.white} />
+          {item.sender_avatar_url ? (
+            <Image source={{ uri: item.sender_avatar_url }} style={styles.avatar} />
+          ) : (
+            <View style={[styles.avatar, styles.avatarPlaceholder]}>
+              <Ionicons name="person" size={24} color={colors.text.tertiary} />
+            </View>
+          )}
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.rejectButton}
-          onPress={() => rejectConnection(item.connection_id)}
-        >
-          <Ionicons name="close" size={20} color={colors.white} />
-        </TouchableOpacity>
+
+        {/* Info de la demande */}
+        <View style={styles.requestText}>
+          <Text style={styles.requestName}>{item.sender_username}</Text>
+          <Text style={styles.requestDate}>
+            {new Date(item.created_at).toLocaleDateString('fr-FR')}
+          </Text>
+        </View>
+
+        {/* Boutons d'action */}
+        <View style={styles.requestActions}>
+          <TouchableOpacity
+            style={styles.acceptButton}
+            onPress={() => handleAcceptConnection(item.connection_id)}
+          >
+            <Ionicons name="checkmark" size={20} color={colors.white} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.rejectButton}
+            onPress={() => rejectConnection(item.connection_id)}
+          >
+            <Ionicons name="close" size={20} color={colors.white} />
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    ),
+    [handleFriendSelect, handleAcceptConnection, rejectConnection]
   )
 
   const renderContent = () => {
@@ -299,7 +317,7 @@ export const ChatScreen: React.FC = () => {
         connectionId={selectedFriend?.connectionId ?? null}
         onClose={() => setSelectedFriend(null)}
         onOpenConversation={(connectionId, friendName, friendAvatar) => {
-          const friend = friends?.find(f => f.connection_id === connectionId)
+          const friend = friendsByConnectionId.get(connectionId)
           setSelectedFriend(null)
           setOpenConversation({
             connectionId,

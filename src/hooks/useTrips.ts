@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../services/supabase'
 import type {
   AddStageInput,
@@ -7,6 +7,7 @@ import type {
   PublicTrip,
   UpdateStageNoteInput,
 } from '../types/trip'
+import { useQueryMutation } from './useQueryMutation'
 
 // Query keys
 export const tripKeys = {
@@ -82,9 +83,7 @@ export function useTripDetail(tripId: string | null) {
 // ============================================
 
 export function useCreateTrip() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+  return useQueryMutation({
     mutationFn: async (input: CreateTripInput): Promise<string> => {
       const { data, error } = await supabase.rpc('create_new_trip', {
         p_name: input.name,
@@ -97,10 +96,7 @@ export function useCreateTrip() {
       if (error) throw error
       return data as string
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: tripKeys.list() })
-      queryClient.invalidateQueries({ queryKey: tripKeys.active() })
-    },
+    invalidateKeys: [tripKeys.list(), tripKeys.active()],
   })
 }
 
@@ -109,9 +105,7 @@ export function useCreateTrip() {
 // ============================================
 
 export function useEndTrip() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+  return useQueryMutation({
     mutationFn: async (tripId: string): Promise<boolean> => {
       const { data, error } = await supabase.rpc('end_trip', {
         p_trip_id: tripId,
@@ -120,10 +114,7 @@ export function useEndTrip() {
       if (error) throw error
       return data as boolean
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: tripKeys.list() })
-      queryClient.invalidateQueries({ queryKey: tripKeys.active() })
-    },
+    invalidateKeys: [tripKeys.list(), tripKeys.active()],
   })
 }
 
@@ -132,9 +123,7 @@ export function useEndTrip() {
 // ============================================
 
 export function useAddStage() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+  return useQueryMutation({
     mutationFn: async (input: AddStageInput): Promise<string> => {
       const { data, error } = await supabase.rpc('add_trip_stage', {
         lat: input.latitude,
@@ -146,10 +135,8 @@ export function useAddStage() {
       if (error) throw error
       return data as string
     },
-    onSuccess: () => {
-      // Invalidate all trip-related queries to refresh list, active, and detail views
-      queryClient.invalidateQueries({ queryKey: tripKeys.all })
-    },
+    // Invalidate all trip-related queries to refresh list, active, and detail views
+    invalidateKeys: [tripKeys.all],
   })
 }
 
@@ -158,9 +145,7 @@ export function useAddStage() {
 // ============================================
 
 export function useDeleteTrip() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+  return useQueryMutation({
     mutationFn: async (tripId: string): Promise<boolean> => {
       const { data, error } = await supabase.rpc('delete_trip', {
         p_trip_id: tripId,
@@ -169,10 +154,7 @@ export function useDeleteTrip() {
       if (error) throw error
       return data as boolean
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: tripKeys.list() })
-      queryClient.invalidateQueries({ queryKey: tripKeys.active() })
-    },
+    invalidateKeys: [tripKeys.list(), tripKeys.active()],
   })
 }
 
@@ -181,9 +163,7 @@ export function useDeleteTrip() {
 // ============================================
 
 export function useUpdateStageNote() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+  return useQueryMutation({
     mutationFn: async (input: UpdateStageNoteInput): Promise<boolean> => {
       const { data, error } = await supabase.rpc('update_stage_note', {
         p_stage_id: input.stageId,
@@ -193,9 +173,7 @@ export function useUpdateStageNote() {
       if (error) throw error
       return data as boolean
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: tripKeys.all })
-    },
+    invalidateKeys: [tripKeys.all],
   })
 }
 
@@ -204,9 +182,7 @@ export function useUpdateStageNote() {
 // ============================================
 
 export function useDeleteStage() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+  return useQueryMutation({
     mutationFn: async (stageId: string): Promise<boolean> => {
       const { data, error } = await supabase.rpc('delete_trip_stage', {
         p_stage_id: stageId,
@@ -215,9 +191,7 @@ export function useDeleteStage() {
       if (error) throw error
       return data as boolean
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: tripKeys.all })
-    },
+    invalidateKeys: [tripKeys.all],
   })
 }
 

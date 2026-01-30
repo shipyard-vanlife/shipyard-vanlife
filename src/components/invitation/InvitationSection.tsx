@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { UserPlus, Trophy, Sparkles, AlertCircle, Lock } from 'lucide-react-native'
 import { colors, fontSize, fontWeight, spacing, borderRadius, shadows } from '../../styles/theme'
+import { formatDateLong } from '../../utils/formatDate'
 import { useInvitationCount, useGenerateInvitationCode } from '../../hooks/useInvitations'
 import { InvitationCodeModal } from './InvitationCodeModal'
 import { InvitationHistory } from './InvitationHistory'
@@ -40,15 +41,6 @@ export const InvitationSection: React.FC<InvitationSectionProps> = ({
   }
 
   const canGenerate = isVerified && !isSuspended
-
-  const formatSuspensionDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    })
-  }
 
   // Get milestone message based on count
   const getMilestoneMessage = () => {
@@ -89,7 +81,7 @@ export const InvitationSection: React.FC<InvitationSectionProps> = ({
         <View style={styles.alertContainer}>
           <AlertCircle size={18} color={colors.error} />
           <Text style={styles.alertText}>
-            {t('invitation:section.suspended', { date: formatSuspensionDate(suspendedUntil) })}
+            {t('invitation:section.suspended', { date: formatDateLong(suspendedUntil) })}
           </Text>
         </View>
       ) : !isVerified ? (

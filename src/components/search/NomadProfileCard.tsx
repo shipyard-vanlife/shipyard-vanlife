@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo } from 'react'
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
@@ -24,7 +24,7 @@ const formatDistance = (meters: number, t: any): string => {
   return `${(meters / 1000).toFixed(1)}${t('distance.kilometers')}`
 }
 
-export const NomadProfileCard: React.FC<NomadProfileCardProps> = ({
+export const NomadProfileCard = memo(function NomadProfileCard({
   profile,
   distance,
   onAddFriend,
@@ -33,7 +33,7 @@ export const NomadProfileCard: React.FC<NomadProfileCardProps> = ({
   isAlreadyFriend = false,
   isReceived = false,
   connectionId,
-}) => {
+}: NomadProfileCardProps) {
   const { t } = useTranslation('search')
 
   return (
@@ -121,7 +121,7 @@ export const NomadProfileCard: React.FC<NomadProfileCardProps> = ({
       </View>
     </TouchableOpacity>
   )
-}
+})
 
 const styles = StyleSheet.create({
   card: {
