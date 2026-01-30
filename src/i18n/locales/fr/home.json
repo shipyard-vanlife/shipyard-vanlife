@@ -7,7 +7,8 @@
   "map": {
     "loading": "Chargement de la carte...",
     "noLocation": "Aucune localisation définie. Déclare ta position pour voir la carte.",
-    "activities": "Activités"
+    "activities": "Activités",
+    "backToProfile": "Retour à {{username}}"
   },
   "noLocation": {
     "title": "Aucune localisation définie",

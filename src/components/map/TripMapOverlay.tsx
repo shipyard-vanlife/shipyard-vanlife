@@ -15,6 +15,10 @@ interface TripMapOverlayProps {
   stages: TripOverlayStage[]
   onStageSelect?: (stage: TripOverlayStage) => void
   onClose?: () => void
+  /** Callback to go back to the source profile (when viewing a trip from visitor profile) */
+  onBackToProfile?: () => void
+  /** Username of the source profile (displayed on the back button) */
+  sourceUsername?: string | null
 }
 
 export const TripMapOverlay: React.FC<TripMapOverlayProps> = ({
@@ -24,12 +28,15 @@ export const TripMapOverlay: React.FC<TripMapOverlayProps> = ({
   stages,
   onStageSelect,
   onClose,
+  onBackToProfile,
+  sourceUsername,
 }) => {
-  const { t } = useTranslation('trips')
+  const { t } = useTranslation(['trips', 'home'])
   const insets = useSafeAreaInsets()
   const [isExpanded, setIsExpanded] = useState(false)
 
   const distanceDisplay = formatDistance(totalDistanceKm, true)
+  const showBackButton = onBackToProfile && sourceUsername
 
   const toggleExpand = () => {
     setIsExpanded(!isExpanded)
@@ -42,18 +49,29 @@ export const TripMapOverlay: React.FC<TripMapOverlayProps> = ({
 
   return (
     <View style={[styles.container, { top: insets.top + 12 }]}>
-      <View style={[styles.content, isExpanded && styles.contentExpanded]}>
-        {/* Header cliquable */}
-        <TouchableOpacity style={styles.header} onPress={toggleExpand} activeOpacity={0.7}>
-          <View style={styles.textContainer}>
-            <Text style={styles.tripName} numberOfLines={1}>
-              {tripName}
-            </Text>
-            <Text style={styles.stats}>
-              {t('map.overlay.stages', { count: stagesCount })} • {distanceDisplay}
-            </Text>
-          </View>
-          <View style={styles.headerActions}>
+      <View style={styles.headerRow}>
+        {/* Back to profile button - shows when viewing a trip from visitor profile */}
+        {showBackButton ? (
+          <TouchableOpacity
+            style={styles.backToProfileButton}
+            onPress={onBackToProfile}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="arrow-back" size={18} color={colors.white} />
+          </TouchableOpacity>
+        ) : null}
+
+        <View style={[styles.content, isExpanded && styles.contentExpanded]}>
+          {/* Header cliquable */}
+          <TouchableOpacity style={styles.header} onPress={toggleExpand} activeOpacity={0.7}>
+            <View style={styles.textContainer}>
+              <Text style={styles.tripName} numberOfLines={1}>
+                {tripName}
+              </Text>
+              <Text style={styles.stats}>
+                {t('trips:map.overlay.stages', { count: stagesCount })} • {distanceDisplay}
+              </Text>
+            </View>
             <View style={styles.expandButton}>
               <Ionicons
                 name={isExpanded ? 'chevron-up' : 'chevron-down'}
@@ -61,42 +79,48 @@ export const TripMapOverlay: React.FC<TripMapOverlayProps> = ({
                 color={colors.text.secondary}
               />
             </View>
-            {onClose ? (
-              <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
-                <Ionicons name="close" size={20} color={colors.text.primary} />
-              </TouchableOpacity>
-            ) : null}
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
 
-        {/* Liste des étapes (visible quand expanded) */}
-        {isExpanded && (
-          <ScrollView
-            style={styles.stagesList}
-            showsVerticalScrollIndicator={false}
-            bounces={false}
+          {/* Liste des étapes (visible quand expanded) */}
+          {isExpanded && (
+            <ScrollView
+              style={styles.stagesList}
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+            >
+              {stages.map((stage, index) => (
+                <TouchableOpacity
+                  key={stage.id}
+                  style={[styles.stageItem, index === stages.length - 1 && styles.stageItemLast]}
+                  onPress={() => handleStagePress(stage)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.stageNumber}>
+                    <Text style={styles.stageNumberText}>{stage.stageOrder}</Text>
+                  </View>
+                  <View style={styles.stageInfo}>
+                    <Text style={styles.stageCity} numberOfLines={1}>
+                      {stage.city ?? t('trips:card.noCity')}
+                    </Text>
+                    <Text style={styles.stageDate}>{formatDateCompact(stage.arrivedAt)}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color={colors.text.tertiary} />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+        </View>
+
+        {/* Close button - outside the dropdown on the right */}
+        {onClose ? (
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={onClose}
+            activeOpacity={0.8}
           >
-            {stages.map((stage, index) => (
-              <TouchableOpacity
-                key={stage.id}
-                style={[styles.stageItem, index === stages.length - 1 && styles.stageItemLast]}
-                onPress={() => handleStagePress(stage)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.stageNumber}>
-                  <Text style={styles.stageNumberText}>{stage.stageOrder}</Text>
-                </View>
-                <View style={styles.stageInfo}>
-                  <Text style={styles.stageCity} numberOfLines={1}>
-                    {stage.city ?? t('card.noCity')}
-                  </Text>
-                  <Text style={styles.stageDate}>{formatDateCompact(stage.arrivedAt)}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={16} color={colors.text.tertiary} />
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
+            <Ionicons name="close" size={20} color={colors.white} />
+          </TouchableOpacity>
+        ) : null}
       </View>
     </View>
   )
@@ -109,7 +133,26 @@ const styles = StyleSheet.create({
     right: 16,
     zIndex: 10,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+  },
+  backToProfileButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 20,
+    backgroundColor: colors.secondary.main,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
   content: {
+    flex: 1,
     backgroundColor: colors.white,
     borderRadius: 12,
     shadowColor: colors.black,
@@ -142,11 +185,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.text.secondary,
   },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
   expandButton: {
     width: 36,
     height: 36,
@@ -155,12 +193,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   closeButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.primary.main,
+    width: 60,
+    height: 60,
+    borderRadius: 20,
+    backgroundColor: colors.text.tertiary,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
   stagesList: {
     maxHeight: 240,

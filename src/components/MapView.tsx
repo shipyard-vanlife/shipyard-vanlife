@@ -25,6 +25,9 @@ interface MapViewProps {
   tripOverlay?: TripOverlayData | null
   onTripOverlayClose?: () => void
   onStagePress?: (stage: TripOverlayStage) => void
+  // Back to profile props (when viewing trip from visitor profile)
+  onBackToProfile?: () => void
+  sourceProfileUsername?: string | null
 }
 
 export const MapView: React.FC<MapViewProps> = ({
@@ -39,6 +42,8 @@ export const MapView: React.FC<MapViewProps> = ({
   tripOverlay,
   onTripOverlayClose,
   onStagePress,
+  onBackToProfile,
+  sourceProfileUsername,
 }) => {
   const { t } = useTranslation('home')
   const mapRef = useRef<RNMapView>(null)
@@ -250,6 +255,8 @@ export const MapView: React.FC<MapViewProps> = ({
           stages={tripOverlay.stages}
           onStageSelect={handleStageSelect}
           onClose={onTripOverlayClose}
+          onBackToProfile={onBackToProfile}
+          sourceUsername={sourceProfileUsername}
         />
       )}
     </View>
