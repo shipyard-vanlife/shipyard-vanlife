@@ -1,4 +1,4 @@
-import type { Trip } from './trip'
+import type { Trip, PublicTrip } from './trip'
 
 // Stage data for map overlay
 export interface TripOverlayStage {
@@ -35,6 +35,26 @@ export function tripToOverlayData(trip: Trip): TripOverlayData {
       arrivedAt: s.arrived_at,
       stageOrder: s.stage_order,
       note: s.note,
+    })),
+    totalDistanceKm: trip.total_distance_km,
+    stagesCount: trip.stages_count,
+  }
+}
+
+// Helper function to convert PublicTrip to TripOverlayData (for viewing other users' trips)
+export function publicTripToOverlayData(trip: PublicTrip): TripOverlayData {
+  return {
+    tripId: trip.id,
+    tripName: trip.name,
+    stages: trip.stages.map(s => ({
+      id: s.id,
+      latitude: s.location.latitude,
+      longitude: s.location.longitude,
+      city: s.city,
+      country: s.country,
+      arrivedAt: s.arrived_at,
+      stageOrder: s.stage_order,
+      note: null, // Notes are always null for public trips
     })),
     totalDistanceKm: trip.total_distance_km,
     stagesCount: trip.stages_count,

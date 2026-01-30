@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 
 import { NearbyProfile } from '../../types/location'
+import type { PublicTrip, PublicTripStage } from '../../types/trip'
 import { ProfileContentView, ImageZoomModal } from '../shared'
 import { ConnectionActionButtons } from './ConnectionActionButtons'
 import { ModerationActions } from './ModerationActions'
@@ -40,12 +41,18 @@ interface VisitorProfileSheetProps {
   onClose?: () => void
   /** Callback to navigate to conversation */
   onMessage?: (connectionId: string) => void
+  /** Callback when user wants to view a trip stage on map */
+  onViewStageOnMap?: (stage: PublicTripStage) => void
+  /** Callback when user wants to view all trip stages on map */
+  onViewTripOnMap?: (trip: PublicTrip) => void
 }
 
 export const VisitorProfileSheet: React.FC<VisitorProfileSheetProps> = ({
   profile,
   onClose,
   onMessage,
+  onViewStageOnMap,
+  onViewTripOnMap,
 }) => {
   const { t } = useTranslation(['common', 'home'])
 
@@ -250,6 +257,8 @@ export const VisitorProfileSheet: React.FC<VisitorProfileSheetProps> = ({
             profile={displayProfile}
             isLoading={isLoadingProfile}
             onPhotoPress={setZoomedImage}
+            onViewStageOnMap={onViewStageOnMap}
+            onViewTripOnMap={onViewTripOnMap}
             renderActions={() => (
               <ConnectionActionButtons
                 connectionStatus={connectionStatus ?? null}

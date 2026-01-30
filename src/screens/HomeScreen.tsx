@@ -16,8 +16,8 @@ import {
 import { useNearbyActivities } from '../hooks/useActivities'
 import { colors } from '../styles/theme'
 import { NearbyProfile } from '../types/location'
-import { TripOverlayData, TripOverlayStage, tripToOverlayData } from '../types/map'
-import type { Trip } from '../types/trip'
+import { TripOverlayData, TripOverlayStage, tripToOverlayData, publicTripToOverlayData } from '../types/map'
+import type { Trip, PublicTrip, PublicTripStage } from '../types/trip'
 import type { Activity } from '../types/activity'
 
 interface HomeScreenProps {
@@ -84,6 +84,36 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         city: loc.city ?? undefined,
       })
     }
+  }
+
+  // Handler to view a public trip on the map
+  const handleViewTripOnMap = (trip: PublicTrip) => {
+    setSelectedProfile(null) // Close the profile sheet
+    setTripOverlay(publicTripToOverlayData(trip))
+  }
+
+  // Handler to view a single stage on the map
+  const handleViewStageOnMap = (stage: PublicTripStage) => {
+    setSelectedProfile(null) // Close the profile sheet
+    // Create a minimal overlay with just this stage
+    setTripOverlay({
+      tripId: 'single-stage',
+      tripName: stage.city ?? 'Stage',
+      stages: [
+        {
+          id: stage.id,
+          latitude: stage.location.latitude,
+          longitude: stage.location.longitude,
+          city: stage.city,
+          country: stage.country,
+          arrivedAt: stage.arrived_at,
+          stageOrder: stage.stage_order,
+          note: null,
+        },
+      ],
+      totalDistanceKm: 0,
+      stagesCount: 1,
+    })
   }
 
   if (isLoading) {
@@ -186,6 +216,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 setSelectedProfile(null)
                 onNavigateToChat?.()
               }}
+              onViewStageOnMap={handleViewStageOnMap}
+              onViewTripOnMap={handleViewTripOnMap}
             />
           ) : null}
 
