@@ -17,6 +17,7 @@ import { colors, spacing, borderRadius, fontSize, shadows } from '../../styles/t
 import { useCreateActivity } from '../../hooks/useActivities'
 import { useMyProfile } from '../../hooks/useProfiles'
 import { ActivityType, ACTIVITY_TYPE_ICONS, ACTIVITY_TYPE_COLORS } from '../../types/activity'
+import { LocationSearchInput } from './LocationSearchInput'
 
 interface CreateActivityModalProps {
   visible: boolean
@@ -32,6 +33,7 @@ export const CreateActivityModal: React.FC<CreateActivityModalProps> = ({ visibl
   const [description, setDescription] = useState('')
   const [activityType, setActivityType] = useState<ActivityType>('outdoor')
   const [locationName, setLocationName] = useState('')
+  const [locationCoords, setLocationCoords] = useState<{ latitude: number; longitude: number } | null>(null)
   const [startDate, setStartDate] = useState(new Date())
   const [showStartPicker, setShowStartPicker] = useState(false)
   const [endDate, setEndDate] = useState<Date | null>(null)
@@ -46,12 +48,8 @@ export const CreateActivityModal: React.FC<CreateActivityModalProps> = ({ visibl
       Alert.alert(t('common:errors.generic'), t('create.titleRequired'))
       return
     }
-    if (!locationName.trim()) {
+    if (!locationName.trim() || !locationCoords) {
       Alert.alert(t('common:errors.generic'), t('create.locationRequired'))
-      return
-    }
-    if (!myProfile?.location?.latitude || !myProfile?.location?.longitude) {
-      Alert.alert(t('common:errors.generic'), t('create.locationGpsRequired'))
       return
     }
 
@@ -60,8 +58,8 @@ export const CreateActivityModal: React.FC<CreateActivityModalProps> = ({ visibl
         title: title.trim(),
         description: description.trim() || undefined,
         activity_type: activityType,
-        latitude: myProfile.location.latitude,
-        longitude: myProfile.location.longitude,
+        latitude: locationCoords.latitude,
+        longitude: locationCoords.longitude,
         location_name: locationName.trim(),
         start_date: startDate.toISOString(),
         end_date: endDate?.toISOString(),
@@ -86,6 +84,7 @@ export const CreateActivityModal: React.FC<CreateActivityModalProps> = ({ visibl
     setDescription('')
     setActivityType('outdoor')
     setLocationName('')
+    setLocationCoords(null)
     setStartDate(new Date())
     setEndDate(null)
     setMaxParticipants('')
@@ -168,12 +167,13 @@ export const CreateActivityModal: React.FC<CreateActivityModalProps> = ({ visibl
           {/* Location */}
           <View style={styles.field}>
             <Text style={styles.label}>{t('create.location')}</Text>
-            <TextInput
-              style={styles.input}
+            <LocationSearchInput
               placeholder={t('create.locationPlaceholder')}
-              value={locationName}
-              onChangeText={setLocationName}
-              maxLength={100}
+              initialValue={locationName}
+              onLocationSelect={(location) => {
+                setLocationName(location.name)
+                setLocationCoords({ latitude: location.latitude, longitude: location.longitude })
+              }}
             />
           </View>
 

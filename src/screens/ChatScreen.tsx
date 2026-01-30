@@ -24,9 +24,12 @@ import { useRealtimeConnections } from '../hooks/useRealtimeConnections'
 import { Friend, ConnectionRequest } from '../types/chat'
 import { FriendProfileModal } from '../components/FriendProfileModal'
 import { ConversationScreen } from './ConversationScreen'
+import { ActivityChatScreen } from './ActivityChatScreen'
+import { useMyActivityChats } from '../hooks/useActivityChat'
+import { ACTIVITY_TYPE_ICONS, ACTIVITY_TYPE_COLORS } from '../types/activity'
 import { colors } from '../styles/theme'
 
-type ChatTab = 'friends' | 'requests'
+type ChatTab = 'friends' | 'groups' | 'requests'
 
 export const ChatScreen: React.FC = () => {
   const { t } = useTranslation(['common', 'chat'])
@@ -48,6 +51,7 @@ export const ChatScreen: React.FC = () => {
     friendAvatar: string | null
     friendId: string
   } | null>(null)
+  const [openActivityChat, setOpenActivityChat] = useState<string | null>(null)
 
   const { data: friends, isLoading: loadingFriends, refetch: refetchFriends } = useMyFriends()
   const {
@@ -55,6 +59,7 @@ export const ChatScreen: React.FC = () => {
     isLoading: loadingRequests,
     refetch: refetchRequests,
   } = useConnectionRequests()
+  const { data: activityChats, isLoading: loadingActivityChats } = useMyActivityChats()
   const { mutate: acceptConnection } = useAcceptConnection()
   const { mutate: rejectConnection } = useRejectConnection()
   const { mutate: deleteConnection } = useDeleteConnection()
@@ -146,6 +151,41 @@ export const ChatScreen: React.FC = () => {
     </View>
   )
 
+  const renderActivityChatItem = ({ item }: { item: any }) => (
+    <TouchableOpacity
+      style={styles.friendCard}
+      onPress={() => setOpenActivityChat(item.activity_id)}
+    >
+      <View
+        style={[
+          styles.avatar,
+          { backgroundColor: ACTIVITY_TYPE_COLORS[item.activity_type as keyof typeof ACTIVITY_TYPE_COLORS] },
+        ]}
+      >
+        <Ionicons name="calendar" size={24} color={colors.white} />
+      </View>
+
+      <View style={styles.friendText}>
+        <Text style={styles.friendName} numberOfLines={1}>
+          {item.activity_title}
+        </Text>
+        {item.last_message ? (
+          <Text style={styles.lastMessage} numberOfLines={1}>
+            {item.last_message}
+          </Text>
+        ) : (
+          <Text style={styles.noMessage}>{t('chat:status.noMessage')}</Text>
+        )}
+      </View>
+
+      {item.unread_count > 0 && (
+        <View style={styles.unreadBadge}>
+          <Text style={styles.unreadText}>{item.unread_count}</Text>
+        </View>
+      )}
+    </TouchableOpacity>
+  )
+
   const renderRequestItem = ({ item }: { item: ConnectionRequest }) => (
     <View style={styles.requestCard}>
       {/* Avatar cliquable pour voir le profil */}
@@ -217,6 +257,33 @@ export const ChatScreen: React.FC = () => {
           contentContainerStyle={styles.listContent}
         />
       )
+    } else if (activeTab === 'groups') {
+      if (loadingActivityChats) {
+        return (
+          <View style={styles.centerContainer}>
+            <ActivityIndicator size="large" color={colors.secondary.main} />
+          </View>
+        )
+      }
+
+      if (!activityChats || activityChats.length === 0) {
+        return (
+          <View style={styles.centerContainer}>
+            <Ionicons name="chatbubbles-outline" size={64} color={colors.text.tertiary} />
+            <Text style={styles.emptyTitle}>{t('chat:empty.groups.title')}</Text>
+            <Text style={styles.emptyText}>{t('chat:empty.groups.message')}</Text>
+          </View>
+        )
+      }
+
+      return (
+        <FlatList
+          data={activityChats}
+          renderItem={renderActivityChatItem}
+          keyExtractor={item => item.activity_id}
+          contentContainerStyle={styles.listContent}
+        />
+      )
     } else {
       if (loadingRequests) {
         return (
@@ -265,6 +332,21 @@ export const ChatScreen: React.FC = () => {
     )
   }
 
+  if (openActivityChat) {
+    return (
+      <ActivityChatScreen
+        route={{
+          params: {
+            activityId: openActivityChat,
+          },
+        }}
+        navigation={{
+          goBack: () => setOpenActivityChat(null),
+        }}
+      />
+    )
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -276,6 +358,17 @@ export const ChatScreen: React.FC = () => {
             {t('chat:tabs.friends')}
             {friends && friends.length > 0 && (
               <Text style={styles.tabBadge}> ({friends.length})</Text>
+            )}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'groups' && styles.tabActive]}
+          onPress={() => setActiveTab('groups')}
+        >
+          <Text style={[styles.tabText, activeTab === 'groups' && styles.tabTextActive]}>
+            {t('chat:tabs.groups')}
+            {activityChats && activityChats.length > 0 && (
+              <Text style={styles.tabBadge}> ({activityChats.length})</Text>
             )}
           </Text>
         </TouchableOpacity>

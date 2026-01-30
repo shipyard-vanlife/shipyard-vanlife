@@ -25,6 +25,7 @@ import {
 } from '../../hooks/useActivities'
 import { useMyProfile } from '../../hooks/useProfiles'
 import { ACTIVITY_TYPE_ICONS, ACTIVITY_TYPE_COLORS } from '../../types/activity'
+import { InviteFriendsModal } from './InviteFriendsModal'
 
 interface ActivityDetailModalProps {
   activityId: string | null
@@ -37,6 +38,7 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
 }) => {
   const { t, i18n } = useTranslation('activities')
   const locale = i18n.language === 'fr' ? fr : enUS
+  const [showInviteModal, setShowInviteModal] = useState(false)
 
   const { data: activity, isLoading } = useActivityById(activityId)
   const { data: participants } = useActivityParticipants(activityId)
@@ -242,6 +244,17 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
 
         {/* Action Buttons */}
         <View style={styles.footer}>
+          {/* Invite button for creator and participants */}
+          {(isCreator || isParticipant) && activity.status === 'open' && (
+            <TouchableOpacity
+              style={[styles.actionButton, styles.inviteButton]}
+              onPress={() => setShowInviteModal(true)}
+            >
+              <Ionicons name="person-add" size={20} color={colors.white} />
+              <Text style={styles.actionButtonText}>{t('actions.invite')}</Text>
+            </TouchableOpacity>
+          )}
+
           {isCreator ? (
             // Creator actions
             <>
@@ -290,6 +303,13 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
           )}
         </View>
       </View>
+
+      {/* Invite Friends Modal */}
+      <InviteFriendsModal
+        visible={showInviteModal}
+        activityId={activityId}
+        onClose={() => setShowInviteModal(false)}
+      />
     </Modal>
   )
 }
@@ -428,11 +448,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderTopWidth: 1,
     borderTopColor: colors.border.light,
+    gap: spacing.sm,
   },
   actionButton: {
+    flexDirection: 'row',
     paddingVertical: spacing.md,
     borderRadius: borderRadius.md,
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+  },
+  inviteButton: {
+    backgroundColor: colors.tertiary.main,
   },
   joinButton: {
     backgroundColor: colors.secondary.main,

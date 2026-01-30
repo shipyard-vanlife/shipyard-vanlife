@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons'
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Image, StyleSheet, Text, View } from 'react-native'
 import RNMapView, { Circle, Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps'
@@ -82,16 +82,35 @@ export const MapView: React.FC<MapViewProps> = ({
   }
 
   // Use zone_center (BLURRED coordinates) for other users' markers
-  const profilesData = otherProfiles
-    .filter(p => p.zone_center?.latitude && p.zone_center?.longitude)
-    .map(p => ({
-      id: p.id,
-      username: p.username,
-      lat: p.zone_center!.latitude,
-      lng: p.zone_center!.longitude,
-      avatarUrl: p.avatar_url,
-      profile: p,
-    }))
+  const profilesData = useMemo(
+    () =>
+      otherProfiles
+        .filter(p => p.zone_center?.latitude && p.zone_center?.longitude)
+        .map(p => ({
+          id: p.id,
+          username: p.username,
+          lat: p.zone_center!.latitude,
+          lng: p.zone_center!.longitude,
+          avatarUrl: p.avatar_url,
+          profile: p,
+        })),
+    [otherProfiles]
+  )
+
+  // Stabilize activity markers to prevent flickering
+  const activityMarkers = useMemo(
+    () =>
+      nearbyActivities
+        .filter(a => a.location?.latitude && a.location?.longitude)
+        .map(a => ({
+          id: a.id,
+          latitude: a.location.latitude,
+          longitude: a.location.longitude,
+          type: a.activity_type,
+          activity: a,
+        })),
+    [nearbyActivities]
+  )
 
   return (
     <View style={styles.container}>
@@ -175,20 +194,21 @@ export const MapView: React.FC<MapViewProps> = ({
 
         {/* Marqueurs des activités (masqués quand un trip est affiché) */}
         {!tripOverlay &&
-          nearbyActivities.map(activity => (
+          activityMarkers.map(marker => (
             <Marker
-              key={activity.id}
+              key={marker.id}
               coordinate={{
-                latitude: activity.location.latitude,
-                longitude: activity.location.longitude,
+                latitude: marker.latitude,
+                longitude: marker.longitude,
               }}
               anchor={{ x: 0.5, y: 0.5 }}
-              onPress={() => onActivitySelect?.(activity)}
+              onPress={() => onActivitySelect?.(marker.activity)}
+              tracksViewChanges={false}
             >
               <View
                 style={[
                   styles.activityMarker,
-                  { backgroundColor: ACTIVITY_TYPE_COLORS[activity.activity_type] },
+                  { backgroundColor: ACTIVITY_TYPE_COLORS[marker.type] },
                 ]}
               >
                 <Ionicons name="calendar" size={16} color={colors.white} />

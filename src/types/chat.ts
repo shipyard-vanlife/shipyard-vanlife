@@ -10,6 +10,24 @@ export interface Connection {
   updated_at: string
 }
 
+export interface Profile {
+  id: string
+  username: string
+  avatar_url: string | null
+}
+
+export interface ConnectionWithProfiles {
+  id: string
+  sender_id: string
+  receiver_id: string
+  user_id: string
+  status: ConnectionStatus
+  created_at: string
+  updated_at: string
+  sender_profile: Profile
+  receiver_profile: Profile
+}
+
 // Friend (connexion acceptée avec infos)
 export interface Friend {
   connection_id: string
