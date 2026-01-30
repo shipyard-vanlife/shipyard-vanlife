@@ -24,7 +24,7 @@ interface VisitorTripDetailModalProps {
   trip: PublicTrip | null
   isLoading?: boolean
   onClose: () => void
-  onViewStageOnMap?: (stage: PublicTripStage) => void
+  onViewStageOnMap?: (stage: PublicTripStage, trip: PublicTrip) => void
   onViewAllOnMap?: (trip: PublicTrip) => void
 }
 
@@ -167,7 +167,7 @@ export function VisitorTripDetailModal({
                     isFirst={index === 0}
                     isLast={index === trip.stages.length - 1}
                     showCountryFlag={shouldShowFlag(index)}
-                    onViewOnMap={onViewStageOnMap ? () => onViewStageOnMap(stage) : undefined}
+                    onViewOnMap={onViewStageOnMap && trip ? () => onViewStageOnMap(stage, trip) : undefined}
                   />
                 ))}
               </View>

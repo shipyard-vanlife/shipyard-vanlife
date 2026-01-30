@@ -51,6 +51,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   // Trip overlay state
   const [tripOverlay, setTripOverlay] = useState<TripOverlayData | null>(null)
   const [selectedStage, setSelectedStage] = useState<TripOverlayStage | null>(null)
+  // Store the profile we came from (to allow going back)
+  const [tripOverlaySourceProfile, setTripOverlaySourceProfile] = useState<NearbyProfile | null>(null)
 
   // Handle trip to show from navigation
   useEffect(() => {
@@ -63,6 +65,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const handleCloseTripOverlay = () => {
     setTripOverlay(null)
     setSelectedStage(null)
+    setTripOverlaySourceProfile(null)
+  }
+
+  // Handler to go back to the profile we came from
+  const handleBackToProfile = () => {
+    if (tripOverlaySourceProfile) {
+      setTripOverlay(null)
+      setSelectedStage(null)
+      setSelectedProfile(tripOverlaySourceProfile)
+      setTripOverlaySourceProfile(null)
+    }
   }
 
   const handleStagePress = (stage: TripOverlayStage) => {
@@ -88,32 +101,29 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
   // Handler to view a public trip on the map
   const handleViewTripOnMap = (trip: PublicTrip) => {
+    // Store the profile we came from so we can go back
+    if (selectedProfile) {
+      setTripOverlaySourceProfile(selectedProfile)
+    }
     setSelectedProfile(null) // Close the profile sheet
     setTripOverlay(publicTripToOverlayData(trip))
   }
 
-  // Handler to view a single stage on the map
-  const handleViewStageOnMap = (stage: PublicTripStage) => {
+  // Handler to view a single stage on the map (with full trip context)
+  const handleViewStageOnMap = (stage: PublicTripStage, trip: PublicTrip) => {
+    // Store the profile we came from so we can go back
+    if (selectedProfile) {
+      setTripOverlaySourceProfile(selectedProfile)
+    }
     setSelectedProfile(null) // Close the profile sheet
-    // Create a minimal overlay with just this stage
-    setTripOverlay({
-      tripId: 'single-stage',
-      tripName: stage.city ?? 'Stage',
-      stages: [
-        {
-          id: stage.id,
-          latitude: stage.location.latitude,
-          longitude: stage.location.longitude,
-          city: stage.city,
-          country: stage.country,
-          arrivedAt: stage.arrived_at,
-          stageOrder: stage.stage_order,
-          note: null,
-        },
-      ],
-      totalDistanceKm: 0,
-      stagesCount: 1,
-    })
+    // Use the full trip for the overlay so user can navigate between all stages
+    const overlayData = publicTripToOverlayData(trip)
+    setTripOverlay(overlayData)
+    // Find the corresponding stage in the overlay and select it (like clicking on its marker)
+    const overlayStage = overlayData.stages.find(s => s.id === stage.id)
+    if (overlayStage) {
+      setSelectedStage(overlayStage)
+    }
   }
 
   if (isLoading) {
@@ -173,35 +183,39 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             tripOverlay={tripOverlay}
             onTripOverlayClose={handleCloseTripOverlay}
             onStagePress={handleStagePress}
+            onBackToProfile={tripOverlaySourceProfile ? handleBackToProfile : undefined}
+            sourceProfileUsername={tripOverlaySourceProfile?.username}
           />
 
-          {/* Toggle Activities Button */}
-          <View style={styles.toggleActivitiesButton}>
-            <TouchableOpacity
-              style={[
-                styles.toggleButton,
-                { backgroundColor: showActivities ? colors.secondary.main : colors.white },
-              ]}
-              onPress={() => setShowActivities(!showActivities)}
-            >
-              <Ionicons
-                name="calendar"
-                size={20}
-                color={showActivities ? colors.white : colors.text.primary}
-              />
-              <Text
+          {/* Toggle Activities Button - hidden when trip overlay is shown */}
+          {!tripOverlay && (
+            <View style={styles.toggleActivitiesButton}>
+              <TouchableOpacity
                 style={[
-                  styles.toggleButtonText,
-                  { color: showActivities ? colors.white : colors.text.primary },
+                  styles.toggleButton,
+                  { backgroundColor: showActivities ? colors.secondary.main : colors.white },
                 ]}
+                onPress={() => setShowActivities(!showActivities)}
               >
-                {t('home:map.activities')}
-              </Text>
-            </TouchableOpacity>
-          </View>
+                <Ionicons
+                  name="calendar"
+                  size={20}
+                  color={showActivities ? colors.white : colors.text.primary}
+                />
+                <Text
+                  style={[
+                    styles.toggleButtonText,
+                    { color: showActivities ? colors.white : colors.text.primary },
+                  ]}
+                >
+                  {t('home:map.activities')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
           {/* Card overlay avec info ville */}
-          {profile.city ? (
+          {profile.city && !tripOverlay ? (
             <View style={styles.mapOverlay}>
               <Text style={styles.cityLabel}>{profile.city}</Text>
             </View>

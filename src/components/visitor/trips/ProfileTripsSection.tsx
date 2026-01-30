@@ -11,7 +11,7 @@ const CARD_GAP = spacing.md
 
 interface ProfileTripsSectionProps {
   userId: string
-  onViewStageOnMap?: (stage: PublicTripStage) => void
+  onViewStageOnMap?: (stage: PublicTripStage, trip: PublicTrip) => void
   onViewAllTripsOnMap?: (trip: PublicTrip) => void
 }
 
@@ -38,9 +38,9 @@ export function ProfileTripsSection({
   }, [])
 
   const handleViewStageOnMap = useCallback(
-    (stage: PublicTripStage) => {
+    (stage: PublicTripStage, trip: PublicTrip) => {
       handleCloseModal()
-      onViewStageOnMap?.(stage)
+      onViewStageOnMap?.(stage, trip)
     },
     [onViewStageOnMap, handleCloseModal]
   )
