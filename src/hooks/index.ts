@@ -1,5 +1,17 @@
 export { useSignIn, useSignOut, useSignUp } from './useAuth'
 export { useAvatarUpload } from './useAvatarUpload'
+export { useConnectionHandlers } from './useConnectionHandlers'
+export {
+  connectionKeys,
+  useAcceptConnection,
+  useAllConnections,
+  useCheckConnection,
+  useConnectionRequests,
+  useDeleteConnection,
+  useMyFriends,
+  useRejectConnection,
+  useSendConnectionRequest,
+} from './useConnections'
 export {
   useImagePicker,
   type ImagePickerError,
