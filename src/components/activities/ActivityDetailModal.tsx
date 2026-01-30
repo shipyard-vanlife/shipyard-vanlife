@@ -116,8 +116,8 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
 
   const isFull =
     activity.max_participants !== null &&
-    activity.current_participants !== undefined &&
-    activity.current_participants >= activity.max_participants
+    participants !== undefined &&
+    participants.length >= activity.max_participants
 
   const isCreator = activity.creator_id === myProfile?.id
   const isParticipant = activity.is_participant
@@ -216,7 +216,7 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
           {/* Participants */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>
-              {t('detail.participants')} ({activity.current_participants || 0}
+              {t('detail.participants')} ({participants?.length || 0}
               {activity.max_participants ? `/${activity.max_participants}` : ''})
             </Text>
             {!activity.max_participants && (

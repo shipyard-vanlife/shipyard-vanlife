@@ -29,24 +29,62 @@ export function useNearbyActivities(
   longitude: number | null,
   radiusKm: number = 50
 ) {
-  return useQuery({
+  const queryClient = useQueryClient()
+
+  const query = useQuery({
     queryKey:
       latitude && longitude ? activityKeys.nearby(latitude, longitude, radiusKm) : ['disabled'],
     queryFn: async (): Promise<Activity[]> => {
       if (!latitude || !longitude) return []
 
       const { data, error } = await supabase.rpc('get_nearby_activities', {
-        user_lat: latitude,
-        user_lng: longitude,
-        radius_km: radiusKm,
+        p_latitude: latitude,
+        p_longitude: longitude,
+        p_radius_km: radiusKm,
       })
 
       if (error) throw error
-      return (data as Activity[]) ?? []
+
+      // Transform data to match Activity interface
+      return (data as any[])?.map(activity => ({
+        ...activity,
+        location: {
+          latitude: activity.latitude,
+          longitude: activity.longitude,
+        },
+      })) ?? []
     },
     enabled: !!latitude && !!longitude,
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
+
+  // Realtime subscription for all activities (for nearby updates)
+  useEffect(() => {
+    if (!latitude || !longitude) return
+
+    const channel = supabase
+      .channel('nearby-activities-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'activities',
+        },
+        () => {
+          queryClient.invalidateQueries({
+            queryKey: activityKeys.nearby(latitude, longitude, radiusKm)
+          })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [latitude, longitude, radiusKm, queryClient])
+
+  return query
 }
 
 // ============================================
@@ -54,7 +92,24 @@ export function useNearbyActivities(
 // ============================================
 
 export function useMyActivities() {
-  return useQuery({
+  const queryClient = useQueryClient()
+  const {
+    data: session,
+    isLoading: sessionLoading,
+    error: sessionError,
+  } = useQuery({
+    queryKey: ['session'],
+    queryFn: async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+      return session
+    },
+  })
+
+  const userId = session?.user?.id
+
+  const query = useQuery({
     queryKey: activityKeys.my(),
     queryFn: async (): Promise<Activity[]> => {
       const { data, error } = await supabase.rpc('get_my_activities')
@@ -62,8 +117,50 @@ export function useMyActivities() {
       if (error) throw error
       return (data as Activity[]) ?? []
     },
+    enabled: !!userId,
     staleTime: 1000 * 60 * 2, // 2 minutes
   })
+
+  // Realtime subscription for activities
+  useEffect(() => {
+    if (!userId) return
+
+    const channel = supabase
+      .channel(`my-activities-${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'activities',
+          filter: `creator_id=eq.${userId}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: activityKeys.my() })
+          queryClient.invalidateQueries({ queryKey: activityKeys.all })
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'activity_participants',
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: activityKeys.my() })
+          queryClient.invalidateQueries({ queryKey: activityKeys.all })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [userId, queryClient])
+
+  return query
 }
 
 // ============================================
@@ -436,17 +533,24 @@ export function useSendInvitation() {
 // ACCEPT INVITATION
 // ============================================
 
-export function useAcceptInvitation() {
+export function useRespondToInvitation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (invitationId: string): Promise<{ success: boolean; error?: string }> => {
-      const { data, error } = await supabase.rpc('accept_activity_invitation', {
-        invitation_id: invitationId,
+    mutationFn: async ({
+      invitationId,
+      response,
+    }: {
+      invitationId: string
+      response: 'accepted' | 'declined'
+    }): Promise<{ success: boolean; error?: string; status?: string }> => {
+      const { data, error } = await supabase.rpc('respond_to_activity_invitation', {
+        p_invitation_id: invitationId,
+        p_response: response,
       })
 
       if (error) throw error
-      return data as { success: boolean; error?: string }
+      return data as { success: boolean; error?: string; status?: string }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: activityKeys.all })

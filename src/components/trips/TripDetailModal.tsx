@@ -150,6 +150,9 @@ export function TripDetailModal({ visible, tripId, onClose, onViewOnMap }: TripD
                 size={24}
                 color={trip.is_active ? colors.secondary.main : colors.text.muted}
               />
+              <Text style={styles.tripName} numberOfLines={1}>
+                {trip.name}
+              </Text>
               <View style={styles.statusContainer}>
                 <TripStatusBadge isActive={trip.is_active} />
                 <TripCountryFlags stages={trip.stages} />
@@ -291,8 +294,14 @@ const styles = StyleSheet.create({
   infoHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: spacing.md,
     marginBottom: spacing.md,
+  },
+  tripName: {
+    flex: 1,
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
+    color: colors.text.primary,
   },
   statusContainer: {
     alignItems: 'flex-end',
