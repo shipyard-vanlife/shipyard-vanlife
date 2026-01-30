@@ -26,22 +26,14 @@ export const BottomSheetHeader: React.FC<BottomSheetHeaderProps> = ({
           onPress={() => onVanPhotoPress?.(vanPhotoUrl)}
           activeOpacity={0.9}
         >
-          <Image
-            source={{ uri: vanPhotoUrl }}
-            style={styles.vanPhoto}
-            resizeMode="cover"
-          />
+          <Image source={{ uri: vanPhotoUrl }} style={styles.vanPhoto} resizeMode="cover" />
         </TouchableOpacity>
       )}
 
       {/* Avatar + Username + Van name */}
       <View style={styles.headerContainer}>
         {avatarUrl && (
-          <Image
-            source={{ uri: avatarUrl }}
-            style={styles.avatar}
-            resizeMode="cover"
-          />
+          <Image source={{ uri: avatarUrl }} style={styles.avatar} resizeMode="cover" />
         )}
         <View style={styles.header}>
           <Text style={styles.username}>{username}</Text>

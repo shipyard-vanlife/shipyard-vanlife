@@ -26,7 +26,11 @@ interface HomeScreenProps {
   onNavigateToChat?: () => void
 }
 
-export const HomeScreen: React.FC<HomeScreenProps> = ({ tripToShow, onClearTripToShow, onNavigateToChat }) => {
+export const HomeScreen: React.FC<HomeScreenProps> = ({
+  tripToShow,
+  onClearTripToShow,
+  onNavigateToChat,
+}) => {
   const { t } = useTranslation(['common', 'home'])
   const queryClient = useQueryClient()
   const { data: profile, isLoading } = useMyProfile()
@@ -134,7 +138,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ tripToShow, onClearTripT
             isProfileVisible={profile.is_visible}
             otherProfiles={otherProfiles ?? []}
             onProfileSelect={handleProfileSelect}
-            nearbyActivities={showActivities ? nearbyActivities ?? [] : []}
+            nearbyActivities={showActivities ? (nearbyActivities ?? []) : []}
             onActivitySelect={setSelectedActivity}
             tripOverlay={tripOverlay}
             onTripOverlayClose={handleCloseTripOverlay}

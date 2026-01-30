@@ -23,8 +23,10 @@ interface SetQueryDataConfig<TData, TVariables> {
  * Options for useQueryMutation hook.
  * Extends standard useMutation options with declarative cache management.
  */
-interface QueryMutationOptions<TData, TError, TVariables, TContext>
-  extends Omit<UseMutationOptions<TData, TError, TVariables, TContext>, 'mutationFn'> {
+interface QueryMutationOptions<TData, TError, TVariables, TContext> extends Omit<
+  UseMutationOptions<TData, TError, TVariables, TContext>,
+  'mutationFn'
+> {
   /** The mutation function */
   mutationFn: (variables: TVariables) => Promise<TData>
   /** Query keys to invalidate on success (triggers refetch when query is active) */

@@ -63,7 +63,10 @@ export const FriendProfileModal: React.FC<FriendProfileModalProps> = ({
 
     acceptConnection(connectionId, {
       onSuccess: () => {
-        Alert.alert(t('common:profile.friendAddedTitle'), t('common:profile.friendAddedMessage', { username: profile?.username }))
+        Alert.alert(
+          t('common:profile.friendAddedTitle'),
+          t('common:profile.friendAddedMessage', { username: profile?.username })
+        )
         onClose()
       },
       onError: () => {
@@ -77,7 +80,9 @@ export const FriendProfileModal: React.FC<FriendProfileModalProps> = ({
 
     Alert.alert(
       t('common:connection.rejectTitle'),
-      t('common:connection.rejectMessage', { username: profile?.username ?? t('common:profile.notFound') }),
+      t('common:connection.rejectMessage', {
+        username: profile?.username ?? t('common:profile.notFound'),
+      }),
       [
         { text: t('common:buttons.cancel'), style: 'cancel' },
         {
@@ -104,7 +109,9 @@ export const FriendProfileModal: React.FC<FriendProfileModalProps> = ({
 
     Alert.alert(
       t('common:connection.removeFriendTitle'),
-      t('common:connection.removeFriendMessage', { username: profile?.username ?? t('common:profile.notFound') }),
+      t('common:connection.removeFriendMessage', {
+        username: profile?.username ?? t('common:profile.notFound'),
+      }),
       [
         { text: t('common:buttons.cancel'), style: 'cancel' },
         {
@@ -113,7 +120,10 @@ export const FriendProfileModal: React.FC<FriendProfileModalProps> = ({
           onPress: () => {
             deleteConnection(connectionId, {
               onSuccess: () => {
-                Alert.alert(t('common:profile.friendRemovedTitle'), t('common:profile.friendRemovedMessage'))
+                Alert.alert(
+                  t('common:profile.friendRemovedTitle'),
+                  t('common:profile.friendRemovedMessage')
+                )
                 onClose()
               },
               onError: () => {
@@ -140,7 +150,10 @@ export const FriendProfileModal: React.FC<FriendProfileModalProps> = ({
       onClose()
       onOpenConversation(connectionId, profile.username, profile.avatar_url)
     } else {
-      Alert.alert(t('common:profile.openConversationTitle'), t('common:profile.openConversationMessage', { username: profile.username }))
+      Alert.alert(
+        t('common:profile.openConversationTitle'),
+        t('common:profile.openConversationMessage', { username: profile.username })
+      )
     }
   }
 
@@ -247,7 +260,9 @@ export const FriendProfileModal: React.FC<FriendProfileModalProps> = ({
                 >
                   <Ionicons name="person-remove" size={20} color={colors.white} />
                   <Text style={styles.removeText}>
-                    {isDeleting ? t('common:connection.removing') : t('common:connection.removeFriendTitle')}
+                    {isDeleting
+                      ? t('common:connection.removing')
+                      : t('common:connection.removeFriendTitle')}
                   </Text>
                 </TouchableOpacity>
               </>
@@ -263,7 +278,9 @@ export const FriendProfileModal: React.FC<FriendProfileModalProps> = ({
                 >
                   <Ionicons name="checkmark-circle" size={20} color={colors.white} />
                   <Text style={styles.acceptText}>
-                    {isAccepting ? t('common:connection.accepting') : t('common:connection.acceptRequest')}
+                    {isAccepting
+                      ? t('common:connection.accepting')
+                      : t('common:connection.acceptRequest')}
                   </Text>
                 </TouchableOpacity>
 
@@ -274,7 +291,9 @@ export const FriendProfileModal: React.FC<FriendProfileModalProps> = ({
                 >
                   <Ionicons name="close-circle" size={20} color={colors.white} />
                   <Text style={styles.removeText}>
-                    {isRejecting ? t('common:connection.rejecting') : t('common:connection.rejectRequest')}
+                    {isRejecting
+                      ? t('common:connection.rejecting')
+                      : t('common:connection.rejectRequest')}
                   </Text>
                 </TouchableOpacity>
               </>

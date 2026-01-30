@@ -61,7 +61,12 @@ export function VisitorTripDetailModal({
 
   if (isLoading) {
     return (
-      <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+      <Modal
+        visible={visible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={onClose}
+      >
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.secondary.main} />
@@ -74,7 +79,12 @@ export function VisitorTripDetailModal({
   if (!trip) return null
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={onClose}
+    >
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         {/* Header */}
         <View style={styles.header}>

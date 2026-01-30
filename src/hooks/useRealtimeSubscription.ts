@@ -69,7 +69,9 @@ interface RealtimeSubscriptionConfig<T extends Record<string, unknown> = Record<
  *   ],
  * })
  */
-export function useRealtimeSubscription<T extends Record<string, unknown> = Record<string, unknown>>({
+export function useRealtimeSubscription<
+  T extends Record<string, unknown> = Record<string, unknown>,
+>({
   channelName,
   table,
   schema = 'public',

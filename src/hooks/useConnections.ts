@@ -145,7 +145,7 @@ export function useCheckConnection(userId: string) {
           schema: 'public',
           table: 'connections',
         },
-        (payload) => {
+        payload => {
           console.log('🟢 Connection change detected:', payload)
           // Invalidate this specific connection check
           queryClient.invalidateQueries({ queryKey: [...connectionKeys.all, 'check', userId] })

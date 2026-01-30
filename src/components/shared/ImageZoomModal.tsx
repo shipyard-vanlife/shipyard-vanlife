@@ -13,7 +13,7 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = ({ imageUrl, onClos
     <Modal visible={!!imageUrl} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.container}>
         <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
-          <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
+          <TouchableOpacity activeOpacity={1} onPress={e => e.stopPropagation()}>
             {imageUrl ? (
               <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="contain" />
             ) : null}

@@ -14,14 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import { useSignIn } from '../hooks'
 import { sanitizeEmail, isValidEmail } from '../utils/security/validation'
-import {
-  colors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-  shadows,
-} from '../styles/theme'
+import { colors, spacing, fontSize, fontWeight, borderRadius, shadows } from '../styles/theme'
 
 interface LoginScreenProps {
   onNavigateToRegister: () => void
@@ -88,7 +81,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister }
             editable={!loading}
           />
           <TouchableOpacity style={styles.eyeButton} onPress={() => setShowPassword(!showPassword)}>
-            <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color={colors.text.tertiary} />
+            <Ionicons
+              name={showPassword ? 'eye-off' : 'eye'}
+              size={24}
+              color={colors.text.tertiary}
+            />
           </TouchableOpacity>
         </View>
 

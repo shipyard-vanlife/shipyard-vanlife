@@ -14,11 +14,7 @@ import { useProfileById } from '../hooks/useProfiles'
 import { colors } from '../styles/theme'
 import { NearbyProfile } from '../types/location'
 import { SkillBadge } from './SkillBadge'
-import {
-  BottomSheetActions,
-  BottomSheetHeader,
-  BottomSheetStats,
-} from './bottom-sheet'
+import { BottomSheetActions, BottomSheetHeader, BottomSheetStats } from './bottom-sheet'
 import { ProfilePhotoGrid } from './profile/ProfilePhotoGrid'
 import { ImageZoomModal } from './shared'
 
@@ -167,10 +163,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ profile, onClose }) =>
         </TouchableOpacity>
       )}
 
-      <ImageZoomModal
-        imageUrl={zoomedImage}
-        onClose={() => setZoomedImage(null)}
-      />
+      <ImageZoomModal imageUrl={zoomedImage} onClose={() => setZoomedImage(null)} />
     </Animated.View>
   )
 }

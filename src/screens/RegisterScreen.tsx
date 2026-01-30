@@ -22,14 +22,7 @@ import {
   isValidEmail,
   containsSuspiciousCharacters,
 } from '../utils/security/validation'
-import {
-  colors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-  shadows,
-} from '../styles/theme'
+import { colors, spacing, fontSize, fontWeight, borderRadius, shadows } from '../styles/theme'
 
 interface RegisterScreenProps {
   onNavigateToLogin: () => void
@@ -133,7 +126,11 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
               style={styles.eyeButton}
               onPress={() => setShowPassword(!showPassword)}
             >
-              <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color={colors.text.tertiary} />
+              <Ionicons
+                name={showPassword ? 'eye-off' : 'eye'}
+                size={24}
+                color={colors.text.tertiary}
+              />
             </TouchableOpacity>
           </View>
 
@@ -153,7 +150,11 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
               style={styles.eyeButton}
               onPress={() => setShowConfirmPassword(!showConfirmPassword)}
             >
-              <Ionicons name={showConfirmPassword ? 'eye-off' : 'eye'} size={24} color={colors.text.tertiary} />
+              <Ionicons
+                name={showConfirmPassword ? 'eye-off' : 'eye'}
+                size={24}
+                color={colors.text.tertiary}
+              />
             </TouchableOpacity>
           </View>
 

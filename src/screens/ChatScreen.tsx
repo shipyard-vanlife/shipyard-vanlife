@@ -139,7 +139,9 @@ export const ChatScreen: React.FC = () => {
             </Text>
           ) : (
             <Text style={styles.noMessage}>
-              {item.status === 'pending' ? t('chat:status.requestSent') : t('chat:status.noMessage')}
+              {item.status === 'pending'
+                ? t('chat:status.requestSent')
+                : t('chat:status.noMessage')}
             </Text>
           )}
         </TouchableOpacity>

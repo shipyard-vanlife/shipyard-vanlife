@@ -334,7 +334,11 @@ export const ProfileSetupScreen: React.FC = () => {
           </TouchableOpacity>
 
           {/* Sign out link */}
-          <TouchableOpacity style={styles.signOutLink} onPress={() => signOut()} disabled={isPending}>
+          <TouchableOpacity
+            style={styles.signOutLink}
+            onPress={() => signOut()}
+            disabled={isPending}
+          >
             <Text style={styles.signOutLinkText}>{t('profile:actions.signOut')}</Text>
           </TouchableOpacity>
         </View>

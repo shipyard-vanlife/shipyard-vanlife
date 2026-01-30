@@ -57,8 +57,14 @@ interface ConnectionState {
 export function useConnectionHandlers(
   options: UseConnectionHandlersOptions
 ): ConnectionHandlers & ConnectionState {
-  const { profileId, username, onAcceptSuccess, onRejectSuccess, onRemoveSuccess, onConnectSuccess } =
-    options
+  const {
+    profileId,
+    username,
+    onAcceptSuccess,
+    onRejectSuccess,
+    onRemoveSuccess,
+    onConnectSuccess,
+  } = options
 
   const { t } = useTranslation('common')
   const queryClient = useQueryClient()
@@ -125,13 +131,19 @@ export function useConnectionHandlers(
       sendRequest(profileId, {
         onSuccess: async () => {
           await invalidateAndRefetch()
-          Alert.alert(t('connection.requestSentTitle'), t('connection.requestSentMessage', { username }))
+          Alert.alert(
+            t('connection.requestSentTitle'),
+            t('connection.requestSentMessage', { username })
+          )
           onConnectSuccess?.()
         },
         onError: async (error: any) => {
           await refetchConnection()
           if (error?.message?.includes('Connection already exists')) {
-            Alert.alert(t('connection.existingConnectionTitle'), t('connection.existingConnectionMessage'))
+            Alert.alert(
+              t('connection.existingConnectionTitle'),
+              t('connection.existingConnectionMessage')
+            )
           } else {
             Alert.alert(t('errors.error'), t('connection.sendError'))
           }
@@ -196,25 +208,32 @@ export function useConnectionHandlers(
   const handleRemoveFriend = useCallback(() => {
     if (!connectionStatus?.id) return
 
-    Alert.alert(t('connection.removeFriendTitle'), t('connection.removeFriendMessage', { username }), [
-      { text: t('buttons.cancel'), style: 'cancel' },
-      {
-        text: t('connection.removeFriendButton'),
-        style: 'destructive',
-        onPress: () => {
-          deleteConnection(connectionStatus.id, {
-            onSuccess: async () => {
-              await invalidateAndRefetch()
-              Alert.alert(t('connection.removedSuccess'), t('connection.removedMessage', { username }))
-              onRemoveSuccess?.()
-            },
-            onError: () => {
-              Alert.alert(t('errors.generic'), t('connection.removedError'))
-            },
-          })
+    Alert.alert(
+      t('connection.removeFriendTitle'),
+      t('connection.removeFriendMessage', { username }),
+      [
+        { text: t('buttons.cancel'), style: 'cancel' },
+        {
+          text: t('connection.removeFriendButton'),
+          style: 'destructive',
+          onPress: () => {
+            deleteConnection(connectionStatus.id, {
+              onSuccess: async () => {
+                await invalidateAndRefetch()
+                Alert.alert(
+                  t('connection.removedSuccess'),
+                  t('connection.removedMessage', { username })
+                )
+                onRemoveSuccess?.()
+              },
+              onError: () => {
+                Alert.alert(t('errors.generic'), t('connection.removedError'))
+              },
+            })
+          },
         },
-      },
-    ])
+      ]
+    )
   }, [connectionStatus?.id, deleteConnection, invalidateAndRefetch, username, onRemoveSuccess, t])
 
   return {

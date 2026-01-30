@@ -61,7 +61,11 @@ const ERROR_PATTERNS: ErrorPattern[] = [
   { pattern: 'Not authenticated', code: 'NOT_AUTHENTICATED', i18nKey: 'errors.notAuthenticated' },
 
   // Verification
-  { pattern: 'Must be verified', code: 'VERIFICATION_REQUIRED', i18nKey: 'errors.verificationRequired' },
+  {
+    pattern: 'Must be verified',
+    code: 'VERIFICATION_REQUIRED',
+    i18nKey: 'errors.verificationRequired',
+  },
 
   // Invitations
   { pattern: 'suspended', code: 'INVITATION_SUSPENDED', i18nKey: 'errors.invitationSuspended' },
@@ -70,7 +74,11 @@ const ERROR_PATTERNS: ErrorPattern[] = [
   { pattern: 'Cannot use your own', code: 'OWN_CODE', i18nKey: 'errors.ownCode' },
 
   // Rate limiting
-  { pattern: 'once per month', code: 'USERNAME_CHANGE_LIMIT', i18nKey: 'errors.usernameChangeLimit' },
+  {
+    pattern: 'once per month',
+    code: 'USERNAME_CHANGE_LIMIT',
+    i18nKey: 'errors.usernameChangeLimit',
+  },
   { pattern: /rate limit/i, code: 'RATE_LIMITED', i18nKey: 'errors.rateLimited' },
 
   // Permissions
@@ -78,8 +86,16 @@ const ERROR_PATTERNS: ErrorPattern[] = [
   { pattern: /forbidden/i, code: 'FORBIDDEN', i18nKey: 'errors.forbidden' },
 
   // Help requests
-  { pattern: 'déjà une demande en attente', code: 'OWN_PENDING_REQUEST', i18nKey: 'errors.ownPendingRequest' },
-  { pattern: "demande d'aide est déjà en cours", code: 'PENDING_REQUEST_EXISTS', i18nKey: 'errors.pendingRequestExists' },
+  {
+    pattern: 'déjà une demande en attente',
+    code: 'OWN_PENDING_REQUEST',
+    i18nKey: 'errors.ownPendingRequest',
+  },
+  {
+    pattern: "demande d'aide est déjà en cours",
+    code: 'PENDING_REQUEST_EXISTS',
+    i18nKey: 'errors.pendingRequestExists',
+  },
 
   // Resource errors
   { pattern: /not found/i, code: 'NOT_FOUND', i18nKey: 'errors.notFound' },
@@ -126,8 +142,7 @@ export function mapSupabaseError(error: PostgrestError | Error): AppError {
   const message = error.message || 'Unknown error'
 
   for (const { pattern, code, i18nKey } of ERROR_PATTERNS) {
-    const matches =
-      typeof pattern === 'string' ? message.includes(pattern) : pattern.test(message)
+    const matches = typeof pattern === 'string' ? message.includes(pattern) : pattern.test(message)
 
     if (matches) {
       return createAppError(message, code, i18nKey, error)

@@ -44,7 +44,10 @@ export const HelpRequestModal: React.FC<HelpRequestModalProps> = ({
       { connectionId, skill: selectedSkill },
       {
         onSuccess: () => {
-          Alert.alert(t('help:requestSentTitle'), t('help:requestSentMessage', { name: friendName }))
+          Alert.alert(
+            t('help:requestSentTitle'),
+            t('help:requestSentMessage', { name: friendName })
+          )
           onClose()
           setSelectedSkill(null)
         },
@@ -95,9 +98,7 @@ export const HelpRequestModal: React.FC<HelpRequestModalProps> = ({
               </TouchableOpacity>
             )}
             ListEmptyComponent={
-              <Text style={styles.emptyText}>
-                {t('help:noSkills', { name: friendName })}
-              </Text>
+              <Text style={styles.emptyText}>{t('help:noSkills', { name: friendName })}</Text>
             }
           />
 

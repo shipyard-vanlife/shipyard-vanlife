@@ -37,11 +37,7 @@ export const NomadProfileCard = memo(function NomadProfileCard({
   const { t } = useTranslation('search')
 
   return (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
       {/* Section supérieure */}
       <View style={styles.header}>
         {/* Avatar */}
@@ -76,7 +72,7 @@ export const NomadProfileCard = memo(function NomadProfileCard({
       {/* Badges de compétences */}
       {profile.skills.length > 0 && (
         <View style={styles.tagsContainer}>
-          {profile.skills.slice(0, 3).map((skill) => (
+          {profile.skills.slice(0, 3).map(skill => (
             <SkillBadge key={skill} skill={skill} />
           ))}
         </View>
@@ -86,11 +82,7 @@ export const NomadProfileCard = memo(function NomadProfileCard({
       <View style={styles.footer}>
         {isReceived ? (
           // Demande reçue → Afficher texte "Demande reçue" et renvoyer vers le profil
-          <TouchableOpacity
-            style={styles.receivedButton}
-            onPress={onPress}
-            activeOpacity={0.8}
-          >
+          <TouchableOpacity style={styles.receivedButton} onPress={onPress} activeOpacity={0.8}>
             <Ionicons name="mail" size={14} color={colors.secondary.main} />
             <Text style={styles.receivedButtonText}>
               {t('card.received', { defaultValue: 'Demande reçue' })}
@@ -114,7 +106,11 @@ export const NomadProfileCard = memo(function NomadProfileCard({
               color={colors.white}
             />
             <Text style={styles.addButtonText}>
-              {isAlreadyFriend ? t('card.friend') : isPending ? t('card.pending') : t('card.addFriend')}
+              {isAlreadyFriend
+                ? t('card.friend')
+                : isPending
+                  ? t('card.pending')
+                  : t('card.addFriend')}
             </Text>
           </TouchableOpacity>
         )}

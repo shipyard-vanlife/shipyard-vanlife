@@ -63,7 +63,9 @@ export function useCreateHelpRequest() {
 
       if (error) throw error
     },
-    invalidateKeys: [(vars: CreateHelpRequestInput) => helpRequestKeys.byConnection(vars.connectionId)],
+    invalidateKeys: [
+      (vars: CreateHelpRequestInput) => helpRequestKeys.byConnection(vars.connectionId),
+    ],
   })
 }
 

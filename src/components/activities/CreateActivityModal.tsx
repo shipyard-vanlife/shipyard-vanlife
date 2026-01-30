@@ -39,7 +39,15 @@ export const CreateActivityModal: React.FC<CreateActivityModalProps> = ({ visibl
   const [maxParticipants, setMaxParticipants] = useState('')
   const [visibility, setVisibility] = useState<'public' | 'friends' | 'private'>('friends')
 
-  const activityTypes: ActivityType[] = ['outdoor', 'food', 'skills', 'social', 'sport', 'culture', 'other']
+  const activityTypes: ActivityType[] = [
+    'outdoor',
+    'food',
+    'skills',
+    'social',
+    'sport',
+    'culture',
+    'other',
+  ]
 
   const handleSubmit = () => {
     if (!title.trim()) {
@@ -152,12 +160,7 @@ export const CreateActivityModal: React.FC<CreateActivityModalProps> = ({ visibl
                     size={20}
                     color={activityType === type ? colors.white : colors.text.secondary}
                   />
-                  <Text
-                    style={[
-                      styles.typeText,
-                      activityType === type && { color: colors.white },
-                    ]}
-                  >
+                  <Text style={[styles.typeText, activityType === type && { color: colors.white }]}>
                     {t(`types.${type}`)}
                   </Text>
                 </TouchableOpacity>
@@ -180,10 +183,7 @@ export const CreateActivityModal: React.FC<CreateActivityModalProps> = ({ visibl
           {/* Start Date */}
           <View style={styles.field}>
             <Text style={styles.label}>{t('create.startDate')}</Text>
-            <TouchableOpacity
-              style={styles.dateButton}
-              onPress={() => setShowStartPicker(true)}
-            >
+            <TouchableOpacity style={styles.dateButton} onPress={() => setShowStartPicker(true)}>
               <Ionicons name="calendar" size={20} color={colors.secondary.main} />
               <Text style={styles.dateText}>
                 {startDate.toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US', {
@@ -211,10 +211,7 @@ export const CreateActivityModal: React.FC<CreateActivityModalProps> = ({ visibl
           {/* End Date (optional) */}
           <View style={styles.field}>
             <Text style={styles.label}>{t('create.endDate')}</Text>
-            <TouchableOpacity
-              style={styles.dateButton}
-              onPress={() => setShowEndPicker(true)}
-            >
+            <TouchableOpacity style={styles.dateButton} onPress={() => setShowEndPicker(true)}>
               <Ionicons name="calendar" size={20} color={colors.secondary.main} />
               <Text style={styles.dateText}>
                 {endDate
