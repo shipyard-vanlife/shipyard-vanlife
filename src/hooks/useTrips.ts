@@ -206,7 +206,7 @@ export function useUserTrips(userId: string | null) {
       if (!userId) return []
 
       const { data, error } = await supabase.rpc('get_user_trips', {
-        p_user_id: userId,
+        target_user_id: userId,
       })
 
       if (error) throw error
