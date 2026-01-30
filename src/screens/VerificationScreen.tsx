@@ -17,7 +17,7 @@ import {
   VerificationPhotosForm,
   VerificationConfirmation,
 } from '../components/verification'
-import { useAuth } from '../contexts/AuthContext'
+import { useSignOut } from '../hooks'
 import { useSubmitVerification } from '../hooks/useVerification'
 import { profileKeys } from '../hooks/useProfiles'
 import {
@@ -45,7 +45,7 @@ interface FormErrors {
 
 export const VerificationScreen: React.FC = () => {
   const { t } = useTranslation(['verification', 'common', 'profile'])
-  const { signOut } = useAuth()
+  const { mutate: signOut } = useSignOut()
   const queryClient = useQueryClient()
   const { mutate: submitVerification, isPending } = useSubmitVerification()
 
@@ -389,7 +389,7 @@ export const VerificationScreen: React.FC = () => {
           {/* Sign out link */}
           <TouchableOpacity
             style={styles.signOutLink}
-            onPress={signOut}
+            onPress={() => signOut()}
             disabled={isPending}
             accessibilityRole="button"
             accessibilityLabel={t('profile:actions.signOut')}

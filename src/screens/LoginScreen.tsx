@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { useAuth } from '../contexts/AuthContext'
+import { useSignIn } from '../hooks'
 import { sanitizeEmail, isValidEmail } from '../utils/security/validation'
 
 interface LoginScreenProps {
@@ -23,9 +23,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister }
   const { t } = useTranslation(['login', 'common'])
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const { signIn } = useAuth()
+  const { mutateAsync: signIn, isPending: loading } = useSignIn()
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -40,13 +39,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister }
       return
     }
 
-    setLoading(true)
     try {
-      await signIn(cleanEmail, password)
+      await signIn({ email: cleanEmail, password })
     } catch (error: any) {
       Alert.alert(t('errors.title'), error.message)
-    } finally {
-      setLoading(false)
     }
   }
 

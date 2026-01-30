@@ -13,8 +13,8 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
-import { useAuth } from '../contexts/AuthContext'
 import { TermsModal } from '../components/TermsModal'
+import { useSignUp } from '../hooks'
 import {
   sanitizeInput,
   sanitizeEmail,
@@ -33,12 +33,11 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [showTermsModal, setShowTermsModal] = useState(false)
-  const { signUp } = useAuth()
+  const { mutateAsync: signUp, isPending: loading } = useSignUp()
 
   const handleRegister = async () => {
     // Vérification des champs requis
@@ -79,16 +78,13 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
       return
     }
 
-    setLoading(true)
     try {
-      await signUp(cleanEmail, password)
+      await signUp({ email: cleanEmail, password })
       Alert.alert(t('success.title'), t('success.message'), [
         { text: 'OK', onPress: onNavigateToLogin },
       ])
     } catch (error: any) {
       Alert.alert(t('errors.title'), error.message)
-    } finally {
-      setLoading(false)
     }
   }
 
