@@ -87,48 +87,6 @@ export const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
               <Text style={styles.emptyText}>{t('invitations.noFriends')}</Text>
             </View>
           ) : (
-<<<<<<< HEAD
-            <View style={styles.friendsList}>
-              <FlatList
-                data={friends}
-                keyExtractor={item => item.id}
-                renderItem={({ item }) => {
-                  const friend =
-                    item.sender_id !== item.user_id ? item.sender_profile : item.receiver_profile
-
-                  // Skip if friend profile is null
-                  if (!friend) return null
-
-                  const isSelected = selectedFriends.includes(friend.id)
-
-                  return (
-                    <TouchableOpacity
-                      style={[styles.friendItem, isSelected && styles.friendItemSelected]}
-                      onPress={() => toggleFriend(friend.id)}
-                    >
-                      {friend.avatar_url ? (
-                        <Image source={{ uri: friend.avatar_url }} style={styles.avatar} />
-                      ) : (
-                        <View style={[styles.avatar, styles.avatarPlaceholder]}>
-                          <Ionicons name="person" size={24} color={colors.white} />
-                        </View>
-                      )}
-                      <Text style={styles.friendName}>{friend.username}</Text>
-                      {isSelected && (
-                        <Ionicons
-                          name="checkmark-circle"
-                          size={24}
-                          color={colors.secondary.main}
-                        />
-                      )}
-                    </TouchableOpacity>
-                  )
-                }}
-                contentContainerStyle={styles.listContent}
-                showsVerticalScrollIndicator={true}
-              />
-            </View>
-=======
             <FlatList
               data={friends}
               keyExtractor={item => item.friend_id}
@@ -157,7 +115,6 @@ export const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
               }}
               contentContainerStyle={styles.listContent}
             />
->>>>>>> dev
           )}
 
           {/* Message */}
