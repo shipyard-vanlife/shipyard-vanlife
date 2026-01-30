@@ -95,7 +95,7 @@ export interface ActivityWithParticipants extends Activity {
 
 // Activity type icons mapping
 export const ACTIVITY_TYPE_ICONS: Record<ActivityType, string> = {
-  outdoor: 'mountain',
+  outdoor: 'leaf',
   food: 'restaurant',
   skills: 'hammer',
   social: 'people',

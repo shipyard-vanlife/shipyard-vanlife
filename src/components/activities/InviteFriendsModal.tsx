@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { colors, spacing, borderRadius, fontSize } from '../../styles/theme'
 import { useSendInvitation } from '../../hooks/useActivities'
@@ -64,15 +65,17 @@ export const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
   }
 
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <View style={styles.container}>
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={28} color={colors.text.primary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('invitations.title')}</Text>
-          <View style={{ width: 28 }} />
+          <View style={styles.headerContent}>
+            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+              <Ionicons name="close" size={28} color={colors.text.primary} />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>{t('invitations.title')}</Text>
+            <View style={{ width: 28 }} />
+          </View>
         </View>
 
         {/* Content */}
@@ -84,6 +87,48 @@ export const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
               <Text style={styles.emptyText}>{t('invitations.noFriends')}</Text>
             </View>
           ) : (
+<<<<<<< HEAD
+            <View style={styles.friendsList}>
+              <FlatList
+                data={friends}
+                keyExtractor={item => item.id}
+                renderItem={({ item }) => {
+                  const friend =
+                    item.sender_id !== item.user_id ? item.sender_profile : item.receiver_profile
+
+                  // Skip if friend profile is null
+                  if (!friend) return null
+
+                  const isSelected = selectedFriends.includes(friend.id)
+
+                  return (
+                    <TouchableOpacity
+                      style={[styles.friendItem, isSelected && styles.friendItemSelected]}
+                      onPress={() => toggleFriend(friend.id)}
+                    >
+                      {friend.avatar_url ? (
+                        <Image source={{ uri: friend.avatar_url }} style={styles.avatar} />
+                      ) : (
+                        <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                          <Ionicons name="person" size={24} color={colors.white} />
+                        </View>
+                      )}
+                      <Text style={styles.friendName}>{friend.username}</Text>
+                      {isSelected && (
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={24}
+                          color={colors.secondary.main}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  )
+                }}
+                contentContainerStyle={styles.listContent}
+                showsVerticalScrollIndicator={true}
+              />
+            </View>
+=======
             <FlatList
               data={friends}
               keyExtractor={item => item.friend_id}
@@ -112,6 +157,7 @@ export const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
               }}
               contentContainerStyle={styles.listContent}
             />
+>>>>>>> dev
           )}
 
           {/* Message */}
@@ -145,7 +191,7 @@ export const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </SafeAreaView>
     </Modal>
   )
 }
@@ -156,13 +202,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary.main,
   },
   header: {
+    backgroundColor: colors.white,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border.light,
+  },
+  headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.md,
-    backgroundColor: colors.white,
   },
   closeButton: {
     padding: spacing.xs,
@@ -171,6 +220,8 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xl,
     fontWeight: '700',
     color: colors.text.primary,
+    flex: 1,
+    textAlign: 'center',
   },
   content: {
     flex: 1,
@@ -212,6 +263,11 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     marginRight: spacing.md,
+  },
+  avatarPlaceholder: {
+    backgroundColor: colors.primary.main,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   friendName: {
     flex: 1,

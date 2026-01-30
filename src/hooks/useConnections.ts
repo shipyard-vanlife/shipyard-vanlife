@@ -9,6 +9,38 @@ export const connectionKeys = {
   all: ['connections'] as const,
   friends: () => [...connectionKeys.all, 'friends'] as const,
   requests: () => [...connectionKeys.all, 'requests'] as const,
+  myConnections: () => [...connectionKeys.all, 'myConnections'] as const,
+}
+
+// Get my connections with profiles (for invitations)
+export function useMyConnections() {
+  return useQuery({
+    queryKey: connectionKeys.myConnections(),
+    queryFn: async (): Promise<ConnectionWithProfiles[]> => {
+      const { data: user } = await supabase.auth.getUser()
+      if (!user.user) throw new Error('Not authenticated')
+
+      const { data, error } = await supabase
+        .from('connections')
+        .select(`
+          *,
+          sender_profile:profiles!connections_sender_id_fkey(id, username, avatar_url),
+          receiver_profile:profiles!connections_receiver_id_fkey(id, username, avatar_url)
+        `)
+        .or(`sender_id.eq.${user.user.id},receiver_id.eq.${user.user.id}`)
+
+      if (error) throw error
+
+      // Add user_id to each connection
+      return (data?.map(conn => ({
+        ...conn,
+        user_id: user.user.id,
+      })) as ConnectionWithProfiles[]) ?? []
+    },
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+  })
 }
 
 // Cache duration constant - 5 minutes

@@ -1,6 +1,7 @@
 {
   "tabs": {
     "friends": "Amis",
+    "groups": "Groupes",
     "requests": "Demandes"
   },
   "status": {
@@ -12,6 +13,10 @@
     "friends": {
       "title": "Aucun ami",
       "message": "Envoie des demandes de connexion depuis la carte !"
+    },
+    "groups": {
+      "title": "Aucun chat de groupe",
+      "message": "Les conversations de groupe de tes activités apparaîtront ici"
     },
     "requests": {
       "title": "Aucune demande",

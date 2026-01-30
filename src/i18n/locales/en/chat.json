@@ -1,6 +1,7 @@
 {
   "tabs": {
     "friends": "Friends",
+    "groups": "Groups",
     "requests": "Requests"
   },
   "status": {
@@ -12,6 +13,10 @@
     "friends": {
       "title": "No friends",
       "message": "Send connection requests from the map!"
+    },
+    "groups": {
+      "title": "No group chats",
+      "message": "Group conversations from your activities will appear here"
     },
     "requests": {
       "title": "No requests",
