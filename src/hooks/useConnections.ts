@@ -1,7 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { supabase } from '../services/supabase'
 import { Connection, ConnectionRequest, Friend } from '../types/chat'
+import { useQueryMutation } from './useQueryMutation'
 
 // Query keys
 export const connectionKeys = {
@@ -9,6 +10,9 @@ export const connectionKeys = {
   friends: () => [...connectionKeys.all, 'friends'] as const,
   requests: () => [...connectionKeys.all, 'requests'] as const,
 }
+
+// Cache duration constant - 5 minutes
+const STALE_TIME = 5 * 60 * 1000
 
 // Get my friends (accepted connections)
 export function useMyFriends() {
@@ -19,8 +23,7 @@ export function useMyFriends() {
       if (error) throw error
       return (data as Friend[]) ?? []
     },
-    staleTime: 0,
-    refetchOnMount: 'always',
+    staleTime: STALE_TIME,
     refetchOnWindowFocus: true,
   })
 }
@@ -34,7 +37,7 @@ export function useConnectionRequests() {
       if (error) throw error
       return (data as ConnectionRequest[]) ?? []
     },
-    refetchOnMount: 'always',
+    staleTime: STALE_TIME,
     refetchOnWindowFocus: true,
   })
 }
@@ -55,16 +58,14 @@ export function useAllConnections() {
       if (error) throw error
       return (data as Connection[]) ?? []
     },
-    refetchOnMount: 'always',
+    staleTime: STALE_TIME,
     refetchOnWindowFocus: true,
   })
 }
 
 // Send a connection request
 export function useSendConnectionRequest() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+  return useQueryMutation({
     mutationFn: async (receiverId: string): Promise<string> => {
       const { data, error } = await supabase.rpc('send_connection_request', {
         p_receiver_id: receiverId,
@@ -72,46 +73,33 @@ export function useSendConnectionRequest() {
       if (error) throw error
       return data as string
     },
-    onSuccess: async () => {
-      // Invalidate all connection-related queries
-      await queryClient.invalidateQueries({ queryKey: connectionKeys.all })
-    },
+    invalidateKeys: [connectionKeys.all],
   })
 }
 
 // Accept a connection request
 export function useAcceptConnection() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+  return useQueryMutation({
     mutationFn: async (connectionId: string): Promise<void> => {
       const { error } = await supabase.rpc('accept_connection', {
         p_connection_id: connectionId,
       })
       if (error) throw error
     },
-    onSuccess: async () => {
-      // Invalidate all connection-related queries
-      await queryClient.invalidateQueries({ queryKey: connectionKeys.all })
-    },
+    invalidateKeys: [connectionKeys.all],
   })
 }
 
 // Reject a connection request
 export function useRejectConnection() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+  return useQueryMutation({
     mutationFn: async (connectionId: string): Promise<void> => {
       const { error } = await supabase.rpc('reject_connection', {
         p_connection_id: connectionId,
       })
       if (error) throw error
     },
-    onSuccess: async () => {
-      // Invalidate all connection-related queries
-      await queryClient.invalidateQueries({ queryKey: connectionKeys.all })
-    },
+    invalidateKeys: [connectionKeys.all],
   })
 }
 
@@ -140,9 +128,8 @@ export function useCheckConnection(userId: string) {
       return connection as Connection | null
     },
     enabled: !!userId,
-    staleTime: 0, // Always refetch
-    refetchOnMount: 'always', // Refetch every time component mounts
-    refetchOnWindowFocus: true, // Refetch when window gains focus
+    staleTime: STALE_TIME,
+    refetchOnWindowFocus: true,
   })
 
   // Subscribe to realtime changes on connections table
@@ -178,18 +165,13 @@ export function useCheckConnection(userId: string) {
 
 // Delete a connection (cancel request or remove friend)
 export function useDeleteConnection() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+  return useQueryMutation({
     mutationFn: async (connectionId: string): Promise<void> => {
       const { error } = await supabase.rpc('delete_connection', {
         p_connection_id: connectionId,
       })
       if (error) throw error
     },
-    onSuccess: async () => {
-      // Invalidate all connection-related queries
-      await queryClient.invalidateQueries({ queryKey: connectionKeys.all })
-    },
+    invalidateKeys: [connectionKeys.all],
   })
 }

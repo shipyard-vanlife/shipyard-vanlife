@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../services/supabase'
 import type {
   NearbyProfile,
@@ -7,6 +7,10 @@ import type {
   PublicProfile,
 } from '../types/location'
 import type { ProfileInput, UserProfile } from '../types/user'
+import { useQueryMutation } from './useQueryMutation'
+
+// Cache duration constant - 5 minutes
+const STALE_TIME = 5 * 60 * 1000
 
 // Extended input for profile creation (location optional)
 export interface CreateProfileInput extends ProfileInput {
@@ -86,8 +90,7 @@ export function useAllVisibleProfiles() {
       if (error) throw error
       return (data as NearbyProfile[]) ?? []
     },
-    staleTime: 0,
-    refetchOnMount: 'always',
+    staleTime: STALE_TIME,
   })
 }
 
@@ -143,9 +146,7 @@ export function useZoneProfiles(params: ZoneProfilesParams | null) {
 // ============================================
 
 export function useCreateProfile() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+  return useQueryMutation({
     mutationFn: async (input: CreateProfileInput): Promise<void> => {
       const {
         data: { user },
@@ -153,7 +154,7 @@ export function useCreateProfile() {
 
       if (!user) throw new Error('Not authenticated')
 
-      // 1. Create profile
+      // 1. Create profile first (required before location/trip)
       const { error: profileError } = await supabase.from('profiles').insert({
         id: user.id,
         username: input.username,
@@ -172,33 +173,30 @@ export function useCreateProfile() {
 
       if (profileError) throw profileError
 
-      // 2. Update location and create first trip (only if location provided)
+      // 2. Update location and create first trip in parallel (both independent after profile exists)
       const hasLocation = input.latitude !== undefined && input.longitude !== undefined
 
       if (hasLocation) {
-        const { error: locationError } = await supabase.rpc('update_my_location', {
-          lat: input.latitude,
-          lng: input.longitude,
-          city_name: input.city ?? null,
-        })
+        const [locationResult, tripResult] = await Promise.all([
+          supabase.rpc('update_my_location', {
+            lat: input.latitude,
+            lng: input.longitude,
+            city_name: input.city ?? null,
+          }),
+          supabase.rpc('create_first_trip', {
+            trip_name: input.tripName,
+            lat: input.latitude,
+            lng: input.longitude,
+            city_name: input.city ?? null,
+            country_code: input.country ?? null,
+          }),
+        ])
 
-        if (locationError) throw locationError
-
-        // 3. Create first trip with first stage
-        const { error: tripError } = await supabase.rpc('create_first_trip', {
-          trip_name: input.tripName,
-          lat: input.latitude,
-          lng: input.longitude,
-          city_name: input.city ?? null,
-          country_code: input.country ?? null,
-        })
-
-        if (tripError) throw tripError
+        if (locationResult.error) throw locationResult.error
+        if (tripResult.error) throw tripResult.error
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: profileKeys.my() })
-    },
+    invalidateKeys: [profileKeys.my()],
   })
 }
 
@@ -208,9 +206,7 @@ export function useCreateProfile() {
 // Used when a partial profile exists from verification and needs username etc.
 
 export function useCompleteProfile() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+  return useQueryMutation({
     mutationFn: async (input: CreateProfileInput): Promise<void> => {
       const {
         data: { user },
@@ -237,33 +233,30 @@ export function useCompleteProfile() {
 
       if (profileError) throw profileError
 
-      // 2. Update location and create first trip (only if location provided)
+      // 2. Update location and create first trip in parallel (both independent after profile exists)
       const hasLocation = input.latitude !== undefined && input.longitude !== undefined
 
       if (hasLocation) {
-        const { error: locationError } = await supabase.rpc('update_my_location', {
-          lat: input.latitude,
-          lng: input.longitude,
-          city_name: input.city ?? null,
-        })
+        const [locationResult, tripResult] = await Promise.all([
+          supabase.rpc('update_my_location', {
+            lat: input.latitude,
+            lng: input.longitude,
+            city_name: input.city ?? null,
+          }),
+          supabase.rpc('create_first_trip', {
+            trip_name: input.tripName,
+            lat: input.latitude,
+            lng: input.longitude,
+            city_name: input.city ?? null,
+            country_code: input.country ?? null,
+          }),
+        ])
 
-        if (locationError) throw locationError
-
-        // 3. Create first trip with first stage
-        const { error: tripError } = await supabase.rpc('create_first_trip', {
-          trip_name: input.tripName,
-          lat: input.latitude,
-          lng: input.longitude,
-          city_name: input.city ?? null,
-          country_code: input.country ?? null,
-        })
-
-        if (tripError) throw tripError
+        if (locationResult.error) throw locationResult.error
+        if (tripResult.error) throw tripResult.error
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: profileKeys.my() })
-    },
+    invalidateKeys: [profileKeys.my()],
   })
 }
 
@@ -272,9 +265,7 @@ export function useCompleteProfile() {
 // ============================================
 
 export function useUpdateProfile() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+  return useQueryMutation({
     mutationFn: async (input: Partial<ProfileInput>): Promise<void> => {
       const {
         data: { user },
@@ -286,16 +277,12 @@ export function useUpdateProfile() {
 
       if (error) throw error
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: profileKeys.my() })
-    },
+    invalidateKeys: [profileKeys.my()],
   })
 }
 
 export function useUpdateUsername() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+  return useQueryMutation({
     mutationFn: async (newUsername: string): Promise<void> => {
       const { error } = await supabase.rpc('update_username', {
         p_new_username: newUsername,
@@ -308,9 +295,7 @@ export function useUpdateUsername() {
         throw error
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: profileKeys.my() })
-    },
+    invalidateKeys: [profileKeys.my()],
   })
 }
 
@@ -319,9 +304,7 @@ export function useUpdateUsername() {
 // ============================================
 
 export function useUpdateLocation() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+  return useQueryMutation({
     mutationFn: async (params: {
       latitude: number
       longitude: number
@@ -336,10 +319,7 @@ export function useUpdateLocation() {
       if (error) throw error
       return data as boolean
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: profileKeys.my() })
-      queryClient.invalidateQueries({ queryKey: profileKeys.all })
-    },
+    invalidateKeys: [profileKeys.my(), profileKeys.all],
   })
 }
 
@@ -348,9 +328,7 @@ export function useUpdateLocation() {
 // ============================================
 
 export function useDeleteProfile() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+  return useQueryMutation({
     mutationFn: async (): Promise<void> => {
       const {
         data: { user },
@@ -369,14 +347,8 @@ export function useDeleteProfile() {
 
       if (profileError) throw profileError
     },
-    onSuccess: () => {
-      // Clear all profile queries
-      queryClient.invalidateQueries({ queryKey: profileKeys.all })
-      // Clear all trip queries
-      queryClient.invalidateQueries({ queryKey: ['trips'] })
-      // Specifically set my profile to null to trigger ProfileSetupScreen
-      queryClient.setQueryData(profileKeys.my(), null)
-    },
+    invalidateKeys: [profileKeys.all, ['trips']],
+    setQueryData: { key: profileKeys.my(), data: null },
   })
 }
 
@@ -385,18 +357,12 @@ export function useDeleteProfile() {
 // ============================================
 
 export function useDeleteAccount() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+  return useQueryMutation({
     mutationFn: async (): Promise<void> => {
       const { error } = await supabase.rpc('delete_my_account')
       if (error) throw error
     },
-    onSuccess: async () => {
-      // Clear all React Query cache
-      queryClient.clear()
-      // Sign out will be handled by the component after this succeeds
-    },
+    clearAll: true, // Clear all React Query cache
   })
 }
 

@@ -1,7 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { supabase } from '../services/supabase'
 import type { InvitationCode } from '../types/invitation'
 import { profileKeys } from './useProfiles'
+import { useQueryMutation } from './useQueryMutation'
 
 // Query keys for invitation-related queries
 export const invitationKeys = {
@@ -50,9 +51,7 @@ export function useInvitationCount(userId?: string) {
 // ============================================
 
 export function useGenerateInvitationCode() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+  return useQueryMutation({
     mutationFn: async (): Promise<string> => {
       const { data, error } = await supabase.rpc('generate_invitation_code')
 
@@ -69,10 +68,7 @@ export function useGenerateInvitationCode() {
 
       return data as string
     },
-    onSuccess: () => {
-      // Invalidate the codes list to show the new code
-      queryClient.invalidateQueries({ queryKey: invitationKeys.myCodes() })
-    },
+    invalidateKeys: [invitationKeys.myCodes()],
   })
 }
 
@@ -81,9 +77,7 @@ export function useGenerateInvitationCode() {
 // ============================================
 
 export function useUseInvitationCode() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+  return useQueryMutation({
     mutationFn: async (code: string): Promise<boolean> => {
       const { data, error } = await supabase.rpc('use_invitation_code', {
         p_code: code.toUpperCase().trim(),
@@ -105,10 +99,7 @@ export function useUseInvitationCode() {
 
       return data as boolean
     },
-    onSuccess: () => {
-      // Invalidate profile to get updated invited_by field
-      queryClient.invalidateQueries({ queryKey: profileKeys.my() })
-    },
+    invalidateKeys: [profileKeys.my()],
   })
 }
 

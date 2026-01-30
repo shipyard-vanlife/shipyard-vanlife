@@ -1,6 +1,8 @@
-import { useMutation, useQuery, useQueryClient, useInfiniteQuery } from '@tanstack/react-query'
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
 import { supabase } from '../services/supabase'
 import { Message, MessageInput } from '../types/chat'
+import { useQueryMutation } from './useQueryMutation'
+import { connectionKeys } from './useConnections'
 
 // Query keys
 export const messageKeys = {
@@ -27,9 +29,7 @@ export function useMessages(connectionId: string) {
 
 // Send a message
 export function useSendMessage() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+  return useQueryMutation({
     mutationFn: async (input: MessageInput): Promise<string> => {
       const { data, error } = await supabase.rpc('send_message', {
         p_connection_id: input.connection_id,
@@ -38,33 +38,23 @@ export function useSendMessage() {
       if (error) throw error
       return data as string
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: messageKeys.infinite(variables.connection_id),
-      })
-    },
+    invalidateKeys: [(vars: MessageInput) => messageKeys.infinite(vars.connection_id)],
   })
 }
 
 // Mark messages as read
 export function useMarkMessagesAsRead() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+  return useQueryMutation({
     mutationFn: async (connectionId: string): Promise<void> => {
       const { error } = await supabase.rpc('mark_messages_as_read', {
         p_connection_id: connectionId,
       })
       if (error) throw error
     },
-    onSuccess: (_, connectionId) => {
-      queryClient.refetchQueries({
-        queryKey: messageKeys.conversation(connectionId),
-      })
-      queryClient.refetchQueries({
-        queryKey: ['connections', 'friends'],
-      })
-    },
+    refetchKeys: [
+      (connectionId: string) => messageKeys.conversation(connectionId),
+      connectionKeys.friends(),
+    ],
   })
 }
 
