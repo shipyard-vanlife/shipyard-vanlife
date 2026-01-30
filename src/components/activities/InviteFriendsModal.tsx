@@ -4,11 +4,15 @@ import {
   Alert,
   FlatList,
   Image,
+  Keyboard,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -78,8 +82,15 @@ export const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
           </View>
         </View>
 
-        {/* Content */}
-        <View style={styles.content}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={0}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={{ flex: 1 }}>
+              {/* Content */}
+              <View style={styles.content}>
           <Text style={styles.sectionTitle}>{t('invitations.selectFriends')}</Text>
 
           {friends.length === 0 ? (
@@ -87,34 +98,40 @@ export const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
               <Text style={styles.emptyText}>{t('invitations.noFriends')}</Text>
             </View>
           ) : (
-            <FlatList
-              data={friends}
-              keyExtractor={item => item.friend_id}
-              renderItem={({ item }) => {
-                const isSelected = selectedFriends.includes(item.friend_id)
+            <View style={styles.friendsList}>
+              <FlatList
+                data={friends}
+                keyExtractor={item => item.friend_id}
+                renderItem={({ item }) => {
+                  const isSelected = selectedFriends.includes(item.friend_id)
 
-                return (
-                  <TouchableOpacity
-                    style={[styles.friendItem, isSelected && styles.friendItemSelected]}
-                    onPress={() => toggleFriend(item.friend_id)}
-                  >
-                    <Image
-                      source={
-                        item.friend_avatar_url
-                          ? { uri: item.friend_avatar_url }
-                          : require('../../assets/default-avatar.png')
-                      }
-                      style={styles.avatar}
-                    />
-                    <Text style={styles.friendName}>{item.friend_username}</Text>
-                    {isSelected && (
-                      <Ionicons name="checkmark-circle" size={24} color={colors.secondary.main} />
-                    )}
-                  </TouchableOpacity>
-                )
-              }}
-              contentContainerStyle={styles.listContent}
-            />
+                  return (
+                    <TouchableOpacity
+                      style={[styles.friendItem, isSelected && styles.friendItemSelected]}
+                      onPress={() => toggleFriend(item.friend_id)}
+                    >
+                      {item.friend_avatar_url ? (
+                        <Image source={{ uri: item.friend_avatar_url }} style={styles.avatar} />
+                      ) : (
+                        <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                          <Ionicons name="person" size={24} color={colors.white} />
+                        </View>
+                      )}
+                      <Text style={styles.friendName}>{item.friend_username}</Text>
+                      {isSelected && (
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={24}
+                          color={colors.secondary.main}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  )
+                }}
+                contentContainerStyle={styles.listContent}
+                showsVerticalScrollIndicator={true}
+              />
+            </View>
           )}
 
           {/* Message */}
@@ -131,23 +148,26 @@ export const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
             />
           </View>
         </View>
+            </View>
+          </TouchableWithoutFeedback>
 
-        {/* Footer */}
-        <View style={styles.footer}>
-          <TouchableOpacity
-            style={[
-              styles.sendButton,
-              (isPending || selectedFriends.length === 0) && styles.sendButtonDisabled,
-            ]}
-            onPress={handleSend}
-            disabled={isPending || selectedFriends.length === 0}
-          >
-            <Text style={styles.sendButtonText}>
-              {isPending ? t('invitations.sending') : t('invitations.send')}
-              {selectedFriends.length > 0 && ` (${selectedFriends.length})`}
-            </Text>
-          </TouchableOpacity>
-        </View>
+          {/* Footer */}
+          <View style={styles.footer}>
+            <TouchableOpacity
+              style={[
+                styles.sendButton,
+                (isPending || selectedFriends.length === 0) && styles.sendButtonDisabled,
+              ]}
+              onPress={handleSend}
+              disabled={isPending || selectedFriends.length === 0}
+            >
+              <Text style={styles.sendButtonText}>
+                {isPending ? t('invitations.sending') : t('invitations.send')}
+                {selectedFriends.length > 0 && ` (${selectedFriends.length})`}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </Modal>
   )
@@ -199,6 +219,10 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: fontSize.md,
     color: colors.text.tertiary,
+  },
+  friendsList: {
+    flex: 1,
+    marginBottom: spacing.md,
   },
   listContent: {
     paddingBottom: spacing.lg,

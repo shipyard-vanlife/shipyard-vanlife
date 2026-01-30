@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { colors, shadows } from '../styles/theme'
 import { useMyFriends } from '../hooks/useConnections'
 import { useRealtimeConnections } from '../hooks/useRealtimeConnections'
+import { useMyInvitations } from '../hooks/useActivities'
 
 type TabName = 'trips' | 'home' | 'activities' | 'chat' | 'search' | 'profile'
 
@@ -32,6 +33,7 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
   onTabChange,
 }) => {
   const { data: friends } = useMyFriends()
+  const { data: invitations } = useMyInvitations()
 
   // Active le realtime pour mettre à jour le badge en temps réel
   useRealtimeConnections()
@@ -40,12 +42,17 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
   const totalUnreadCount =
     friends?.reduce((total, friend) => total + (friend.unread_count || 0), 0) || 0
 
+  // Calculer le nombre d'invitations pending
+  const pendingInvitationsCount =
+    invitations?.filter(inv => inv.status === 'pending').length || 0
+
   return (
     <View style={styles.container}>
       <View style={styles.tabBar}>
         {tabs.map(tab => {
           const isActive = activeTab === tab.name
-          const showBadge = tab.name === 'chat' && totalUnreadCount > 0
+          const showChatBadge = tab.name === 'chat' && totalUnreadCount > 0
+          const showActivitiesBadge = tab.name === 'activities' && pendingInvitationsCount > 0
 
           return (
             <TouchableOpacity
@@ -60,10 +67,17 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
                   size={26}
                   color={isActive ? colors.secondary.main : colors.text.tertiary}
                 />
-                {showBadge && (
+                {showChatBadge && (
                   <View style={styles.badge}>
                     <Text style={styles.badgeText}>
                       {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
+                    </Text>
+                  </View>
+                )}
+                {showActivitiesBadge && (
+                  <View key={`activities-badge-${pendingInvitationsCount}`} style={styles.badge}>
+                    <Text style={styles.badgeText}>
+                      {pendingInvitationsCount > 99 ? '99+' : pendingInvitationsCount}
                     </Text>
                   </View>
                 )}

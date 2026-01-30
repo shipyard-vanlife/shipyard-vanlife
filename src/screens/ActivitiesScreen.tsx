@@ -15,6 +15,7 @@ import { colors, spacing, borderRadius, fontSize, shadows } from '../styles/them
 import { ActivityCard } from '../components/activities/ActivityCard'
 import { ActivityDetailModal } from '../components/activities/ActivityDetailModal'
 import { CreateActivityModal } from '../components/activities/CreateActivityModal'
+import { InvitationCard } from '../components/activities/InvitationCard'
 import { useMyActivities, useNearbyActivities, useMyInvitations } from '../hooks/useActivities'
 import { useMyProfile } from '../hooks/useProfiles'
 import { Activity, ActivityType, ActivityStatus } from '../types/activity'
@@ -80,7 +81,12 @@ export const ActivitiesScreen: React.FC = () => {
     return result
   }, [searchQuery, selectedType, selectedStatus, nearbyActivities, myActivities, activeTab])
 
-  const isLoading = activeTab === 'nearby' ? loadingNearby : loadingMy
+  const isLoading =
+    activeTab === 'nearby'
+      ? loadingNearby
+      : activeTab === 'my'
+        ? loadingMy
+        : loadingInvitations
 
   const handleActivityPress = (activity: Activity) => {
     setSelectedActivity(activity)
@@ -148,9 +154,31 @@ export const ActivitiesScreen: React.FC = () => {
           style={[styles.tab, activeTab === 'invitations' && styles.tabActive]}
           onPress={() => setActiveTab('invitations')}
         >
-          <Text style={[styles.tabText, activeTab === 'invitations' && styles.tabTextActive]}>
-            {t('tabs.invitations')}
-          </Text>
+          <View style={{ position: 'relative' }}>
+            <Text style={[styles.tabText, activeTab === 'invitations' && styles.tabTextActive]}>
+              {t('tabs.invitations')}
+            </Text>
+            {invitations?.filter(inv => inv.status === 'pending').length > 0 && (
+              <View
+                style={{
+                  position: 'absolute',
+                  top: -5,
+                  right: -10,
+                  backgroundColor: colors.secondary.main,
+                  borderRadius: 10,
+                  minWidth: 20,
+                  height: 20,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  paddingHorizontal: 5,
+                }}
+              >
+                <Text style={{ color: colors.white, fontSize: 11, fontWeight: 'bold' }}>
+                  {invitations?.filter(inv => inv.status === 'pending').length}
+                </Text>
+              </View>
+            )}
+          </View>
         </TouchableOpacity>
       </View>
 
@@ -217,6 +245,26 @@ export const ActivitiesScreen: React.FC = () => {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.secondary.main} />
         </View>
+      ) : activeTab === 'invitations' ? (
+        <FlatList
+          data={invitations ?? []}
+          keyExtractor={item => item.id}
+          renderItem={({ item }) => (
+            <InvitationCard
+              invitation={item}
+              onPress={() => {
+                // Find the activity and open detail modal
+                const activity = nearbyActivities?.find(a => a.id === item.activity_id)
+                if (activity) {
+                  handleActivityPress(activity)
+                }
+              }}
+            />
+          )}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={renderEmptyState}
+          showsVerticalScrollIndicator={false}
+        />
       ) : (
         <FlatList
           data={filteredActivities}
@@ -230,15 +278,15 @@ export const ActivitiesScreen: React.FC = () => {
         />
       )}
 
-      {/* FAB - Create Activity Button */}
+
       <TouchableOpacity style={styles.fab} onPress={handleCreateActivity}>
         <Ionicons name="add" size={32} color={colors.white} />
       </TouchableOpacity>
 
-      {/* Create Activity Modal */}
+
       <CreateActivityModal visible={showCreateModal} onClose={() => setShowCreateModal(false)} />
 
-      {/* Activity Detail Modal */}
+   
       <ActivityDetailModal
         activityId={selectedActivity?.id ?? null}
         onClose={() => setSelectedActivity(null)}

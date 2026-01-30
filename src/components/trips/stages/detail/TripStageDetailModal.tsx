@@ -36,7 +36,7 @@ export function TripStageDetailModal({
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet"
+      presentationStyle="formSheet"
       onRequestClose={onClose}
     >
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
