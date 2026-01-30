@@ -1,6 +1,5 @@
 // Main trip components
 export { TripStatusBadge } from './TripStatusBadge'
-export { TripEmptyState } from './TripEmptyState'
 export { TripStats } from './TripStats'
 export { TripCard } from './TripCard'
 export { AddStageButton } from './AddStageButton'

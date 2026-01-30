@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { memo, useMemo } from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import CountryFlag from 'react-native-country-flag'
@@ -6,6 +6,7 @@ import { colors, fontSize, fontWeight, spacing, borderRadius, shadows } from '..
 import type { Trip } from '../../types/trip'
 import { TripStatusBadge } from './TripStatusBadge'
 import { TripStats } from './TripStats'
+import { formatDateShort } from '../../utils/formatDate'
 
 const MAX_FLAGS_DISPLAY = 4
 const FLAG_CONTAINER_SIZE = 22
@@ -16,20 +17,9 @@ interface TripCardProps {
   onPress: () => void
 }
 
-export function TripCard({ trip, onPress }: TripCardProps) {
-  const startDate = new Date(trip.start_date).toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
-
-  const endDate = trip.end_date
-    ? new Date(trip.end_date).toLocaleDateString('fr-FR', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      })
-    : null
+export const TripCard = memo(function TripCard({ trip, onPress }: TripCardProps) {
+  const startDate = formatDateShort(trip.start_date)
+  const endDate = trip.end_date ? formatDateShort(trip.end_date) : null
 
   // Get first stage city as starting point
   const startCity = trip.stages?.[0]?.city ?? null
@@ -116,7 +106,7 @@ export function TripCard({ trip, onPress }: TripCardProps) {
       </View>
     </TouchableOpacity>
   )
-}
+})
 
 const styles = StyleSheet.create({
   container: {

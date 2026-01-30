@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons'
 import CountryFlag from 'react-native-country-flag'
 import { useTranslation } from 'react-i18next'
 import { colors, fontSize, fontWeight, spacing, borderRadius, shadows } from '../../../styles/theme'
+import { formatMonthYear } from '../../../utils/formatDate'
 import type { PublicTrip } from '../../../types/trip'
 
 const CARD_WIDTH = 160
@@ -21,12 +22,9 @@ export function VisitorTripCard({ trip, onPress }: VisitorTripCardProps) {
 
   // Format dates in short format
   const dateRange = useMemo(() => {
-    const start = new Date(trip.start_date)
-    const startStr = start.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })
-
+    const startStr = formatMonthYear(trip.start_date)
     if (trip.end_date) {
-      const end = new Date(trip.end_date)
-      const endStr = end.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })
+      const endStr = formatMonthYear(trip.end_date)
       return `${startStr} - ${endStr}`
     }
     return startStr

@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons'
 import CountryFlag from 'react-native-country-flag'
 import { useTranslation } from 'react-i18next'
 import { colors, fontSize, fontWeight, spacing, borderRadius } from '../../../styles/theme'
+import { formatDateShort } from '../../../utils/formatDate'
 import type { PublicTripStage } from '../../../types/trip'
 
 const FLAG_SIZE = 20
@@ -28,11 +29,7 @@ export function VisitorTripStageItem({
   const { t } = useTranslation('trips')
 
   // Format date
-  const dateStr = new Date(stage.arrived_at).toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
+  const dateStr = formatDateShort(stage.arrived_at)
 
   // Build location text
   const locationText = [stage.city, stage.country].filter(Boolean).join(', ')
