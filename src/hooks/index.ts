@@ -1,3 +1,4 @@
+export { useSignIn, useSignOut, useSignUp } from './useAuth'
 export { useAvatarUpload } from './useAvatarUpload'
 export {
   useImagePicker,
