@@ -21,7 +21,7 @@ interface ProfileContentViewProps {
   /** Render function for moderation actions (report, block) */
   renderModerationActions?: () => React.ReactNode
   /** Callback when user wants to view a trip stage on map */
-  onViewStageOnMap?: (stage: PublicTripStage) => void
+  onViewStageOnMap?: (stage: PublicTripStage, trip: PublicTrip) => void
   /** Callback when user wants to view all trip stages on map */
   onViewTripOnMap?: (trip: PublicTrip) => void
 }
