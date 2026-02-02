@@ -19,18 +19,14 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({ invitation, onPr
   const locale = i18n.language === 'fr' ? fr : enUS
   const { mutate: respond, isPending } = useRespondToInvitation()
 
-  const startDate = invitation.activity_start_date
-    ? new Date(invitation.activity_start_date)
-    : null
-  const formattedDate = startDate
-    ? format(startDate, 'EEE d MMM · HH:mm', { locale })
-    : ''
+  const startDate = invitation.activity_start_date ? new Date(invitation.activity_start_date) : null
+  const formattedDate = startDate ? format(startDate, 'EEE d MMM · HH:mm', { locale }) : ''
 
   const handleAccept = () => {
     respond(
       { invitationId: invitation.id, response: 'accepted' },
       {
-        onSuccess: (data) => {
+        onSuccess: data => {
           if (data.success) {
             Alert.alert(t('alerts.invitationAccepted'))
           } else if (data.error === 'Activity is full') {
@@ -139,7 +135,9 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({ invitation, onPr
       ) : (
         <View style={styles.statusBadge}>
           <Text style={styles.statusText}>
-            {invitation.status === 'accepted' ? t('invitations.accepted') : t('invitations.declined')}
+            {invitation.status === 'accepted'
+              ? t('invitations.accepted')
+              : t('invitations.declined')}
           </Text>
         </View>
       )}

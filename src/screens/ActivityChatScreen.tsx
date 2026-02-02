@@ -102,9 +102,7 @@ export const ActivityChatScreen: React.FC<ActivityChatScreenProps> = ({ route, n
           <Text style={[styles.messageText, item.is_mine && styles.myMessageText]}>
             {item.content}
           </Text>
-          <Text style={[styles.messageTime, item.is_mine && styles.myMessageTime]}>
-            {timeStr}
-          </Text>
+          <Text style={[styles.messageTime, item.is_mine && styles.myMessageTime]}>{timeStr}</Text>
         </View>
       </View>
     )
@@ -168,7 +166,10 @@ export const ActivityChatScreen: React.FC<ActivityChatScreenProps> = ({ route, n
             maxLength={1000}
           />
           <TouchableOpacity
-            style={[styles.sendButton, (!messageText.trim() || sending) && styles.sendButtonDisabled]}
+            style={[
+              styles.sendButton,
+              (!messageText.trim() || sending) && styles.sendButtonDisabled,
+            ]}
             onPress={handleSend}
             disabled={!messageText.trim() || sending}
           >

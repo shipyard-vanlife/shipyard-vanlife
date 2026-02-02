@@ -82,11 +82,7 @@ export const ActivitiesScreen: React.FC = () => {
   }, [searchQuery, selectedType, selectedStatus, nearbyActivities, myActivities, activeTab])
 
   const isLoading =
-    activeTab === 'nearby'
-      ? loadingNearby
-      : activeTab === 'my'
-        ? loadingMy
-        : loadingInvitations
+    activeTab === 'nearby' ? loadingNearby : activeTab === 'my' ? loadingMy : loadingInvitations
 
   const handleActivityPress = (activity: Activity) => {
     setSelectedActivity(activity)
@@ -278,15 +274,12 @@ export const ActivitiesScreen: React.FC = () => {
         />
       )}
 
-
       <TouchableOpacity style={styles.fab} onPress={handleCreateActivity}>
         <Ionicons name="add" size={32} color={colors.white} />
       </TouchableOpacity>
 
-
       <CreateActivityModal visible={showCreateModal} onClose={() => setShowCreateModal(false)} />
 
-   
       <ActivityDetailModal
         activityId={selectedActivity?.id ?? null}
         onClose={() => setSelectedActivity(null)}

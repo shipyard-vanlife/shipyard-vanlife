@@ -111,7 +111,7 @@ export const LocationSearchInput: React.FC<LocationSearchInputProps> = ({
             keyboardShouldPersistTaps="handled"
             nestedScrollEnabled={true}
           >
-            {results.map((item) => (
+            {results.map(item => (
               <TouchableOpacity
                 key={item.place_id}
                 style={styles.resultItem}

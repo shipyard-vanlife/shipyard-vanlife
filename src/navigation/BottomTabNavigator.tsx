@@ -43,8 +43,7 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
     friends?.reduce((total, friend) => total + (friend.unread_count || 0), 0) || 0
 
   // Calculer le nombre d'invitations pending
-  const pendingInvitationsCount =
-    invitations?.filter(inv => inv.status === 'pending').length || 0
+  const pendingInvitationsCount = invitations?.filter(inv => inv.status === 'pending').length || 0
 
   return (
     <View style={styles.container}>

@@ -69,7 +69,12 @@ export const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
   }
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={onClose}
+    >
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         {/* Header */}
         <View style={styles.header}>
@@ -91,63 +96,66 @@ export const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
             <View style={{ flex: 1 }}>
               {/* Content */}
               <View style={styles.content}>
-          <Text style={styles.sectionTitle}>{t('invitations.selectFriends')}</Text>
+                <Text style={styles.sectionTitle}>{t('invitations.selectFriends')}</Text>
 
-          {friends.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>{t('invitations.noFriends')}</Text>
-            </View>
-          ) : (
-            <View style={styles.friendsList}>
-              <FlatList
-                data={friends}
-                keyExtractor={item => item.friend_id}
-                renderItem={({ item }) => {
-                  const isSelected = selectedFriends.includes(item.friend_id)
+                {friends.length === 0 ? (
+                  <View style={styles.emptyState}>
+                    <Text style={styles.emptyText}>{t('invitations.noFriends')}</Text>
+                  </View>
+                ) : (
+                  <View style={styles.friendsList}>
+                    <FlatList
+                      data={friends}
+                      keyExtractor={item => item.friend_id}
+                      renderItem={({ item }) => {
+                        const isSelected = selectedFriends.includes(item.friend_id)
 
-                  return (
-                    <TouchableOpacity
-                      style={[styles.friendItem, isSelected && styles.friendItemSelected]}
-                      onPress={() => toggleFriend(item.friend_id)}
-                    >
-                      {item.friend_avatar_url ? (
-                        <Image source={{ uri: item.friend_avatar_url }} style={styles.avatar} />
-                      ) : (
-                        <View style={[styles.avatar, styles.avatarPlaceholder]}>
-                          <Ionicons name="person" size={24} color={colors.white} />
-                        </View>
-                      )}
-                      <Text style={styles.friendName}>{item.friend_username}</Text>
-                      {isSelected && (
-                        <Ionicons
-                          name="checkmark-circle"
-                          size={24}
-                          color={colors.secondary.main}
-                        />
-                      )}
-                    </TouchableOpacity>
-                  )
-                }}
-                contentContainerStyle={styles.listContent}
-                showsVerticalScrollIndicator={true}
-              />
-            </View>
-          )}
+                        return (
+                          <TouchableOpacity
+                            style={[styles.friendItem, isSelected && styles.friendItemSelected]}
+                            onPress={() => toggleFriend(item.friend_id)}
+                          >
+                            {item.friend_avatar_url ? (
+                              <Image
+                                source={{ uri: item.friend_avatar_url }}
+                                style={styles.avatar}
+                              />
+                            ) : (
+                              <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                                <Ionicons name="person" size={24} color={colors.white} />
+                              </View>
+                            )}
+                            <Text style={styles.friendName}>{item.friend_username}</Text>
+                            {isSelected && (
+                              <Ionicons
+                                name="checkmark-circle"
+                                size={24}
+                                color={colors.secondary.main}
+                              />
+                            )}
+                          </TouchableOpacity>
+                        )
+                      }}
+                      contentContainerStyle={styles.listContent}
+                      showsVerticalScrollIndicator={true}
+                    />
+                  </View>
+                )}
 
-          {/* Message */}
-          <View style={styles.messageContainer}>
-            <Text style={styles.label}>{t('invitations.message')}</Text>
-            <TextInput
-              style={styles.messageInput}
-              placeholder={t('invitations.messagePlaceholder')}
-              value={message}
-              onChangeText={setMessage}
-              multiline
-              maxLength={200}
-              placeholderTextColor={colors.text.tertiary}
-            />
-          </View>
-        </View>
+                {/* Message */}
+                <View style={styles.messageContainer}>
+                  <Text style={styles.label}>{t('invitations.message')}</Text>
+                  <TextInput
+                    style={styles.messageInput}
+                    placeholder={t('invitations.messagePlaceholder')}
+                    value={message}
+                    onChangeText={setMessage}
+                    multiline
+                    maxLength={200}
+                    placeholderTextColor={colors.text.tertiary}
+                  />
+                </View>
+              </View>
             </View>
           </TouchableWithoutFeedback>
 

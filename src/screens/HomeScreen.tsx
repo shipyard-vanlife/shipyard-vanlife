@@ -16,7 +16,12 @@ import {
 import { useNearbyActivities } from '../hooks/useActivities'
 import { colors } from '../styles/theme'
 import { NearbyProfile } from '../types/location'
-import { TripOverlayData, TripOverlayStage, tripToOverlayData, publicTripToOverlayData } from '../types/map'
+import {
+  TripOverlayData,
+  TripOverlayStage,
+  tripToOverlayData,
+  publicTripToOverlayData,
+} from '../types/map'
 import type { Trip, PublicTrip, PublicTripStage } from '../types/trip'
 import type { Activity } from '../types/activity'
 
@@ -52,7 +57,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [tripOverlay, setTripOverlay] = useState<TripOverlayData | null>(null)
   const [selectedStage, setSelectedStage] = useState<TripOverlayStage | null>(null)
   // Store the profile we came from (to allow going back)
-  const [tripOverlaySourceProfile, setTripOverlaySourceProfile] = useState<NearbyProfile | null>(null)
+  const [tripOverlaySourceProfile, setTripOverlaySourceProfile] = useState<NearbyProfile | null>(
+    null
+  )
 
   // Handle trip to show from navigation
   useEffect(() => {

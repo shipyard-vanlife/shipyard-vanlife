@@ -33,7 +33,10 @@ export const CreateActivityModal: React.FC<CreateActivityModalProps> = ({ visibl
   const [description, setDescription] = useState('')
   const [activityType, setActivityType] = useState<ActivityType>('outdoor')
   const [locationName, setLocationName] = useState('')
-  const [locationCoords, setLocationCoords] = useState<{ latitude: number; longitude: number } | null>(null)
+  const [locationCoords, setLocationCoords] = useState<{
+    latitude: number
+    longitude: number
+  } | null>(null)
   const [startDate, setStartDate] = useState(new Date())
   const [showStartPicker, setShowStartPicker] = useState(false)
   const [endDate, setEndDate] = useState<Date | null>(null)
@@ -173,7 +176,7 @@ export const CreateActivityModal: React.FC<CreateActivityModalProps> = ({ visibl
             <LocationSearchInput
               placeholder={t('create.locationPlaceholder')}
               initialValue={locationName}
-              onLocationSelect={(location) => {
+              onLocationSelect={location => {
                 setLocationName(location.name)
                 setLocationCoords({ latitude: location.latitude, longitude: location.longitude })
               }}

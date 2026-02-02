@@ -113,11 +113,7 @@ export const TripMapOverlay: React.FC<TripMapOverlayProps> = ({
 
         {/* Close button - outside the dropdown on the right */}
         {onClose ? (
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={onClose}
-            activeOpacity={0.8}
-          >
+          <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.8}>
             <Ionicons name="close" size={20} color={colors.white} />
           </TouchableOpacity>
         ) : null}

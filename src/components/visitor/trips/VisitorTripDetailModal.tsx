@@ -167,7 +167,9 @@ export function VisitorTripDetailModal({
                     isFirst={index === 0}
                     isLast={index === trip.stages.length - 1}
                     showCountryFlag={shouldShowFlag(index)}
-                    onViewOnMap={onViewStageOnMap && trip ? () => onViewStageOnMap(stage, trip) : undefined}
+                    onViewOnMap={
+                      onViewStageOnMap && trip ? () => onViewStageOnMap(stage, trip) : undefined
+                    }
                   />
                 ))}
               </View>

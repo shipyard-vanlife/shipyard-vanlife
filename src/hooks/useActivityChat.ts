@@ -1,7 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { supabase } from '../services/supabase'
-import type { ActivityMessage, SendActivityMessageInput, ActivityChatPreview } from '../types/activityChat'
+import type {
+  ActivityMessage,
+  SendActivityMessageInput,
+  ActivityChatPreview,
+} from '../types/activityChat'
 
 // Query keys
 export const activityChatKeys = {

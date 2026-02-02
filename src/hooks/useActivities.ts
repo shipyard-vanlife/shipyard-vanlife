@@ -46,13 +46,15 @@ export function useNearbyActivities(
       if (error) throw error
 
       // Transform data to match Activity interface
-      return (data as any[])?.map(activity => ({
-        ...activity,
-        location: {
-          latitude: activity.latitude,
-          longitude: activity.longitude,
-        },
-      })) ?? []
+      return (
+        (data as any[])?.map(activity => ({
+          ...activity,
+          location: {
+            latitude: activity.latitude,
+            longitude: activity.longitude,
+          },
+        })) ?? []
+      )
     },
     enabled: !!latitude && !!longitude,
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -73,7 +75,7 @@ export function useNearbyActivities(
         },
         () => {
           queryClient.invalidateQueries({
-            queryKey: activityKeys.nearby(latitude, longitude, radiusKm)
+            queryKey: activityKeys.nearby(latitude, longitude, radiusKm),
           })
         }
       )
