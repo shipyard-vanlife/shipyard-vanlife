@@ -98,7 +98,12 @@
     "invitedBy": "Invité par",
     "respondBy": "Répondre avant le",
     "accept": "Accepter",
-    "decline": "Refuser"
+    "decline": "Refuser",
+    "accepted": "Acceptée",
+    "declined": "Refusée",
+    "accepting": "Acceptation...",
+    "declineConfirm": "Refuser cette invitation ?",
+    "from": "De"
   },
   "alerts": {
     "joinSuccess": "Tu participes à cette activité !",

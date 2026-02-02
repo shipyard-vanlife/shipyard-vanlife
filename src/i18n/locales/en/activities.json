@@ -98,7 +98,12 @@
     "invitedBy": "Invited by",
     "respondBy": "Respond by",
     "accept": "Accept",
-    "decline": "Decline"
+    "decline": "Decline",
+    "accepted": "Accepted",
+    "declined": "Declined",
+    "accepting": "Accepting...",
+    "declineConfirm": "Decline this invitation?",
+    "from": "From"
   },
   "alerts": {
     "joinSuccess": "You're now participating!",

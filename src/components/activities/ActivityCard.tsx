@@ -78,7 +78,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onPress })
           <Text style={styles.infoText} numberOfLines={1}>
             {activity.location_name}
             {activity.distance_km !== null && activity.distance_km !== undefined && (
-              <Text style={styles.distance}> · {activity.distance_km}km</Text>
+              <Text style={styles.distance}> · {Math.round(activity.distance_km)}km</Text>
             )}
           </Text>
         </View>
