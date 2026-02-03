@@ -91,4 +91,7 @@ export interface ViewportProfilesParams {
   maxLat: number
   minLng: number
   maxLng: number
+  userLat?: number
+  userLng?: number
+  denseThreshold?: number
 }

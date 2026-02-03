@@ -1,8 +1,7 @@
 import React, { memo } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
 import { Marker } from 'react-native-maps'
-import { colors } from '../../styles/theme'
+import { colors, shadows } from '../../styles/theme'
 
 interface ClusterMarkerProps {
   id: string
@@ -19,8 +18,7 @@ export const ClusterMarker = memo<ClusterMarkerProps>(function ClusterMarker({
 }) {
   const count = properties.point_count
   const size = getClusterSize(count)
-  const innerSize = size - 6
-  const iconSize = count < 10 ? 12 : 14
+  const innerSize = size - 5
 
   return (
     <Marker
@@ -32,31 +30,22 @@ export const ClusterMarker = memo<ClusterMarkerProps>(function ClusterMarker({
       onPress={onPress}
       tracksViewChanges={false}
     >
-      {/* Outer glow ring */}
-      <View
-        style={[
-          styles.outerRing,
-          { width: size + 8, height: size + 8, borderRadius: (size + 8) / 2 },
-        ]}
-      >
-        {/* White border ring */}
-        <View style={[styles.borderRing, { width: size, height: size, borderRadius: size / 2 }]}>
-          {/* Colored inner circle */}
-          <View
-            style={[
-              styles.inner,
-              {
-                width: innerSize,
-                height: innerSize,
-                borderRadius: innerSize / 2,
-              },
-            ]}
-          >
-            <Ionicons name="people" size={iconSize} color={colors.white} style={styles.icon} />
-            <Text style={[styles.count, count >= 100 ? styles.countSmall : null]}>
-              {properties.point_count_abbreviated}
-            </Text>
-          </View>
+      {/* White border ring */}
+      <View style={[styles.borderRing, { width: size, height: size, borderRadius: size / 2 }]}>
+        {/* Colored inner circle */}
+        <View
+          style={[
+            styles.inner,
+            {
+              width: innerSize,
+              height: innerSize,
+              borderRadius: innerSize / 2,
+            },
+          ]}
+        >
+          <Text style={[styles.count, count >= 100 ? styles.countSmall : null]}>
+            {properties.point_count_abbreviated}
+          </Text>
         </View>
       </View>
     </Marker>
@@ -64,43 +53,30 @@ export const ClusterMarker = memo<ClusterMarkerProps>(function ClusterMarker({
 })
 
 function getClusterSize(count: number): number {
-  if (count < 10) return 42
-  if (count < 50) return 50
-  if (count < 100) return 58
-  return 64
+  if (count < 10) return 38
+  if (count < 50) return 44
+  if (count < 100) return 50
+  return 56
 }
 
 const styles = StyleSheet.create({
-  outerRing: {
-    backgroundColor: `${colors.secondary.main}20`,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   borderRing: {
     backgroundColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 4,
+    ...shadows.medium,
   },
   inner: {
-    backgroundColor: colors.secondary.main,
+    backgroundColor: colors.tertiary.main,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  icon: {
-    marginBottom: -2,
-  },
   count: {
     color: colors.white,
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '800',
-    lineHeight: 15,
   },
   countSmall: {
-    fontSize: 11,
+    fontSize: 12,
   },
 })

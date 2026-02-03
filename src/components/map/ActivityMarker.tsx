@@ -3,7 +3,7 @@ import React, { memo } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { Marker } from 'react-native-maps'
 import { colors, shadows } from '../../styles/theme'
-import type { Activity, ActivityType } from '../../types/activity'
+import type { Activity } from '../../types/activity'
 import { ACTIVITY_TYPE_COLORS, ACTIVITY_TYPE_ICONS } from '../../types/activity'
 
 interface ActivityMarkerProps {
@@ -29,7 +29,7 @@ export const ActivityMarker = memo<ActivityMarkerProps>(function ActivityMarker(
       tracksViewChanges={false}
     >
       <View style={[styles.container, { backgroundColor: bgColor }]}>
-        <Ionicons name={iconName} size={16} color={colors.white} />
+        <Ionicons name={iconName} size={18} color={colors.white} />
       </View>
     </Marker>
   )
@@ -37,13 +37,13 @@ export const ActivityMarker = memo<ActivityMarkerProps>(function ActivityMarker(
 
 const styles = StyleSheet.create({
   container: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 2,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 2.5,
     borderColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadows.medium,
+    ...shadows.small,
   },
 })

@@ -9,6 +9,8 @@ export { TermsModal } from './TermsModal'
 
 // Subdirectory exports
 export * from './activities'
+export * from './chat'
+export * from './conversation'
 export * from './invitation'
 export * from './map'
 export * from './profile'

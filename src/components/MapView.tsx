@@ -1,10 +1,8 @@
 import { Ionicons } from '@expo/vector-icons'
 import React, { useCallback, useEffect, useRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import ClusteredMapView from 'react-native-map-clustering'
-import { Circle, Polyline, PROVIDER_GOOGLE } from 'react-native-maps'
-import type RNMapView from 'react-native-maps'
+import { ActivityIndicator, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import RNMapView, { Polyline, PROVIDER_GOOGLE } from 'react-native-maps'
 import type { Region } from 'react-native-maps'
 import { colors, shadows, borderRadius, spacing } from '../styles/theme'
 import type { NearbyProfile, MapZone, ViewportProfilesParams } from '../types/location'
@@ -13,7 +11,6 @@ import type { Activity } from '../types/activity'
 import { ProfileMarker } from './map/ProfileMarker'
 import { MyLocationMarker } from './map/MyLocationMarker'
 import { ActivityMarker } from './map/ActivityMarker'
-import { ClusterMarker } from './map/ClusterMarker'
 import { ZoneBubble } from './map/ZoneBubble'
 import { TripMapOverlay } from './map/TripMapOverlay'
 import { TripStageMarker } from './map/TripStageMarker'
@@ -22,11 +19,17 @@ import { TripStageMarker } from './map/TripStageMarker'
 function regionToViewport(region: Region): ViewportProfilesParams {
   const latBuffer = region.latitudeDelta * 0.2
   const lngBuffer = region.longitudeDelta * 0.2
+
+  // Zoomed in (< ~15km visible) → show all profiles individually
+  // Zoomed out (>= ~15km) → group dense zones into bubbles
+  const denseThreshold = region.latitudeDelta < 0.15 ? 999 : 10
+
   return {
     minLat: region.latitude - region.latitudeDelta / 2 - latBuffer,
     maxLat: region.latitude + region.latitudeDelta / 2 + latBuffer,
     minLng: region.longitude - region.longitudeDelta / 2 - lngBuffer,
     maxLng: region.longitude + region.longitudeDelta / 2 + lngBuffer,
+    denseThreshold,
   }
 }
 
@@ -151,20 +154,6 @@ export const MapView: React.FC<MapViewProps> = ({
 
   const isTripMode = !!tripOverlay
 
-  // Custom cluster renderer (for individual markers that still get pixel-clustered)
-  const renderCluster = useCallback(
-    (cluster: any) => (
-      <ClusterMarker
-        key={`cluster-${cluster.id}`}
-        id={cluster.id}
-        geometry={cluster.geometry}
-        properties={cluster.properties}
-        onPress={cluster.onPress}
-      />
-    ),
-    []
-  )
-
   if (latitude === null || longitude === null) {
     return (
       <View style={[styles.container, styles.noLocation]}>
@@ -175,10 +164,10 @@ export const MapView: React.FC<MapViewProps> = ({
 
   return (
     <View style={styles.container}>
-      <ClusteredMapView
+      <RNMapView
         ref={mapRef}
         style={styles.map}
-        provider={PROVIDER_GOOGLE}
+        provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
         initialRegion={{
           latitude,
           longitude,
@@ -191,28 +180,8 @@ export const MapView: React.FC<MapViewProps> = ({
         showsMyLocationButton={false}
         showsCompass={false}
         toolbarEnabled={false}
-        // Clustering config
-        clusteringEnabled={!isTripMode}
-        radius={50}
-        maxZoom={14}
-        minPoints={3}
-        clusterColor={colors.secondary.main}
-        renderCluster={renderCluster}
-        animationEnabled
-        preserveClusterPressBehavior={false}
         onRegionChangeComplete={handleRegionChangeComplete}
       >
-        {/* Circle around my position (hidden in trip mode) */}
-        {!isTripMode ? (
-          <Circle
-            center={{ latitude, longitude }}
-            radius={3000}
-            fillColor={`${colors.secondary.main}26`}
-            strokeColor={colors.secondary.main}
-            strokeWidth={0}
-          />
-        ) : null}
-
         {/* My marker (hidden in trip mode) */}
         {!isTripMode ? (
           <MyLocationMarker
@@ -279,7 +248,7 @@ export const MapView: React.FC<MapViewProps> = ({
             onPress={() => onStagePress?.(stage)}
           />
         ))}
-      </ClusteredMapView>
+      </RNMapView>
 
       {/* Loading indicator */}
       {isDataLoading ? (

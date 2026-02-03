@@ -87,11 +87,20 @@ export function useProfileById(userId: string | null) {
 // GET ALL VISIBLE PROFILES (returns BLURRED zone_center for privacy)
 // ============================================
 
-export function useAllVisibleProfiles() {
+export function useAllVisibleProfiles(
+  userLat?: number | null,
+  userLng?: number | null
+) {
   return useQuery({
-    queryKey: profileKeys.allVisible(),
+    queryKey: [...profileKeys.allVisible(), userLat, userLng],
     queryFn: async (): Promise<NearbyProfile[]> => {
-      const { data, error } = await supabase.rpc('get_all_visible_profiles')
+      const params: Record<string, number> = {}
+      if (userLat != null && userLng != null) {
+        params.user_lat = userLat
+        params.user_lng = userLng
+      }
+
+      const { data, error } = await supabase.rpc('get_all_visible_profiles', params)
 
       if (error) throw error
       return (data as NearbyProfile[]) ?? []
@@ -159,12 +168,21 @@ export function useViewportData(params: ViewportProfilesParams | null) {
     queryFn: async (): Promise<ViewportZone[]> => {
       if (!params) return []
 
-      const { data, error } = await supabase.rpc('get_viewport_data', {
+      const rpcParams: Record<string, number> = {
         min_lat: params.minLat,
         max_lat: params.maxLat,
         min_lng: params.minLng,
         max_lng: params.maxLng,
-      })
+      }
+      if (params.userLat != null && params.userLng != null) {
+        rpcParams.user_lat = params.userLat
+        rpcParams.user_lng = params.userLng
+      }
+      if (params.denseThreshold != null) {
+        rpcParams.dense_threshold = params.denseThreshold
+      }
+
+      const { data, error } = await supabase.rpc('get_viewport_data', rpcParams)
 
       if (error) throw error
       return (data as ViewportZone[]) ?? []
@@ -179,7 +197,12 @@ export function useViewportData(params: ViewportProfilesParams | null) {
 // GET ZONE PROFILES (on-demand when user taps a dense zone bubble)
 // ============================================
 
-export function useZoneProfiles(zoneLat: number | null, zoneLng: number | null) {
+export function useZoneProfiles(
+  zoneLat: number | null,
+  zoneLng: number | null,
+  userLat?: number | null,
+  userLng?: number | null
+) {
   return useQuery({
     queryKey:
       zoneLat !== null && zoneLng !== null
@@ -189,12 +212,18 @@ export function useZoneProfiles(zoneLat: number | null, zoneLng: number | null) 
       if (zoneLat === null || zoneLng === null) return []
 
       // Query the exact grid cell (~0.1° around the zone center)
-      const { data, error } = await supabase.rpc('get_profiles_in_zone', {
+      const rpcParams: Record<string, number> = {
         min_lat: zoneLat - 0.05,
         max_lat: zoneLat + 0.05,
         min_lng: zoneLng - 0.05,
         max_lng: zoneLng + 0.05,
-      })
+      }
+      if (userLat != null && userLng != null) {
+        rpcParams.user_lat = userLat
+        rpcParams.user_lng = userLng
+      }
+
+      const { data, error } = await supabase.rpc('get_profiles_in_zone', rpcParams)
 
       if (error) throw error
       return (data as NearbyProfile[]) ?? []

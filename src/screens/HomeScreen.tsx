@@ -55,22 +55,31 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [zoneSourceZone, setZoneSourceZone] = useState<MapZone | null>(null)
   const { data: zoneProfiles, isLoading: zoneProfilesLoading } = useZoneProfiles(
     selectedZone?.center.latitude ?? zoneSourceZone?.center.latitude ?? null,
-    selectedZone?.center.longitude ?? zoneSourceZone?.center.longitude ?? null
+    selectedZone?.center.longitude ?? zoneSourceZone?.center.longitude ?? null,
+    profile?.location?.latitude,
+    profile?.location?.longitude
   )
 
   // Activities state
   const { data: nearbyActivities, isLoading: activitiesLoading } = useNearbyActivities(
     profile?.location?.latitude ?? null,
     profile?.location?.longitude ?? null,
-    100
+    20
   )
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null)
   const [showActivities, setShowActivities] = useState(true)
   const [showProfiles, setShowProfiles] = useState(true)
 
-  const handleViewportChange = useCallback((vp: ViewportProfilesParams) => {
-    setViewport(vp)
-  }, [])
+  const handleViewportChange = useCallback(
+    (vp: ViewportProfilesParams) => {
+      setViewport({
+        ...vp,
+        userLat: profile?.location?.latitude,
+        userLng: profile?.location?.longitude,
+      })
+    },
+    [profile?.location?.latitude, profile?.location?.longitude]
+  )
 
   // Map overlay state (consolidated via useReducer hook)
   const overlay = useMapOverlay(tripToShow, onClearTripToShow)

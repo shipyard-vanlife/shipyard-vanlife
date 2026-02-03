@@ -74,7 +74,10 @@ export const SearchScreen: React.FC = () => {
   const { t } = useTranslation(['search', 'common'])
   const queryClient = useQueryClient()
   const { data: myProfile } = useMyProfile()
-  const { data: profiles, isLoading, refetch } = useAllVisibleProfiles()
+  const { data: profiles, isLoading, refetch } = useAllVisibleProfiles(
+    myProfile?.location?.latitude,
+    myProfile?.location?.longitude
+  )
   const { mutate: sendRequest } = useSendConnectionRequest()
   const { data: allConnections } = useAllConnections()
 

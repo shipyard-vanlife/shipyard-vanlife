@@ -4,6 +4,7 @@ import {
   Alert,
   Image,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -191,7 +192,7 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
             {activity.location && (
               <MapView
                 style={styles.map}
-                provider={PROVIDER_GOOGLE}
+                provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
                 initialRegion={{
                   latitude: activity.location.latitude,
                   longitude: activity.location.longitude,

@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons'
-import React, { memo, useState } from 'react'
-import { Image, StyleSheet, View } from 'react-native'
+import React, { memo, useEffect, useRef, useState } from 'react'
+import { Animated, Image, StyleSheet, View } from 'react-native'
 import { Marker } from 'react-native-maps'
 import { colors, shadows } from '../../styles/theme'
 
@@ -11,7 +11,8 @@ interface MyLocationMarkerProps {
   isVisible: boolean
 }
 
-const MARKER_SIZE = 44
+const MARKER_SIZE = 42
+const PULSE_SIZE = MARKER_SIZE + 24
 
 export const MyLocationMarker = memo<MyLocationMarkerProps>(function MyLocationMarker({
   latitude,
@@ -20,9 +21,35 @@ export const MyLocationMarker = memo<MyLocationMarkerProps>(function MyLocationM
   isVisible,
 }) {
   const [imageLoaded, setImageLoaded] = useState(false)
+  const pulseAnim = useRef(new Animated.Value(0)).current
 
   // Keep tracksViewChanges=true until remote image finishes loading
   const shouldTrackChanges = !!avatarUrl && !imageLoaded
+
+  // Pulsing ring animation
+  useEffect(() => {
+    if (!isVisible) return
+
+    const animation = Animated.loop(
+      Animated.timing(pulseAnim, {
+        toValue: 1,
+        duration: 2000,
+        useNativeDriver: true,
+      })
+    )
+    animation.start()
+    return () => animation.stop()
+  }, [isVisible, pulseAnim])
+
+  const pulseScale = pulseAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1.6],
+  })
+
+  const pulseOpacity = pulseAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.4, 0],
+  })
 
   return (
     <Marker
@@ -31,8 +58,15 @@ export const MyLocationMarker = memo<MyLocationMarkerProps>(function MyLocationM
       tracksViewChanges={shouldTrackChanges}
     >
       <View style={styles.wrapper}>
-        {/* Soft glow ring */}
-        <View style={styles.glowRing} />
+        {/* Animated pulse ring (visible mode only) */}
+        {isVisible ? (
+          <Animated.View
+            style={[
+              styles.pulseRing,
+              { transform: [{ scale: pulseScale }], opacity: pulseOpacity },
+            ]}
+          />
+        ) : null}
 
         {/* Main marker */}
         <View style={[styles.marker, !isVisible && styles.markerInvisible]}>
@@ -61,34 +95,34 @@ export const MyLocationMarker = memo<MyLocationMarkerProps>(function MyLocationM
 
 const styles = StyleSheet.create({
   wrapper: {
-    width: MARKER_SIZE + 24,
-    height: MARKER_SIZE + 24,
+    width: PULSE_SIZE,
+    height: PULSE_SIZE,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  glowRing: {
+  pulseRing: {
     position: 'absolute',
-    width: MARKER_SIZE + 18,
-    height: MARKER_SIZE + 18,
-    borderRadius: (MARKER_SIZE + 18) / 2,
-    backgroundColor: `${colors.secondary.main}20`,
+    width: MARKER_SIZE + 16,
+    height: MARKER_SIZE + 16,
+    borderRadius: (MARKER_SIZE + 16) / 2,
+    backgroundColor: colors.secondary.main,
   },
   marker: {
     width: MARKER_SIZE,
     height: MARKER_SIZE,
     borderRadius: MARKER_SIZE / 2,
-    backgroundColor: colors.secondary.main,
-    borderWidth: 3,
-    borderColor: colors.white,
+    backgroundColor: colors.white,
+    borderWidth: 2.5,
+    borderColor: colors.secondary.main,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
     ...shadows.medium,
   },
   markerInvisible: {
-    backgroundColor: colors.text.tertiary,
+    backgroundColor: colors.primary.dark,
     borderColor: colors.border.main,
-    opacity: 0.7,
+    opacity: 0.5,
   },
   avatar: {
     width: '100%',
@@ -99,15 +133,15 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: colors.white,
+    backgroundColor: colors.secondary.main,
   },
   dotInvisible: {
     backgroundColor: colors.border.main,
   },
   invisibleBadge: {
     position: 'absolute',
-    bottom: 4,
-    right: 4,
+    bottom: 6,
+    right: 6,
     width: 18,
     height: 18,
     borderRadius: 9,

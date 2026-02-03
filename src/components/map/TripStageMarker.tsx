@@ -1,7 +1,7 @@
 import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { Marker } from 'react-native-maps'
-import { colors } from '../../styles/theme'
+import { colors, shadows } from '../../styles/theme'
 
 interface TripStageMarkerProps {
   coordinate: { latitude: number; longitude: number }
@@ -34,25 +34,21 @@ export const TripStageMarker: React.FC<TripStageMarkerProps> = ({
 
 const styles = StyleSheet.create({
   marker: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: colors.secondary.main,
-    borderWidth: 2,
+    borderWidth: 2.5,
     borderColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 4,
+    ...shadows.medium,
   },
   firstMarker: {
-    backgroundColor: '#4CAF50', // Green for start
+    backgroundColor: colors.success,
   },
   lastMarker: {
-    backgroundColor: colors.secondary.main, // Coral for end
+    backgroundColor: colors.secondary.main,
   },
   number: {
     color: colors.white,
