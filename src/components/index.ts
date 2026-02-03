@@ -1,6 +1,4 @@
 // Root components
-export { BottomSheet } from './BottomSheet'
-export { FriendProfileModal } from './FriendProfileModal'
 export { HelpRequestCard } from './HelpRequestCard'
 export { HelpRequestModal } from './HelpRequestModal'
 export { MapView } from './MapView'
@@ -11,7 +9,6 @@ export { TermsModal } from './TermsModal'
 
 // Subdirectory exports
 export * from './activities'
-export * from './bottom-sheet'
 export * from './invitation'
 export * from './map'
 export * from './profile'

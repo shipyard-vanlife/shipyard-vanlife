@@ -1,33 +1,58 @@
 import { Ionicons } from '@expo/vector-icons'
-import React, { useEffect, useRef, useMemo } from 'react'
+import React, { useCallback, useEffect, useRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Image, StyleSheet, Text, View } from 'react-native'
-import RNMapView, { Circle, Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps'
-import { colors } from '../styles/theme'
-import { NearbyProfile } from '../types/location'
-import { TripOverlayData, TripOverlayStage } from '../types/map'
-import { Activity, ACTIVITY_TYPE_COLORS } from '../types/activity'
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import ClusteredMapView from 'react-native-map-clustering'
+import { Circle, Polyline, PROVIDER_GOOGLE } from 'react-native-maps'
+import type RNMapView from 'react-native-maps'
+import type { Region } from 'react-native-maps'
+import { colors, shadows, borderRadius, spacing } from '../styles/theme'
+import type { NearbyProfile, MapZone, ViewportProfilesParams } from '../types/location'
+import type { TripOverlayData, TripOverlayStage } from '../types/map'
+import type { Activity } from '../types/activity'
+import { ProfileMarker } from './map/ProfileMarker'
+import { MyLocationMarker } from './map/MyLocationMarker'
+import { ActivityMarker } from './map/ActivityMarker'
+import { ClusterMarker } from './map/ClusterMarker'
+import { ZoneBubble } from './map/ZoneBubble'
 import { TripMapOverlay } from './map/TripMapOverlay'
 import { TripStageMarker } from './map/TripStageMarker'
+
+/** Convert a map Region to bounding box params with 20% buffer */
+function regionToViewport(region: Region): ViewportProfilesParams {
+  const latBuffer = region.latitudeDelta * 0.2
+  const lngBuffer = region.longitudeDelta * 0.2
+  return {
+    minLat: region.latitude - region.latitudeDelta / 2 - latBuffer,
+    maxLat: region.latitude + region.latitudeDelta / 2 + latBuffer,
+    minLng: region.longitude - region.longitudeDelta / 2 - lngBuffer,
+    maxLng: region.longitude + region.longitudeDelta / 2 + lngBuffer,
+  }
+}
 
 interface MapViewProps {
   latitude: number | null
   longitude: number | null
   city: string | null
   myAvatarUrl: string | null
-  isProfileVisible?: boolean // Whether the user's profile is visible to others
-  otherProfiles: NearbyProfile[] // BLURRED coordinates via zone_center
+  isProfileVisible?: boolean
+  zones: MapZone[]
+  individualProfiles: NearbyProfile[]
   onProfileSelect: (profile: NearbyProfile) => void
-  // Activities props
+  onZonePress: (zone: MapZone) => void
+  showProfiles: boolean
+  onToggleProfiles: () => void
   nearbyActivities?: Activity[]
   onActivitySelect?: (activity: Activity) => void
-  // Trip overlay props
+  showActivities: boolean
+  onToggleActivities: () => void
+  isDataLoading?: boolean
   tripOverlay?: TripOverlayData | null
   onTripOverlayClose?: () => void
   onStagePress?: (stage: TripOverlayStage) => void
-  // Back to profile props (when viewing trip from visitor profile)
   onBackToProfile?: () => void
   sourceProfileUsername?: string | null
+  onViewportChange?: (viewport: ViewportProfilesParams) => void
 }
 
 export const MapView: React.FC<MapViewProps> = ({
@@ -35,18 +60,43 @@ export const MapView: React.FC<MapViewProps> = ({
   longitude,
   myAvatarUrl,
   isProfileVisible = true,
-  otherProfiles,
+  zones,
+  individualProfiles,
   onProfileSelect,
+  onZonePress,
+  showProfiles,
+  onToggleProfiles,
   nearbyActivities = [],
   onActivitySelect,
+  showActivities,
+  onToggleActivities,
+  isDataLoading = false,
   tripOverlay,
   onTripOverlayClose,
   onStagePress,
   onBackToProfile,
   sourceProfileUsername,
+  onViewportChange,
 }) => {
   const { t } = useTranslation('home')
   const mapRef = useRef<RNMapView>(null)
+
+  // Report initial viewport on mount
+  useEffect(() => {
+    if (latitude !== null && longitude !== null && onViewportChange) {
+      onViewportChange(
+        regionToViewport({ latitude, longitude, latitudeDelta: 0.2, longitudeDelta: 0.2 })
+      )
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Track viewport changes as user pans/zooms
+  const handleRegionChangeComplete = useCallback(
+    (region: Region) => {
+      onViewportChange?.(regionToViewport(region))
+    },
+    [onViewportChange]
+  )
 
   // Zoom to fit trip stages when tripOverlay is set
   useEffect(() => {
@@ -62,21 +112,58 @@ export const MapView: React.FC<MapViewProps> = ({
     }
   }, [tripOverlay])
 
-  // Animate to a specific stage and open its detail
-  const handleStageSelect = (stage: TripOverlayStage) => {
-    // Animate map to the selected stage
-    mapRef.current?.animateToRegion(
+  // Recenter on user position
+  const handleRecenter = useCallback(() => {
+    if (latitude === null || longitude === null || !mapRef.current) return
+    mapRef.current.animateToRegion(
       {
-        latitude: stage.latitude,
-        longitude: stage.longitude,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
+        latitude,
+        longitude,
+        latitudeDelta: 0.2,
+        longitudeDelta: 0.2,
       },
       300
     )
-    // Then call the original callback to open the modal
-    onStagePress?.(stage)
-  }
+  }, [latitude, longitude])
+
+  // Animate to a specific stage and open its detail
+  const handleStageSelect = useCallback(
+    (stage: TripOverlayStage) => {
+      mapRef.current?.animateToRegion(
+        {
+          latitude: stage.latitude,
+          longitude: stage.longitude,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        },
+        300
+      )
+      onStagePress?.(stage)
+    },
+    [onStagePress]
+  )
+
+  // Activity markers data
+  const validActivities = useMemo(
+    () => nearbyActivities.filter(a => a.location?.latitude && a.location?.longitude),
+    [nearbyActivities]
+  )
+
+  const isTripMode = !!tripOverlay
+
+  // Custom cluster renderer (for individual markers that still get pixel-clustered)
+  const renderCluster = useCallback(
+    (cluster: any) => (
+      <ClusterMarker
+        key={`cluster-${cluster.id}`}
+        id={cluster.id}
+        geometry={cluster.geometry}
+        properties={cluster.properties}
+        onPress={cluster.onPress}
+      />
+    ),
+    []
+  )
 
   if (latitude === null || longitude === null) {
     return (
@@ -86,40 +173,9 @@ export const MapView: React.FC<MapViewProps> = ({
     )
   }
 
-  // Use zone_center (BLURRED coordinates) for other users' markers
-  const profilesData = useMemo(
-    () =>
-      otherProfiles
-        .filter(p => p.zone_center?.latitude && p.zone_center?.longitude)
-        .map(p => ({
-          id: p.id,
-          username: p.username,
-          lat: p.zone_center!.latitude,
-          lng: p.zone_center!.longitude,
-          avatarUrl: p.avatar_url,
-          profile: p,
-        })),
-    [otherProfiles]
-  )
-
-  // Stabilize activity markers to prevent flickering
-  const activityMarkers = useMemo(
-    () =>
-      nearbyActivities
-        .filter(a => a.location?.latitude && a.location?.longitude)
-        .map(a => ({
-          id: a.id,
-          latitude: a.location.latitude,
-          longitude: a.location.longitude,
-          type: a.activity_type,
-          activity: a,
-        })),
-    [nearbyActivities]
-  )
-
   return (
     <View style={styles.container}>
-      <RNMapView
+      <ClusteredMapView
         ref={mapRef}
         style={styles.map}
         provider={PROVIDER_GOOGLE}
@@ -135,9 +191,19 @@ export const MapView: React.FC<MapViewProps> = ({
         showsMyLocationButton={false}
         showsCompass={false}
         toolbarEnabled={false}
+        // Clustering config
+        clusteringEnabled={!isTripMode}
+        radius={50}
+        maxZoom={14}
+        minPoints={3}
+        clusterColor={colors.secondary.main}
+        renderCluster={renderCluster}
+        animationEnabled
+        preserveClusterPressBehavior={false}
+        onRegionChangeComplete={handleRegionChangeComplete}
       >
-        {/* Cercle autour de ma position (masqué quand un trip est affiché) */}
-        {!tripOverlay && (
+        {/* Circle around my position (hidden in trip mode) */}
+        {!isTripMode ? (
           <Circle
             center={{ latitude, longitude }}
             radius={3000}
@@ -145,84 +211,53 @@ export const MapView: React.FC<MapViewProps> = ({
             strokeColor={colors.secondary.main}
             strokeWidth={0}
           />
-        )}
+        ) : null}
 
-        {/* Mon marqueur (masqué quand un trip est affiché) */}
-        {!tripOverlay && (
-          <Marker coordinate={{ latitude, longitude }} anchor={{ x: 0.5, y: 0.5 }}>
-            <View style={styles.myMarkerContainer}>
-              <View style={[styles.myMarker, !isProfileVisible && styles.myMarkerInvisible]}>
-                {myAvatarUrl ? (
-                  <Image
-                    source={{ uri: myAvatarUrl }}
-                    style={[styles.markerImage, !isProfileVisible && styles.markerImageInvisible]}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View
-                    style={[styles.markerDot, !isProfileVisible && styles.markerDotInvisible]}
-                  />
-                )}
-              </View>
-              {/* Badge d'invisibilité */}
-              {!isProfileVisible && (
-                <View style={styles.invisibleBadge}>
-                  <Ionicons name="eye-off" size={12} color={colors.white} />
-                </View>
-              )}
-            </View>
-          </Marker>
-        )}
+        {/* My marker (hidden in trip mode) */}
+        {!isTripMode ? (
+          <MyLocationMarker
+            latitude={latitude}
+            longitude={longitude}
+            avatarUrl={myAvatarUrl}
+            isVisible={isProfileVisible}
+          />
+        ) : null}
 
-        {/* Marqueurs des autres profils (masqués quand un trip est affiché) */}
-        {!tripOverlay &&
-          profilesData.map(profile => (
-            <Marker
-              key={profile.id}
-              coordinate={{ latitude: profile.lat, longitude: profile.lng }}
-              anchor={{ x: 0.5, y: 0.5 }}
-              onPress={() => onProfileSelect(profile.profile)}
-            >
-              <View style={styles.otherMarker}>
-                {profile.avatarUrl ? (
-                  <Image
-                    source={{ uri: profile.avatarUrl }}
-                    style={styles.otherMarkerImage}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View style={styles.otherMarkerDot} />
-                )}
-              </View>
-            </Marker>
-          ))}
+        {/* Zone bubbles (10+ users in ~11km) */}
+        {!isTripMode && showProfiles
+          ? zones.map(zone => (
+              <ZoneBubble
+                key={`zone-${zone.center.latitude}-${zone.center.longitude}`}
+                zone={zone}
+                onPress={() => onZonePress(zone)}
+              />
+            ))
+          : null}
 
-        {/* Marqueurs des activités (masqués quand un trip est affiché) */}
-        {!tripOverlay &&
-          activityMarkers.map(marker => (
-            <Marker
-              key={marker.id}
-              coordinate={{
-                latitude: marker.latitude,
-                longitude: marker.longitude,
-              }}
-              anchor={{ x: 0.5, y: 0.5 }}
-              onPress={() => onActivitySelect?.(marker.activity)}
-              tracksViewChanges={false}
-            >
-              <View
-                style={[
-                  styles.activityMarker,
-                  { backgroundColor: ACTIVITY_TYPE_COLORS[marker.type] },
-                ]}
-              >
-                <Ionicons name="calendar" size={16} color={colors.white} />
-              </View>
-            </Marker>
-          ))}
+        {/* Individual profile markers (sparse areas) */}
+        {!isTripMode && showProfiles
+          ? individualProfiles.map(p =>
+              p.zone_center ? (
+                <ProfileMarker
+                  key={p.id}
+                  profile={p}
+                  latitude={p.zone_center.latitude}
+                  longitude={p.zone_center.longitude}
+                  onPress={() => onProfileSelect(p)}
+                />
+              ) : null
+            )
+          : null}
 
-        {/* Trip Polyline - ligne connectant les étapes */}
-        {tripOverlay && tripOverlay.stages.length > 1 && (
+        {/* Activity markers */}
+        {!isTripMode && showActivities
+          ? validActivities.map(a => (
+              <ActivityMarker key={a.id} activity={a} onPress={() => onActivitySelect?.(a)} />
+            ))
+          : null}
+
+        {/* Trip Polyline */}
+        {tripOverlay && tripOverlay.stages.length > 1 ? (
           <Polyline
             coordinates={tripOverlay.stages.map(s => ({
               latitude: s.latitude,
@@ -231,9 +266,9 @@ export const MapView: React.FC<MapViewProps> = ({
             strokeColor={colors.secondary.main}
             strokeWidth={3}
           />
-        )}
+        ) : null}
 
-        {/* Trip Stage Markers - marqueurs numérotés pour chaque étape */}
+        {/* Trip Stage Markers */}
         {tripOverlay?.stages.map((stage, index) => (
           <TripStageMarker
             key={stage.id}
@@ -244,10 +279,57 @@ export const MapView: React.FC<MapViewProps> = ({
             onPress={() => onStagePress?.(stage)}
           />
         ))}
-      </RNMapView>
+      </ClusteredMapView>
 
-      {/* Trip Map Overlay - card info flottante avec liste déroulante */}
-      {tripOverlay && (
+      {/* Loading indicator */}
+      {isDataLoading ? (
+        <View style={styles.loadingPill}>
+          <ActivityIndicator size="small" color={colors.secondary.main} />
+          <Text style={styles.loadingText}>{t('map.loading')}</Text>
+        </View>
+      ) : null}
+
+      {/* Map controls column (hidden in trip mode) */}
+      {!isTripMode ? (
+        <View style={styles.controlsColumn}>
+          <TouchableOpacity
+            style={[styles.controlButton, showProfiles ? styles.controlButtonActive : null]}
+            onPress={onToggleProfiles}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name="people"
+              size={20}
+              color={showProfiles ? colors.white : colors.text.tertiary}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.controlButton, showActivities ? styles.controlButtonActive : null]}
+            onPress={onToggleActivities}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name="calendar"
+              size={20}
+              color={showActivities ? colors.white : colors.text.tertiary}
+            />
+          </TouchableOpacity>
+
+          <View style={styles.controlSeparator} />
+
+          <TouchableOpacity
+            style={styles.controlButton}
+            onPress={handleRecenter}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="locate" size={20} color={colors.text.primary} />
+          </TouchableOpacity>
+        </View>
+      ) : null}
+
+      {/* Trip Map Overlay */}
+      {tripOverlay ? (
         <TripMapOverlay
           tripName={tripOverlay.tripName}
           stagesCount={tripOverlay.stagesCount}
@@ -258,10 +340,12 @@ export const MapView: React.FC<MapViewProps> = ({
           onBackToProfile={onBackToProfile}
           sourceUsername={sourceProfileUsername}
         />
-      )}
+      ) : null}
     </View>
   )
 }
+
+const CONTROL_SIZE = 44
 
 const styles = StyleSheet.create({
   container: {
@@ -281,100 +365,46 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 40,
   },
-  myMarkerContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  myMarker: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: colors.secondary.main,
-    borderWidth: 4,
-    borderColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  myMarkerInvisible: {
-    backgroundColor: colors.text.tertiary,
-    borderColor: colors.border.main,
-    opacity: 0.7,
-  },
-  markerImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 25,
-  },
-  markerImageInvisible: {
-    opacity: 0.5,
-  },
-  markerDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#fff',
-  },
-  markerDotInvisible: {
-    backgroundColor: colors.border.main,
-  },
-  invisibleBadge: {
+  loadingPill: {
     position: 'absolute',
-    bottom: -2,
-    right: -2,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: colors.text.tertiary,
-    borderWidth: 2,
-    borderColor: colors.white,
+    top: 60,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.full,
+    gap: spacing.sm,
+    ...shadows.medium,
+  },
+  loadingText: {
+    fontSize: 13,
+    color: colors.text.secondary,
+    fontWeight: '500',
+  },
+  controlsColumn: {
+    position: 'absolute',
+    bottom: 100,
+    right: spacing.lg,
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  controlButton: {
+    width: CONTROL_SIZE,
+    height: CONTROL_SIZE,
+    borderRadius: CONTROL_SIZE / 2,
+    backgroundColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
+    ...shadows.medium,
   },
-  otherMarker: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.tertiary.main,
-    borderWidth: 3,
-    borderColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
+  controlButtonActive: {
+    backgroundColor: colors.secondary.main,
   },
-  otherMarkerImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 20,
-  },
-  otherMarkerDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#fff',
-  },
-  activityMarker: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+  controlSeparator: {
+    width: 24,
+    height: 1,
+    backgroundColor: colors.border.light,
   },
 })

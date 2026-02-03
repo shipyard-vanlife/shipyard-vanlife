@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
@@ -15,12 +15,59 @@ import { Ionicons } from '@expo/vector-icons'
 import { useQueryClient } from '@tanstack/react-query'
 import { colors, spacing, borderRadius, fontSize, fontWeight, shadows } from '../styles/theme'
 import { NomadProfileCard } from '../components/search/NomadProfileCard'
-import { BottomSheet } from '../components/BottomSheet'
+import { VisitorProfileSheet } from '../components/visitor'
 import { useAllVisibleProfiles, useMyProfile, profileKeys } from '../hooks/useProfiles'
-import { useSendConnectionRequest, useMyFriends, useAllConnections } from '../hooks/useConnections'
-import { UserProfile, SkillType, ALL_SKILLS } from '../types/user'
+import { useSendConnectionRequest, useAllConnections } from '../hooks/useConnections'
+import { SkillType, ALL_SKILLS } from '../types/user'
+import type { NearbyProfile } from '../types/location'
 
 type FilterType = 'all' | 'activities' | 'help'
+
+interface ConnectionStatus {
+  isAlreadyFriend: boolean
+  isPending: boolean
+  isReceived: boolean
+  connectionId: string | undefined
+}
+
+const DEFAULT_CONNECTION_STATUS: ConnectionStatus = {
+  isAlreadyFriend: false,
+  isPending: false,
+  isReceived: false,
+  connectionId: undefined,
+}
+
+// Pure function: haversine distance in meters (module-level, no console.log)
+function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371e3
+  const φ1 = (lat1 * Math.PI) / 180
+  const φ2 = (lat2 * Math.PI) / 180
+  const Δφ = ((lat2 - lat1) * Math.PI) / 180
+  const Δλ = ((lng2 - lng1) * Math.PI) / 180
+
+  const a =
+    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+
+  return R * c
+}
+
+// Hoisted separator for FlatList (avoids re-creation)
+const ItemSeparator = () => <View style={styles.separator} />
+
+// FlatList layout for fixed-height items
+const ITEM_HEIGHT = 100 + spacing.md // approximate card height + separator
+const getItemLayout = (_data: any, index: number) => ({
+  length: ITEM_HEIGHT,
+  offset: ITEM_HEIGHT * index,
+  index,
+})
+
+interface ProfileWithDistance {
+  profile: NearbyProfile
+  distance: number
+}
 
 export const SearchScreen: React.FC = () => {
   const { t } = useTranslation(['search', 'common'])
@@ -28,47 +75,55 @@ export const SearchScreen: React.FC = () => {
   const { data: myProfile } = useMyProfile()
   const { data: profiles, isLoading, refetch } = useAllVisibleProfiles()
   const { mutate: sendRequest } = useSendConnectionRequest()
-  const { data: myFriends } = useMyFriends()
   const { data: allConnections } = useAllConnections()
 
   const [searchQuery, setSearchQuery] = useState('')
   const [activeFilter, setActiveFilter] = useState<FilterType>('all')
-  const [selectedProfile, setSelectedProfile] = useState<UserProfile | null>(null)
+  const [selectedProfile, setSelectedProfile] = useState<NearbyProfile | null>(null)
   const [selectedSkill, setSelectedSkill] = useState<SkillType | null>(null)
   const [showSkillModal, setShowSkillModal] = useState(false)
 
-  const calculateDistance = (from: UserProfile | undefined, to: UserProfile): number => {
-    console.log('🔍 calculateDistance - from:', from?.username, from?.location)
-    console.log('🔍 calculateDistance - to:', to.username, to.location)
+  // Build O(1) connection status map
+  const connectionStatusMap = useMemo(() => {
+    const map = new Map<string, ConnectionStatus>()
+    if (!myProfile || !allConnections) return map
 
-    if (!from?.location?.latitude || !to?.location?.latitude) {
-      console.log('⚠️ Missing location data')
-      return 0
+    const myId = myProfile.id
+    for (const conn of allConnections) {
+      const otherId =
+        conn.sender_id === myId
+          ? conn.receiver_id
+          : conn.receiver_id === myId
+            ? conn.sender_id
+            : null
+      if (!otherId) continue
+
+      const isPending = conn.status === 'pending'
+      const isSentByMe = conn.sender_id === myId
+
+      map.set(otherId, {
+        isAlreadyFriend: conn.status === 'accepted',
+        isPending: isPending && isSentByMe,
+        isReceived: isPending && !isSentByMe,
+        connectionId: conn.id,
+      })
     }
 
-    const R = 6371e3 // Rayon de la Terre en mètres
-    const φ1 = (from.location.latitude * Math.PI) / 180
-    const φ2 = (to.location.latitude * Math.PI) / 180
-    const Δφ = ((to.location.latitude - from.location.latitude) * Math.PI) / 180
-    const Δλ = ((to.location.longitude! - from.location.longitude!) * Math.PI) / 180
+    return map
+  }, [myProfile?.id, allConnections])
 
-    const a =
-      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-
-    const distance = R * c
-    console.log('📏 Distance calculated:', distance, 'meters')
-    return distance
-  }
-
-  // Filtrer les profils par recherche de nom
-  const filteredProfiles = useMemo(() => {
+  // Filter + sort profiles, pre-compute distances in single pass
+  const filteredProfiles = useMemo((): ProfileWithDistance[] => {
     if (!profiles) return []
 
-    let result = profiles.filter(p => p.id !== myProfile?.id)
+    const myId = myProfile?.id
+    const myLat = myProfile?.location?.latitude
+    const myLng = myProfile?.location?.longitude
+    const hasMyLocation = myLat !== undefined && myLng !== undefined
 
-    // Recherche par nom
+    let result = profiles.filter(p => p.id !== myId)
+
+    // Search by name
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim()
       result = result.filter(
@@ -76,114 +131,92 @@ export const SearchScreen: React.FC = () => {
       )
     }
 
-    // Filtre par skill (si filtre "Aide" actif)
+    // Filter by skill
     if (activeFilter === 'help' && selectedSkill) {
       result = result.filter(p => p.skills.includes(selectedSkill))
     }
 
-    // Tri par distance (les plus proches en premier)
-    result.sort((a, b) => {
-      const distA = calculateDistance(myProfile || undefined, a)
-      const distB = calculateDistance(myProfile || undefined, b)
-      return distA - distB
+    // Compute distances once & sort
+    const withDistance: ProfileWithDistance[] = result.map(p => {
+      const pLat = p.zone_center?.latitude
+      const pLng = p.zone_center?.longitude
+      const distance =
+        hasMyLocation && pLat !== undefined && pLng !== undefined
+          ? haversineDistance(myLat!, myLng!, pLat, pLng)
+          : 0
+      return { profile: p, distance }
     })
 
-    return result
-  }, [profiles, searchQuery, myProfile, calculateDistance, activeFilter, selectedSkill])
+    withDistance.sort((a, b) => a.distance - b.distance)
 
-  const handleAddFriend = async (profileId: string, username: string) => {
-    if (myProfile?.verification_status !== 'approved') {
-      Alert.alert(t('common:verification.requiredTitle'), t('common:verification.requiredMessage'))
-      return
-    }
+    return withDistance
+  }, [
+    profiles,
+    searchQuery,
+    myProfile?.id,
+    myProfile?.location?.latitude,
+    myProfile?.location?.longitude,
+    activeFilter,
+    selectedSkill,
+  ])
 
-    sendRequest(profileId, {
-      onSuccess: () => {
-        Alert.alert(t('requestSent'), t('requestSentMessage', { name: username }))
-        refetch()
-      },
-      onError: (error: any) => {
-        if (error?.message?.includes('Connection already exists')) {
-          Alert.alert(t('connectionExists'), t('connectionExistsMessage'))
-        } else {
-          Alert.alert(t('common:errors.generic'), t('requestError'))
-        }
-      },
-    })
-  }
-
-  const getConnectionStatus = (profileId: string) => {
-    console.log('🔍 getConnectionStatus - profileId:', profileId)
-    console.log('🔍 myProfile:', myProfile?.id)
-    console.log('🔍 allConnections:', allConnections?.length)
-
-    if (!myProfile || !allConnections) {
-      console.log('❌ Pas de myProfile ou allConnections')
-      return {
-        isAlreadyFriend: false,
-        isPending: false,
-        isReceived: false,
-        connectionId: undefined,
+  const handleAddFriend = useCallback(
+    (profileId: string, username: string) => {
+      if (myProfile?.verification_status !== 'approved') {
+        Alert.alert(
+          t('common:verification.requiredTitle'),
+          t('common:verification.requiredMessage')
+        )
+        return
       }
-    }
 
-    // Trouver la connexion avec ce profil
-    const connection = allConnections.find(
-      conn =>
-        (conn.sender_id === myProfile.id && conn.receiver_id === profileId) ||
-        (conn.receiver_id === myProfile.id && conn.sender_id === profileId)
-    )
+      sendRequest(profileId, {
+        onSuccess: () => {
+          Alert.alert(t('requestSent'), t('requestSentMessage', { name: username }))
+          refetch()
+        },
+        onError: (error: any) => {
+          if (error?.message?.includes('Connection already exists')) {
+            Alert.alert(t('connectionExists'), t('connectionExistsMessage'))
+          } else {
+            Alert.alert(t('common:errors.generic'), t('requestError'))
+          }
+        },
+      })
+    },
+    [myProfile?.verification_status, t, sendRequest, refetch]
+  )
 
-    console.log('🔍 connection trouvée:', connection)
+  const handleProfileSelect = useCallback(
+    async (profile: NearbyProfile) => {
+      await queryClient.invalidateQueries({ queryKey: profileKeys.byId(profile.id) })
+      setSelectedProfile(profile)
+    },
+    [queryClient]
+  )
 
-    if (!connection) {
-      console.log('❌ Aucune connexion trouvée')
-      return {
-        isAlreadyFriend: false,
-        isPending: false,
-        isReceived: false,
-        connectionId: undefined,
-      }
-    }
+  const keyExtractor = useCallback((item: ProfileWithDistance) => item.profile.id, [])
 
-    // Si status = 'accepted' → Ami
-    // Si status = 'pending' → Différencier envoyé vs reçu
-    const isPending = connection.status === 'pending'
-    const isSentByMe = connection.sender_id === myProfile.id
+  const renderProfileCard = useCallback(
+    ({ item }: { item: ProfileWithDistance }) => {
+      const { profile, distance } = item
+      const status = connectionStatusMap.get(profile.id) ?? DEFAULT_CONNECTION_STATUS
 
-    const result = {
-      isAlreadyFriend: connection.status === 'accepted',
-      isPending: isPending && isSentByMe, // En attente seulement si J'AI envoyé
-      isReceived: isPending && !isSentByMe, // Demande reçue si L'AUTRE a envoyé
-      connectionId: connection.id,
-    }
-
-    console.log('✅ Résultat:', result)
-    return result
-  }
-
-  const handleProfileSelect = async (profile: UserProfile) => {
-    await queryClient.invalidateQueries({ queryKey: profileKeys.byId(profile.id) })
-    setSelectedProfile(profile)
-  }
-
-  const renderProfileCard = ({ item }: { item: UserProfile }) => {
-    const distance = calculateDistance(myProfile || undefined, item)
-    const { isAlreadyFriend, isPending, isReceived, connectionId } = getConnectionStatus(item.id)
-
-    return (
-      <NomadProfileCard
-        profile={item}
-        distance={distance}
-        onAddFriend={() => handleAddFriend(item.id, item.username)}
-        onPress={() => handleProfileSelect(item)}
-        isPending={isPending}
-        isAlreadyFriend={isAlreadyFriend}
-        isReceived={isReceived}
-        connectionId={connectionId}
-      />
-    )
-  }
+      return (
+        <NomadProfileCard
+          profile={profile}
+          distance={distance}
+          onAddFriend={() => handleAddFriend(profile.id, profile.username)}
+          onPress={() => handleProfileSelect(profile)}
+          isPending={status.isPending}
+          isAlreadyFriend={status.isAlreadyFriend}
+          isReceived={status.isReceived}
+          connectionId={status.connectionId}
+        />
+      )
+    },
+    [connectionStatusMap, handleAddFriend, handleProfileSelect]
+  )
 
   return (
     <View style={styles.container}>
@@ -198,7 +231,7 @@ export const SearchScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Barre de recherche */}
+      {/* Search bar */}
       <View style={styles.searchContainer}>
         <Ionicons name="search" size={18} color={colors.text.muted} />
         <TextInput
@@ -208,14 +241,14 @@ export const SearchScreen: React.FC = () => {
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
-        {searchQuery.length > 0 && (
+        {searchQuery.length > 0 ? (
           <TouchableOpacity onPress={() => setSearchQuery('')}>
             <Ionicons name="close-circle" size={18} color={colors.text.muted} />
           </TouchableOpacity>
-        )}
+        ) : null}
       </View>
 
-      {/* Filtres rapides */}
+      {/* Quick filters */}
       <View style={styles.filtersScrollContainer}>
         <TouchableOpacity
           style={[styles.filterPill, activeFilter === 'all' && styles.filterPillActive]}
@@ -275,7 +308,7 @@ export const SearchScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Liste des profils */}
+      {/* Profile list */}
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.secondary.main} />
@@ -292,9 +325,10 @@ export const SearchScreen: React.FC = () => {
         <FlatList
           data={filteredProfiles}
           renderItem={renderProfileCard}
-          keyExtractor={item => item.id}
+          keyExtractor={keyExtractor}
           contentContainerStyle={styles.listContent}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          ItemSeparatorComponent={ItemSeparator}
+          getItemLayout={getItemLayout}
           showsVerticalScrollIndicator={false}
           windowSize={10}
           removeClippedSubviews={true}
@@ -303,7 +337,7 @@ export const SearchScreen: React.FC = () => {
         />
       )}
 
-      {/* Modal de sélection de skill */}
+      {/* Skill selection modal */}
       <Modal visible={showSkillModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -341,10 +375,13 @@ export const SearchScreen: React.FC = () => {
         </View>
       </Modal>
 
-      {/* BottomSheet pour profil sélectionné */}
-      {selectedProfile && (
-        <BottomSheet profile={selectedProfile} onClose={() => setSelectedProfile(null)} />
-      )}
+      {/* Selected profile bottom sheet */}
+      {selectedProfile ? (
+        <VisitorProfileSheet
+          profile={selectedProfile}
+          onClose={() => setSelectedProfile(null)}
+        />
+      ) : null}
     </View>
   )
 }

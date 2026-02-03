@@ -1,5 +1,5 @@
-import React from 'react'
-import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native'
+import React, { memo, useMemo } from 'react'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { colors, spacing, borderRadius, fontSize, shadows } from '../../styles/theme'
@@ -12,35 +12,33 @@ interface ActivityCardProps {
   onPress: () => void
 }
 
-export const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onPress }) => {
+export const ActivityCard: React.FC<ActivityCardProps> = memo(function ActivityCard({
+  activity,
+  onPress,
+}) {
   const { t, i18n } = useTranslation('activities')
   const locale = i18n.language === 'fr' ? fr : enUS
 
-  // Format date
-  const startDate = new Date(activity.start_date)
-  const formattedDate = format(startDate, 'EEE d MMM · HH:mm', { locale })
+  // Memoize date formatting (expensive with date-fns locale)
+  const formattedDate = useMemo(
+    () => format(new Date(activity.start_date), 'EEE d MMM · HH:mm', { locale }),
+    [activity.start_date, locale]
+  )
 
-  // Calculate if activity is full
   const isFull =
     activity.max_participants !== null &&
     activity.current_participants !== undefined &&
     activity.current_participants >= activity.max_participants
 
-  // Get status color
-  const getStatusColor = () => {
-    if (activity.status === 'cancelled') return '#DC2626'
-    if (activity.status === 'finished') return '#666666'
-    if (isFull) return '#F59E0B'
-    return colors.secondary.main
-  }
-
-  // Get status text
-  const getStatusText = () => {
-    if (activity.status === 'cancelled') return t('status.cancelled')
-    if (activity.status === 'finished') return t('status.finished')
-    if (isFull) return t('status.full')
-    return t('status.open')
-  }
+  // Memoize status computation
+  const { statusColor, statusText } = useMemo(() => {
+    if (activity.status === 'cancelled')
+      return { statusColor: '#DC2626', statusText: t('status.cancelled') }
+    if (activity.status === 'finished')
+      return { statusColor: '#666666', statusText: t('status.finished') }
+    if (isFull) return { statusColor: '#F59E0B', statusText: t('status.full') }
+    return { statusColor: colors.secondary.main, statusText: t('status.open') }
+  }, [activity.status, isFull, t])
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
@@ -66,8 +64,8 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onPress })
             {t('card.by')} {activity.creator_username}
           </Text>
         </View>
-        <View style={[styles.statusBadge, { backgroundColor: getStatusColor() }]}>
-          <Text style={styles.statusText}>{getStatusText()}</Text>
+        <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
+          <Text style={styles.statusText}>{statusText}</Text>
         </View>
       </View>
 
@@ -77,9 +75,9 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onPress })
           <Ionicons name="location" size={14} color={colors.text.tertiary} />
           <Text style={styles.infoText} numberOfLines={1}>
             {activity.location_name}
-            {activity.distance_km !== null && activity.distance_km !== undefined && (
+            {activity.distance_km !== null && activity.distance_km !== undefined ? (
               <Text style={styles.distance}> · {activity.distance_km}km</Text>
-            )}
+            ) : null}
           </Text>
         </View>
       </View>
@@ -97,27 +95,28 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onPress })
           <Ionicons name="people" size={16} color={colors.text.tertiary} />
           <Text style={styles.participantsText}>
             {activity.current_participants || 0}
-            {activity.max_participants && `/${activity.max_participants}`} {t('card.participants')}
+            {activity.max_participants ? `/${activity.max_participants}` : null}{' '}
+            {t('card.participants')}
           </Text>
         </View>
 
         {/* Badges */}
         <View style={styles.badges}>
-          {activity.is_creator && (
+          {activity.is_creator ? (
             <View style={[styles.badge, styles.creatorBadge]}>
               <Text style={styles.badgeText}>{t('card.creator')}</Text>
             </View>
-          )}
-          {activity.is_participant && (
+          ) : null}
+          {activity.is_participant ? (
             <View style={[styles.badge, styles.participantBadge]}>
               <Text style={styles.badgeText}>{t('card.participating')}</Text>
             </View>
-          )}
+          ) : null}
         </View>
       </View>
     </TouchableOpacity>
   )
-}
+})
 
 const styles = StyleSheet.create({
   card: {

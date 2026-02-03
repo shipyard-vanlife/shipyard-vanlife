@@ -22,7 +22,17 @@ export interface MapBounds {
 export interface MapZone {
   center: ZoneCenter
   count: number // Number of vans in this zone
+  sampleAvatars: string[] // Up to 3 avatar URLs for preview
   profiles?: NearbyProfile[] // Loaded when zone is tapped
+}
+
+// Row returned by get_viewport_data RPC
+export interface ViewportZone {
+  zone_lat: number
+  zone_lng: number
+  profile_count: number
+  sample_avatars: string[]
+  profiles: NearbyProfile[] | null // null for dense zones (>=10), loaded on demand
 }
 
 // Profile as returned by get_nearby_profiles, get_all_visible_profiles, get_profiles_in_zone
@@ -75,10 +85,10 @@ export interface NearbyProfilesParams {
   radiusKm?: number
 }
 
-// Parameters for zone profiles query
-export interface ZoneProfilesParams {
-  zoneLat: number
-  zoneLng: number
-  userLat?: number
-  userLng?: number
+// Parameters for viewport-based profiles query (bounding box)
+export interface ViewportProfilesParams {
+  minLat: number
+  maxLat: number
+  minLng: number
+  maxLng: number
 }
