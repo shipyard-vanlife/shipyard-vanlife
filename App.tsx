@@ -13,6 +13,7 @@ import { RegisterScreen } from './src/screens/RegisterScreen'
 import { VerificationScreen } from './src/screens/VerificationScreen'
 import { VerificationChoiceScreen } from './src/screens/VerificationChoiceScreen'
 import { InvitationCodeScreen } from './src/screens/InvitationCodeScreen'
+import { SplashScreen } from './src/components/SplashScreen'
 import { colors } from './src/styles/theme'
 
 const queryClient = new QueryClient({
@@ -107,6 +108,12 @@ function Navigation() {
 }
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true)
+
+  if (showSplash) {
+    return <SplashScreen onFinish={() => setShowSplash(false)} />
+  }
+
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>

@@ -1,10 +1,17 @@
 {
-  "title": "Find Friends",
+  "title": "Community",
+  "subtitle": "Travelers nearby you",
   "searchPlaceholder": "Search by name...",
   "filters": {
     "all": "All",
     "activities": "Activities",
-    "help": "Help"
+    "help": "Help",
+    "distance": "Within 25km",
+    "activityType": "Activity Type",
+    "selectDistance": "Select Distance",
+    "featureComingSoon": "Feature coming soon",
+    "skillsFilter": "Skills",
+    "cancel": "Cancel"
   },
   "requestSent": "Request sent",
   "requestSentMessage": "Connection request sent to {{name}}!",
@@ -21,21 +28,15 @@
     "addFriend": "Add Friend",
     "friend": "Friend",
     "pending": "Pending",
-    "received": "Request received"
+    "received": "Request received",
+    "defaultBio": "Nomadic traveler exploring the world",
+    "sayHello": "Say Hello"
   },
   "distance": {
     "meters": "m",
     "kilometers": "km"
   },
   "skillModal": {
-    "title": "Select a skill"
-  },
-  "card": {
-    "lookingFor": "Looking for:",
-    "addFriend": "Add Friend",
-    "friend": "Friend",
-    "pending": "Pending",
-    "received": "Request received",
-    "defaultBio": "Vanlife enthusiast"
+    "title": "Filter by skill"
   }
 }

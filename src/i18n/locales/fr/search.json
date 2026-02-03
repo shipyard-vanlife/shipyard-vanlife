@@ -1,10 +1,17 @@
 {
-  "title": "Trouver des Amis",
+  "title": "Communauté",
+  "subtitle": "Voyageurs proches de toi",
   "searchPlaceholder": "Rechercher par nom...",
   "filters": {
     "all": "Tous",
     "activities": "Activités",
-    "help": "Aide"
+    "help": "Aide",
+    "distance": "Dans un rayon de 25km",
+    "activityType": "Type d'activité",
+    "selectDistance": "Sélectionner la distance",
+    "featureComingSoon": "Fonctionnalité à venir",
+    "skillsFilter": "Compétences",
+    "cancel": "Annuler"
   },
   "requestSent": "Demande envoyée",
   "requestSentMessage": "Demande de connexion envoyée à {{name}} !",
@@ -21,21 +28,15 @@
     "addFriend": "Ajouter",
     "friend": "Ami",
     "pending": "En attente",
-    "received": "Demande reçue"
+    "received": "Demande reçue",
+    "defaultBio": "Voyageur nomade parcourant le monde",
+    "sayHello": "Dire Bonjour"
   },
   "distance": {
     "meters": "m",
     "kilometers": "km"
   },
   "skillModal": {
-    "title": "Sélectionner une compétence"
-  },
-  "card": {
-    "lookingFor": "Recherche :",
-    "addFriend": "Ajouter",
-    "friend": "Ami",
-    "pending": "En attente",
-    "received": "Demande reçue",
-    "defaultBio": "Passionné de vanlife"
+    "title": "Filtrer par compétence"
   }
 }

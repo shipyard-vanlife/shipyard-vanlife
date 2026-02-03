@@ -51,8 +51,14 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
 
   const handleJoin = () => {
     joinActivity(activityId, {
-      onSuccess: () => {
-        Alert.alert(t('alerts.joinSuccess'))
+      onSuccess: (data) => {
+        if (data.success) {
+          Alert.alert(t('alerts.joinSuccess'))
+        } else if (data.error === 'Activity is full') {
+          Alert.alert(t('alerts.activityFull'))
+        } else {
+          Alert.alert(t('alerts.error'), data.error)
+        }
       },
       onError: () => {
         Alert.alert(t('alerts.error'))

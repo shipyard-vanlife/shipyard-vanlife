@@ -1,10 +1,11 @@
-import React, { memo } from 'react'
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import React, { memo, useState } from 'react'
+import { Image, StyleSheet, Text, TouchableOpacity, View, Modal, Alert } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { colors, spacing, borderRadius, fontSize, fontWeight, shadows } from '../../styles/theme'
 import type { SkillType } from '../../types/user'
 import { SkillBadge } from '../SkillBadge'
+import { useBlockUser } from '../../hooks/useModeration'
 
 interface ProfileCardData {
   id: string
@@ -12,6 +13,7 @@ interface ProfileCardData {
   avatar_url: string | null
   bio?: string | null
   skills: SkillType[]
+  van_photo_url?: string | null
 }
 
 interface NomadProfileCardProps {
@@ -25,11 +27,12 @@ interface NomadProfileCardProps {
   connectionId?: string
 }
 
-const formatDistance = (meters: number, t: any): string => {
+const formatDistance = (meters: number): string => {
   if (meters < 1000) {
-    return `${Math.round(meters)}${t('distance.meters')}`
+    return `${Math.round(meters)}m`
   }
-  return `${(meters / 1000).toFixed(1)}${t('distance.kilometers')}`
+  const km = meters / 1000
+  return `${Math.round(km)}km`
 }
 
 export const NomadProfileCard = memo(function NomadProfileCard({
@@ -42,86 +45,168 @@ export const NomadProfileCard = memo(function NomadProfileCard({
   isReceived = false,
   connectionId,
 }: NomadProfileCardProps) {
-  const { t } = useTranslation('search')
+  const { t } = useTranslation(['search', 'common'])
+  const [showMenu, setShowMenu] = useState(false)
+  const { mutate: blockUser } = useBlockUser()
+
+  const handleBlock = () => {
+    setShowMenu(false)
+    Alert.alert(
+      t('common:moderation.blockConfirmTitle', { username: profile.username }),
+      t('common:moderation.blockConfirmMessage'),
+      [
+        { text: t('common:buttons.cancel'), style: 'cancel' },
+        {
+          text: t('common:moderation.blockUser'),
+          style: 'destructive',
+          onPress: () => {
+            blockUser(profile.id, {
+              onSuccess: () => {
+                Alert.alert(
+                  t('common:moderation.blockSuccess'),
+                  t('common:moderation.blockSuccessMessage', { username: profile.username })
+                )
+              },
+              onError: () => {
+                Alert.alert(t('common:errors.generic'), t('common:moderation.blockError'))
+              },
+            })
+          },
+        },
+      ]
+    )
+  }
+
+  const handleReport = () => {
+    setShowMenu(false)
+    Alert.alert(
+      t('common:moderation.reportProfile'),
+      t('common:moderation.reportMessage', { username: profile.username })
+    )
+  }
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
-      {/* Section supérieure */}
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.95}>
+      {/* Header: Avatar + Name + Distance + 3-dots */}
       <View style={styles.header}>
-        {/* Avatar */}
         <View style={styles.avatarContainer}>
           {profile.avatar_url ? (
             <Image source={{ uri: profile.avatar_url }} style={styles.avatar} resizeMode="cover" />
           ) : (
             <View style={[styles.avatar, styles.avatarPlaceholder]}>
-              <Ionicons name="person" size={24} color={colors.text.tertiary} />
+              <Ionicons name="person" size={28} color={colors.white} />
             </View>
           )}
         </View>
 
-        {/* Infos utilisateur */}
-        <View style={styles.userInfo}>
-          <View style={styles.nameRow}>
-            <Text style={styles.username} numberOfLines={1}>
-              {profile.username}
-            </Text>
-            {distance !== undefined && (
-              <View style={styles.distanceBadge}>
-                <Text style={styles.distanceText}>{formatDistance(distance, t)}</Text>
-              </View>
-            )}
-          </View>
-          <Text style={styles.bio} numberOfLines={1}>
-            {profile.bio || t('card.defaultBio', { defaultValue: 'Voyageur nomade' })}
+        <View style={styles.nameSection}>
+          <Text style={styles.username} numberOfLines={1}>
+            {profile.username}
           </Text>
+        </View>
+
+        <View style={styles.rightSection}>
+          {distance !== undefined && distance > 0 && (
+            <Text style={styles.distanceRight}>{formatDistance(distance)}</Text>
+          )}
+          <TouchableOpacity style={styles.menuButton} activeOpacity={0.7} onPress={() => setShowMenu(true)}>
+            <Ionicons name="ellipsis-horizontal" size={20} color={colors.text.tertiary} />
+          </TouchableOpacity>
         </View>
       </View>
 
-      {/* Badges de compétences */}
+      {/* Menu Modal */}
+      <Modal visible={showMenu} transparent animationType="fade">
+        <TouchableOpacity
+          style={styles.menuOverlay}
+          activeOpacity={1}
+          onPress={() => setShowMenu(false)}
+        >
+          <View style={styles.menuContainer}>
+            <TouchableOpacity style={styles.menuItem} onPress={handleReport}>
+              <Ionicons name="flag-outline" size={20} color={colors.text.tertiary} />
+              <Text style={styles.menuText}>{t('common:moderation.reportProfile')}</Text>
+            </TouchableOpacity>
+            <View style={styles.menuSeparator} />
+            <TouchableOpacity style={styles.menuItem} onPress={handleBlock}>
+              <Ionicons name="ban-outline" size={20} color={colors.error} />
+              <Text style={[styles.menuText, styles.menuTextDanger]}>
+                {t('common:moderation.blockUser')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Bio */}
+      {profile.bio && (
+        <Text style={styles.bio} numberOfLines={2}>
+          {profile.bio}
+        </Text>
+      )}
+
+      {/* Skill badges */}
       {profile.skills.length > 0 && (
         <View style={styles.tagsContainer}>
           {profile.skills.slice(0, 3).map(skill => (
             <SkillBadge key={skill} skill={skill} />
           ))}
+          {profile.skills.length > 3 && (
+            <View style={styles.moreSkillsBadge}>
+              <Text style={styles.moreSkillsText}>+{profile.skills.length - 3}</Text>
+            </View>
+          )}
         </View>
       )}
 
-      {/* Section inférieure */}
+      {/* Footer: Add friend button + Van photo */}
       <View style={styles.footer}>
+        {/* Action button */}
         {isReceived ? (
-          // Demande reçue → Afficher texte "Demande reçue" et renvoyer vers le profil
           <TouchableOpacity style={styles.receivedButton} onPress={onPress} activeOpacity={0.8}>
-            <Ionicons name="mail" size={14} color={colors.secondary.main} />
+            <Ionicons name="mail" size={16} color={colors.secondary.main} />
             <Text style={styles.receivedButtonText}>
-              {t('card.received', { defaultValue: 'Demande reçue' })}
+              {t('card.received', { defaultValue: 'Request received' })}
             </Text>
           </TouchableOpacity>
         ) : (
-          // Cas normal : Ajouter / En attente / Ami
           <TouchableOpacity
             style={[
-              styles.addButton,
-              isPending && styles.addButtonPending,
-              isAlreadyFriend && styles.addButtonFriend,
+              styles.addFriendButton,
+              (isPending || isAlreadyFriend) && styles.addFriendButtonDisabled,
             ]}
             onPress={onAddFriend}
             disabled={isPending || isAlreadyFriend}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
           >
             <Ionicons
-              name={isAlreadyFriend ? 'checkmark' : 'person-add'}
-              size={14}
+              name={isAlreadyFriend ? 'checkmark' : isPending ? 'time' : 'person-add'}
+              size={18}
               color={colors.white}
             />
-            <Text style={styles.addButtonText}>
-              {isAlreadyFriend
-                ? t('card.friend')
-                : isPending
-                  ? t('card.pending')
-                  : t('card.addFriend')}
+            <Text style={styles.addFriendText}>
+              {isAlreadyFriend ? t('card.friend') : isPending ? t('card.pending') : t('card.addFriend')}
             </Text>
           </TouchableOpacity>
         )}
+
+        {/* Van photo */}
+        <View style={styles.vanPhotoContainer}>
+          {profile.van_photo_url ? (
+            <Image
+              source={{ uri: profile.van_photo_url }}
+              style={styles.vanPhoto}
+              resizeMode="cover"
+              defaultSource={require('../../../assets/van-life.jpg')}
+            />
+          ) : (
+            <Image
+              source={require('../../../assets/van-life.jpg')}
+              style={styles.vanPhoto}
+              resizeMode="cover"
+            />
+          )}
+        </View>
       </View>
     </TouchableOpacity>
   )
@@ -130,11 +215,11 @@ export const NomadProfileCard = memo(function NomadProfileCard({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.white,
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.xxl,
     padding: spacing.lg,
     borderWidth: 1,
     borderColor: colors.border.light,
-    ...shadows.medium,
+    ...shadows.small,
   },
   header: {
     flexDirection: 'row',
@@ -146,98 +231,163 @@ const styles = StyleSheet.create({
     marginRight: spacing.md,
   },
   avatar: {
-    width: 56,
-    height: 56,
+    width: 60,
+    height: 60,
     borderRadius: borderRadius.full,
     borderWidth: 2,
     borderColor: colors.white,
-    ...shadows.small,
   },
   avatarPlaceholder: {
-    backgroundColor: colors.primary.main,
+    backgroundColor: colors.secondary.light,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  userInfo: {
-    flex: 1,
+  statusDot: {
+    position: 'absolute',
+    bottom: 2,
+    left: 2,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    borderWidth: 2,
+    borderColor: colors.white,
   },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 2,
+  nameSection: {
+    flex: 1,
   },
   username: {
     fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
+    fontWeight: fontWeight.bold,
     color: colors.text.primary,
-    flex: 1,
-    marginRight: spacing.sm,
   },
-  distanceBadge: {
-    backgroundColor: colors.primary.dark,
+  rightSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  distanceRight: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.semibold,
+    color: colors.text.tertiary,
+    backgroundColor: colors.border.light,
     paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
+    paddingVertical: spacing.xs,
     borderRadius: borderRadius.sm,
   },
-  distanceText: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
-    color: colors.text.secondary,
+  menuButton: {
+    width: 32,
+    height: 32,
+    borderRadius: borderRadius.md,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   bio: {
     fontSize: fontSize.sm,
     color: colors.text.secondary,
-    fontWeight: fontWeight.regular,
+    lineHeight: 18,
+    marginBottom: spacing.md,
   },
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: spacing.sm,
-    gap: spacing.sm,
+    gap: spacing.xs,
+    marginBottom: spacing.lg,
+  },
+  moreSkillsBadge: {
+    backgroundColor: colors.border.light,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
+  },
+  moreSkillsText: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.medium,
+    color: colors.text.tertiary,
   },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
-    marginTop: spacing.md,
+    gap: spacing.md,
   },
-  addButton: {
+  vanPhotoContainer: {
+    flex: 1,
+    height: 110,
+    borderRadius: borderRadius.lg,
+    overflow: 'hidden',
+    backgroundColor: colors.border.light,
+  },
+  vanPhoto: {
+    width: '100%',
+    height: '100%',
+  },
+  addFriendButton: {
     flexDirection: 'row',
-    alignItems: 'center',
+    gap: spacing.xs,
     backgroundColor: colors.secondary.main,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    gap: 4,
+    borderRadius: borderRadius.xl,
+    paddingVertical: spacing.sm + 2,
+    paddingHorizontal: spacing.md,
+    alignItems: 'center',
+    justifyContent: 'center',
     ...shadows.small,
   },
-  addButtonPending: {
-    backgroundColor: colors.text.tertiary,
+  addFriendButtonDisabled: {
     opacity: 0.6,
+    backgroundColor: colors.text.tertiary,
   },
-  addButtonFriend: {
-    backgroundColor: '#4A90E2',
-    opacity: 1,
-  },
-  addButtonText: {
+  addFriendText: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.semibold,
     color: colors.white,
   },
+  menuOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  menuContainer: {
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.xl,
+    paddingVertical: spacing.sm,
+    minWidth: 200,
+    ...shadows.large,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+  },
+  menuText: {
+    fontSize: fontSize.base,
+    color: colors.text.primary,
+    fontWeight: fontWeight.medium,
+  },
+  menuTextDanger: {
+    color: colors.error,
+  },
+  menuSeparator: {
+    height: 1,
+    backgroundColor: colors.border.light,
+    marginHorizontal: spacing.md,
+  },
   receivedButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: colors.white,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.secondary.main,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    gap: 4,
+    paddingVertical: spacing.sm + 2,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.xl,
+    gap: spacing.xs,
+    ...shadows.small,
   },
   receivedButtonText: {
-    fontSize: fontSize.sm,
+    fontSize: fontSize.base,
     fontWeight: fontWeight.semibold,
     color: colors.secondary.main,
   },

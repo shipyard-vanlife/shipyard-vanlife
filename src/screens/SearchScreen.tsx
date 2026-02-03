@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
@@ -10,6 +10,7 @@ import {
   View,
   Alert,
   Modal,
+  Image,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useQueryClient } from '@tanstack/react-query'
@@ -82,6 +83,8 @@ export const SearchScreen: React.FC = () => {
   const [selectedProfile, setSelectedProfile] = useState<NearbyProfile | null>(null)
   const [selectedSkill, setSelectedSkill] = useState<SkillType | null>(null)
   const [showSkillModal, setShowSkillModal] = useState(false)
+  const [showDistanceModal, setShowDistanceModal] = useState(false)
+  const [displayLimit, setDisplayLimit] = useState(25)
 
   // Build O(1) connection status map
   const connectionStatusMap = useMemo(() => {
@@ -218,22 +221,58 @@ export const SearchScreen: React.FC = () => {
     [connectionStatusMap, handleAddFriend, handleProfileSelect]
   )
 
+  // Paginated profiles - only show first N items
+  const paginatedProfiles = useMemo(() => {
+    return filteredProfiles.slice(0, displayLimit)
+  }, [filteredProfiles, displayLimit])
+
+  // Load more when reaching end of list
+  const handleLoadMore = useCallback(() => {
+    if (displayLimit < filteredProfiles.length) {
+      setDisplayLimit((prev) => prev + 25)
+    }
+  }, [displayLimit, filteredProfiles.length])
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setDisplayLimit(25)
+  }, [searchQuery, activeFilter, selectedSkill])
+
   return (
     <View style={styles.container}>
-      {/* Header */}
+      {/* Header with large title and avatar */}
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Ionicons name="person-outline" size={20} color={colors.secondary.main} />
-          <Text style={styles.headerTitle}>{t('title')}</Text>
+        <View style={styles.headerContent}>
+          <View style={styles.headerLeft}>
+            <Text style={styles.headerTitle}>{t('title')}</Text>
+            <View style={styles.subtitleContainer}>
+              <Text style={styles.headerSubtitle}>{t('subtitle')}</Text>
+            </View>
+          </View>
+
+          <View style={styles.headerRight}>
+            {myProfile?.avatar_url ? (
+              <View style={styles.avatarWrapper}>
+                <Image source={{ uri: myProfile.avatar_url }} style={styles.headerAvatar} />
+                <View style={styles.onlineDot} />
+              </View>
+            ) : (
+              <View style={styles.avatarWrapper}>
+                <View style={[styles.headerAvatar, styles.avatarPlaceholder]}>
+                  <Text style={styles.avatarText}>
+                    {myProfile?.username?.charAt(0).toUpperCase() || 'M'}
+                  </Text>
+                </View>
+                <View style={styles.onlineDot} />
+              </View>
+            )}
+          </View>
         </View>
-        <TouchableOpacity style={styles.filterButton}>
-          <Ionicons name="funnel" size={20} color={colors.text.primary} />
-        </TouchableOpacity>
       </View>
 
       {/* Search bar */}
       <View style={styles.searchContainer}>
-        <Ionicons name="search" size={18} color={colors.text.muted} />
+        <Ionicons name="search" size={20} color={colors.text.muted} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
           placeholder={t('searchPlaceholder')}
@@ -241,70 +280,27 @@ export const SearchScreen: React.FC = () => {
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
-        {searchQuery.length > 0 ? (
-          <TouchableOpacity onPress={() => setSearchQuery('')}>
-            <Ionicons name="close-circle" size={18} color={colors.text.muted} />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
+            <Ionicons name="close-circle" size={20} color={colors.text.muted} />
           </TouchableOpacity>
-        ) : null}
+        )}
       </View>
 
       {/* Quick filters */}
       <View style={styles.filtersScrollContainer}>
         <TouchableOpacity
-          style={[styles.filterPill, activeFilter === 'all' && styles.filterPillActive]}
-          onPress={() => setActiveFilter('all')}
+          style={styles.filterPill}
+          onPress={() => setShowSkillModal(true)}
           activeOpacity={0.7}
         >
-          <Ionicons
-            name="people"
-            size={16}
-            color={activeFilter === 'all' ? colors.white : colors.text.primary}
-          />
-          <Text
-            style={[styles.filterPillText, activeFilter === 'all' && styles.filterPillTextActive]}
-          >
-            {t('filters.all')}
-          </Text>
+          <Ionicons name="grid" size={16} color={colors.text.secondary} />
+          <Text style={styles.filterPillLabel}>{t('filters.skillsFilter')}</Text>
+          <Ionicons name="chevron-down" size={14} color={colors.text.tertiary} />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.filterPill, activeFilter === 'activities' && styles.filterPillActive]}
-          onPress={() => setActiveFilter('activities')}
-          activeOpacity={0.7}
-        >
-          <Ionicons
-            name="fitness"
-            size={16}
-            color={activeFilter === 'activities' ? colors.white : colors.text.primary}
-          />
-          <Text
-            style={[
-              styles.filterPillText,
-              activeFilter === 'activities' && styles.filterPillTextActive,
-            ]}
-          >
-            {t('filters.activities')}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.filterPill, activeFilter === 'help' && styles.filterPillActive]}
-          onPress={() => {
-            setActiveFilter('help')
-            setShowSkillModal(true)
-          }}
-          activeOpacity={0.7}
-        >
-          <Ionicons
-            name="hand-left"
-            size={16}
-            color={activeFilter === 'help' ? colors.white : colors.text.primary}
-          />
-          <Text
-            style={[styles.filterPillText, activeFilter === 'help' && styles.filterPillTextActive]}
-          >
-            {t('filters.help')}
-          </Text>
+        <TouchableOpacity style={styles.filterIconButton} activeOpacity={0.7}>
+          <Ionicons name="options" size={20} color={colors.text.secondary} />
         </TouchableOpacity>
       </View>
 
@@ -323,7 +319,7 @@ export const SearchScreen: React.FC = () => {
         </View>
       ) : (
         <FlatList
-          data={filteredProfiles}
+          data={paginatedProfiles}
           renderItem={renderProfileCard}
           keyExtractor={keyExtractor}
           contentContainerStyle={styles.listContent}
@@ -333,17 +329,36 @@ export const SearchScreen: React.FC = () => {
           windowSize={10}
           removeClippedSubviews={true}
           maxToRenderPerBatch={10}
-          initialNumToRender={8}
+          initialNumToRender={25}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            displayLimit < filteredProfiles.length ? (
+              <View style={styles.loadMoreContainer}>
+                <ActivityIndicator size="small" color={colors.secondary.main} />
+              </View>
+            ) : null
+          }
         />
       )}
 
       {/* Skill selection modal */}
       <Modal visible={showSkillModal} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {t('skillModal.title', { defaultValue: 'Choisir une compétence' })}
-            </Text>
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => {
+            setShowSkillModal(false)
+            setActiveFilter('all')
+            setSelectedSkill(null)
+          }}
+        >
+          <TouchableOpacity
+            style={styles.modalContent}
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <Text style={styles.modalTitle}>{t('skillModal.title')}</Text>
             <FlatList
               data={ALL_SKILLS}
               keyExtractor={item => item}
@@ -352,6 +367,7 @@ export const SearchScreen: React.FC = () => {
                   style={styles.skillItem}
                   onPress={() => {
                     setSelectedSkill(item)
+                    setActiveFilter('help')
                     setShowSkillModal(false)
                   }}
                 >
@@ -367,12 +383,10 @@ export const SearchScreen: React.FC = () => {
                 setSelectedSkill(null)
               }}
             >
-              <Text style={styles.modalCloseText}>
-                {t('common:cancel', { defaultValue: 'Annuler' })}
-              </Text>
+              <Text style={styles.modalCloseText}>{t('filters.cancel')}</Text>
             </TouchableOpacity>
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
 
       {/* Selected profile bottom sheet */}
@@ -392,90 +406,147 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary.main,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingTop: 60,
     paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.lg,
+    paddingBottom: spacing.xl,
     backgroundColor: colors.primary.main,
   },
-  headerLeft: {
+  headerContent: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  headerLeft: {
+    flex: 1,
   },
   headerTitle: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.semibold,
+    fontSize: 32,
+    fontWeight: fontWeight.bold,
     color: colors.text.primary,
+    marginBottom: spacing.xs,
   },
-  filterButton: {
-    width: 40,
-    height: 40,
+  subtitleContainer: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.border.light,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
+  },
+  headerSubtitle: {
+    fontSize: fontSize.sm,
+    color: colors.text.secondary,
+    fontWeight: fontWeight.medium,
+  },
+  headerRight: {
+    marginLeft: spacing.md,
+  },
+  avatarWrapper: {
+    position: 'relative',
+  },
+  headerAvatar: {
+    width: 56,
+    height: 56,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.white,
+    borderWidth: 2,
+    borderColor: colors.white,
+    ...shadows.small,
+  },
+  avatarPlaceholder: {
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: colors.secondary.light,
+  },
+  avatarText: {
+    fontSize: fontSize.xxl,
+    fontWeight: fontWeight.bold,
+    color: colors.white,
+  },
+  onlineDot: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: colors.success,
+    borderWidth: 2,
+    borderColor: colors.primary.main,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.white,
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.xl,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     borderWidth: 1,
     borderColor: colors.border.light,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    marginHorizontal: spacing.lg,
-    gap: spacing.sm,
     ...shadows.small,
+  },
+  searchIcon: {
+    marginRight: spacing.sm,
   },
   searchInput: {
     flex: 1,
     fontSize: fontSize.base,
     color: colors.text.primary,
-    padding: 0,
+    paddingVertical: spacing.sm,
+  },
+  clearButton: {
+    padding: spacing.xs,
   },
   filtersScrollContainer: {
     flexDirection: 'row',
     paddingHorizontal: spacing.lg,
-    marginTop: spacing.lg,
     gap: spacing.sm,
+    marginBottom: spacing.lg,
   },
   filterPill: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: colors.border.main,
-    borderRadius: borderRadius.round,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    gap: 6,
+    borderColor: colors.border.light,
+    borderRadius: borderRadius.xl,
+    paddingVertical: spacing.sm + 2,
+    paddingHorizontal: spacing.md,
+    gap: spacing.xs,
+    ...shadows.small,
   },
-  filterPillActive: {
-    backgroundColor: colors.secondary.main,
-    borderColor: colors.secondary.main,
-  },
-  filterPillText: {
+  filterPillLabel: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.medium,
-    color: colors.text.primary,
+    color: colors.text.secondary,
+    marginRight: spacing.xs,
   },
-  filterPillTextActive: {
-    color: colors.white,
-    fontWeight: fontWeight.semibold,
+  filterIconButton: {
+    width: 44,
+    height: 44,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...shadows.small,
   },
   listContent: {
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
     paddingBottom: 100,
   },
   separator: {
-    height: spacing.md,
+    height: spacing.lg,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadMoreContainer: {
+    paddingVertical: spacing.xl,
     alignItems: 'center',
   },
   emptyContainer: {
@@ -498,45 +569,54 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: colors.background.overlay,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
     justifyContent: 'center',
     alignItems: 'center',
+    padding: spacing.lg,
   },
   modalContent: {
     backgroundColor: colors.white,
-    borderRadius: borderRadius.lg,
-    padding: spacing.xl,
-    width: '80%',
-    maxHeight: '70%',
+    borderRadius: borderRadius.xxl,
+    padding: spacing.xxl,
+    width: '90%',
+    maxHeight: '65%',
     ...shadows.large,
   },
   modalTitle: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.semibold,
+    fontSize: fontSize.xxl,
+    fontWeight: fontWeight.bold,
     color: colors.text.primary,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xl,
+  },
+  modalSubtext: {
+    fontSize: fontSize.base,
+    color: colors.text.secondary,
     textAlign: 'center',
+    marginBottom: spacing.lg,
   },
   skillItem: {
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: colors.border.light,
+    borderRadius: borderRadius.sm,
   },
   skillText: {
     fontSize: fontSize.base,
     color: colors.text.primary,
+    fontWeight: fontWeight.medium,
   },
   modalCloseButton: {
-    marginTop: spacing.lg,
-    padding: spacing.md,
-    backgroundColor: colors.text.tertiary,
-    borderRadius: borderRadius.md,
+    marginTop: spacing.xl,
+    paddingVertical: spacing.lg,
+    backgroundColor: colors.secondary.main,
+    borderRadius: borderRadius.xl,
     alignItems: 'center',
+    ...shadows.small,
   },
   modalCloseText: {
     color: colors.white,
     fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
+    fontWeight: fontWeight.bold,
   },
 })

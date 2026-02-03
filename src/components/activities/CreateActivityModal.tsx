@@ -83,8 +83,9 @@ export const CreateActivityModal: React.FC<CreateActivityModalProps> = ({ visibl
           resetForm()
           onClose()
         },
-        onError: () => {
-          Alert.alert(t('alerts.error'))
+        onError: (error: any) => {
+          console.error('Create activity error:', error)
+          Alert.alert(t('alerts.error'), error?.message || JSON.stringify(error))
         },
       }
     )

@@ -359,22 +359,20 @@ export function useJoinActivity() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (activityId: string): Promise<void> => {
-      const { data: user } = await supabase.auth.getUser()
-      if (!user.user) throw new Error('Not authenticated')
-
-      const { error } = await supabase.from('activity_participants').insert({
-        activity_id: activityId,
-        user_id: user.user.id,
-        status: 'accepted', // Auto-accept for now
+    mutationFn: async (activityId: string): Promise<{ success: boolean; error?: string }> => {
+      const { data, error } = await supabase.rpc('join_activity', {
+        p_activity_id: activityId,
       })
 
       if (error) throw error
+      return data as { success: boolean; error?: string }
     },
-    onSuccess: (_, activityId) => {
-      queryClient.invalidateQueries({ queryKey: activityKeys.all })
-      queryClient.invalidateQueries({ queryKey: activityKeys.byId(activityId) })
-      queryClient.invalidateQueries({ queryKey: activityKeys.participants(activityId) })
+    onSuccess: (data, activityId) => {
+      if (data.success) {
+        queryClient.invalidateQueries({ queryKey: activityKeys.all })
+        queryClient.invalidateQueries({ queryKey: activityKeys.byId(activityId) })
+        queryClient.invalidateQueries({ queryKey: activityKeys.participants(activityId) })
+      }
     },
   })
 }
