@@ -8,7 +8,14 @@
     "loading": "Loading map...",
     "noLocation": "No location set. Declare your position to see the map.",
     "activities": "Activities",
-    "backToProfile": "Back to {{username}}"
+    "vanlifers": "Vanlifers",
+    "backToProfile": "Back to {{username}}",
+    "zone": {
+      "title": "{{count}} vanlifers in this zone",
+      "loading": "Loading profiles...",
+      "empty": "No profiles found",
+      "viewProfile": "View profile"
+    }
   },
   "noLocation": {
     "title": "No location set",

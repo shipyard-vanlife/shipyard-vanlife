@@ -9,7 +9,9 @@
     "distance": "Dans un rayon de 25km",
     "activityType": "Type d'activité",
     "selectDistance": "Sélectionner la distance",
-    "featureComingSoon": "Fonctionnalité à venir"
+    "featureComingSoon": "Fonctionnalité à venir",
+    "skillsFilter": "Compétences",
+    "cancel": "Annuler"
   },
   "requestSent": "Demande envoyée",
   "requestSentMessage": "Demande de connexion envoyée à {{name}} !",
@@ -35,6 +37,6 @@
     "kilometers": "km"
   },
   "skillModal": {
-    "title": "Choisir le type d'activité"
+    "title": "Filtrer par compétence"
   }
 }

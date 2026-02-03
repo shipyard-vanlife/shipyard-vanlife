@@ -4,21 +4,21 @@
     "slug": "shipyard-vanlife",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/van-life.jpg",
+    "icon": "./assets/nomli-logo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/van-life.jpg",
+      "image": "./assets/nomli-logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#F3ECDC"
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/van-life.jpg",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/nomli-logo.png",
+        "backgroundColor": "#F3ECDC"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false

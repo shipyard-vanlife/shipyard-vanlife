@@ -19,7 +19,12 @@ export const TripStageMarker: React.FC<TripStageMarkerProps> = ({
   onPress,
 }) => {
   return (
-    <Marker coordinate={coordinate} anchor={{ x: 0.5, y: 0.5 }} onPress={onPress}>
+    <Marker
+      coordinate={coordinate}
+      anchor={{ x: 0.5, y: 0.5 }}
+      onPress={onPress}
+      tracksViewChanges={false}
+    >
       <View style={[styles.marker, isFirst && styles.firstMarker, isLast && styles.lastMarker]}>
         <Text style={styles.number}>{stageNumber}</Text>
       </View>

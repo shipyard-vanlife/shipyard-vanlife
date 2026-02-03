@@ -9,7 +9,9 @@
     "distance": "Within 25km",
     "activityType": "Activity Type",
     "selectDistance": "Select Distance",
-    "featureComingSoon": "Feature coming soon"
+    "featureComingSoon": "Feature coming soon",
+    "skillsFilter": "Skills",
+    "cancel": "Cancel"
   },
   "requestSent": "Request sent",
   "requestSentMessage": "Connection request sent to {{name}}!",
@@ -35,6 +37,6 @@
     "kilometers": "km"
   },
   "skillModal": {
-    "title": "Choose Activity Type"
+    "title": "Filter by skill"
   }
 }

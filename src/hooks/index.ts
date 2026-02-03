@@ -36,5 +36,5 @@ export {
   useNearbyProfiles,
   useUpdateLocation,
   useUpdateProfile,
-  useZoneProfiles,
+  useViewportProfiles,
 } from './useProfiles'
