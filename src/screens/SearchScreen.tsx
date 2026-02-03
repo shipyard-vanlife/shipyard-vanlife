@@ -10,6 +10,7 @@ import {
   View,
   Alert,
   Modal,
+  Image,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useQueryClient } from '@tanstack/react-query'
@@ -36,17 +37,14 @@ export const SearchScreen: React.FC = () => {
   const [selectedProfile, setSelectedProfile] = useState<UserProfile | null>(null)
   const [selectedSkill, setSelectedSkill] = useState<SkillType | null>(null)
   const [showSkillModal, setShowSkillModal] = useState(false)
+  const [showDistanceModal, setShowDistanceModal] = useState(false)
 
   const calculateDistance = (from: UserProfile | undefined, to: UserProfile): number => {
-    console.log('🔍 calculateDistance - from:', from?.username, from?.location)
-    console.log('🔍 calculateDistance - to:', to.username, to.location)
-
     if (!from?.location?.latitude || !to?.location?.latitude) {
-      console.log('⚠️ Missing location data')
       return 0
     }
 
-    const R = 6371e3 // Rayon de la Terre en mètres
+    const R = 6371e3
     const φ1 = (from.location.latitude * Math.PI) / 180
     const φ2 = (to.location.latitude * Math.PI) / 180
     const Δφ = ((to.location.latitude - from.location.latitude) * Math.PI) / 180
@@ -58,17 +56,14 @@ export const SearchScreen: React.FC = () => {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 
     const distance = R * c
-    console.log('📏 Distance calculated:', distance, 'meters')
     return distance
   }
 
-  // Filtrer les profils par recherche de nom
   const filteredProfiles = useMemo(() => {
     if (!profiles) return []
 
     let result = profiles.filter(p => p.id !== myProfile?.id)
 
-    // Recherche par nom
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim()
       result = result.filter(
@@ -76,12 +71,10 @@ export const SearchScreen: React.FC = () => {
       )
     }
 
-    // Filtre par skill (si filtre "Aide" actif)
     if (activeFilter === 'help' && selectedSkill) {
       result = result.filter(p => p.skills.includes(selectedSkill))
     }
 
-    // Tri par distance (les plus proches en premier)
     result.sort((a, b) => {
       const distA = calculateDistance(myProfile || undefined, a)
       const distB = calculateDistance(myProfile || undefined, b)
@@ -89,7 +82,7 @@ export const SearchScreen: React.FC = () => {
     })
 
     return result
-  }, [profiles, searchQuery, myProfile, calculateDistance, activeFilter, selectedSkill])
+  }, [profiles, searchQuery, myProfile, activeFilter, selectedSkill])
 
   const handleAddFriend = async (profileId: string, username: string) => {
     if (myProfile?.verification_status !== 'approved') {
@@ -113,12 +106,7 @@ export const SearchScreen: React.FC = () => {
   }
 
   const getConnectionStatus = (profileId: string) => {
-    console.log('🔍 getConnectionStatus - profileId:', profileId)
-    console.log('🔍 myProfile:', myProfile?.id)
-    console.log('🔍 allConnections:', allConnections?.length)
-
     if (!myProfile || !allConnections) {
-      console.log('❌ Pas de myProfile ou allConnections')
       return {
         isAlreadyFriend: false,
         isPending: false,
@@ -127,17 +115,13 @@ export const SearchScreen: React.FC = () => {
       }
     }
 
-    // Trouver la connexion avec ce profil
     const connection = allConnections.find(
       conn =>
         (conn.sender_id === myProfile.id && conn.receiver_id === profileId) ||
         (conn.receiver_id === myProfile.id && conn.sender_id === profileId)
     )
 
-    console.log('🔍 connection trouvée:', connection)
-
     if (!connection) {
-      console.log('❌ Aucune connexion trouvée')
       return {
         isAlreadyFriend: false,
         isPending: false,
@@ -146,20 +130,15 @@ export const SearchScreen: React.FC = () => {
       }
     }
 
-    // Si status = 'accepted' → Ami
-    // Si status = 'pending' → Différencier envoyé vs reçu
     const isPending = connection.status === 'pending'
     const isSentByMe = connection.sender_id === myProfile.id
 
-    const result = {
+    return {
       isAlreadyFriend: connection.status === 'accepted',
-      isPending: isPending && isSentByMe, // En attente seulement si J'AI envoyé
-      isReceived: isPending && !isSentByMe, // Demande reçue si L'AUTRE a envoyé
+      isPending: isPending && isSentByMe,
+      isReceived: isPending && !isSentByMe,
       connectionId: connection.id,
     }
-
-    console.log('✅ Résultat:', result)
-    return result
   }
 
   const handleProfileSelect = async (profile: UserProfile) => {
@@ -187,95 +166,64 @@ export const SearchScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      {/* Header with large title and avatar */}
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Ionicons name="person-outline" size={20} color={colors.secondary.main} />
-          <Text style={styles.headerTitle}>{t('title')}</Text>
+        <View style={styles.headerContent}>
+          <View style={styles.headerLeft}>
+            <Text style={styles.headerTitle}>{t('title')}</Text>
+            <View style={styles.subtitleContainer}>
+              <Text style={styles.headerSubtitle}>{t('subtitle')}</Text>
+            </View>
+          </View>
+
+          <View style={styles.headerRight}>
+            {myProfile?.avatar_url ? (
+              <View style={styles.avatarWrapper}>
+                <Image source={{ uri: myProfile.avatar_url }} style={styles.headerAvatar} />
+                <View style={styles.onlineDot} />
+              </View>
+            ) : (
+              <View style={styles.avatarWrapper}>
+                <View style={[styles.headerAvatar, styles.avatarPlaceholder]}>
+                  <Text style={styles.avatarText}>
+                    {myProfile?.username?.charAt(0).toUpperCase() || 'M'}
+                  </Text>
+                </View>
+                <View style={styles.onlineDot} />
+              </View>
+            )}
+          </View>
         </View>
-        <TouchableOpacity style={styles.filterButton}>
-          <Ionicons name="funnel" size={20} color={colors.text.primary} />
-        </TouchableOpacity>
       </View>
 
-      {/* Barre de recherche */}
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={18} color={colors.text.muted} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder={t('searchPlaceholder')}
-          placeholderTextColor={colors.text.muted}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-        {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchQuery('')}>
-            <Ionicons name="close-circle" size={18} color={colors.text.muted} />
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {/* Filtres rapides */}
-      <View style={styles.filtersScrollContainer}>
+      {/* Filter row with pills */}
+      <View style={styles.filterRow}>
         <TouchableOpacity
-          style={[styles.filterPill, activeFilter === 'all' && styles.filterPillActive]}
-          onPress={() => setActiveFilter('all')}
+          style={styles.filterPillDropdown}
+          onPress={() => setShowDistanceModal(true)}
           activeOpacity={0.7}
         >
-          <Ionicons
-            name="people"
-            size={16}
-            color={activeFilter === 'all' ? colors.white : colors.text.primary}
-          />
-          <Text
-            style={[styles.filterPillText, activeFilter === 'all' && styles.filterPillTextActive]}
-          >
-            {t('filters.all')}
-          </Text>
+          <Ionicons name="location" size={16} color={colors.text.secondary} />
+          <Text style={styles.filterPillLabel}>{t('filters.distance')}</Text>
+          <Ionicons name="chevron-down" size={16} color={colors.text.tertiary} />
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.filterPill, activeFilter === 'activities' && styles.filterPillActive]}
-          onPress={() => setActiveFilter('activities')}
+          style={styles.filterPillDropdown}
+          onPress={() => setShowSkillModal(true)}
           activeOpacity={0.7}
         >
-          <Ionicons
-            name="fitness"
-            size={16}
-            color={activeFilter === 'activities' ? colors.white : colors.text.primary}
-          />
-          <Text
-            style={[
-              styles.filterPillText,
-              activeFilter === 'activities' && styles.filterPillTextActive,
-            ]}
-          >
-            {t('filters.activities')}
-          </Text>
+          <Ionicons name="grid" size={16} color={colors.text.secondary} />
+          <Text style={styles.filterPillLabel}>{t('filters.activityType')}</Text>
+          <Ionicons name="chevron-down" size={16} color={colors.text.tertiary} />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.filterPill, activeFilter === 'help' && styles.filterPillActive]}
-          onPress={() => {
-            setActiveFilter('help')
-            setShowSkillModal(true)
-          }}
-          activeOpacity={0.7}
-        >
-          <Ionicons
-            name="hand-left"
-            size={16}
-            color={activeFilter === 'help' ? colors.white : colors.text.primary}
-          />
-          <Text
-            style={[styles.filterPillText, activeFilter === 'help' && styles.filterPillTextActive]}
-          >
-            {t('filters.help')}
-          </Text>
+        <TouchableOpacity style={styles.filterIconButton} activeOpacity={0.7}>
+          <Ionicons name="options" size={20} color={colors.text.secondary} />
         </TouchableOpacity>
       </View>
 
-      {/* Liste des profils */}
+      {/* List of profiles */}
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.secondary.main} />
@@ -303,13 +251,11 @@ export const SearchScreen: React.FC = () => {
         />
       )}
 
-      {/* Modal de sélection de skill */}
+      {/* Modal for skill selection */}
       <Modal visible={showSkillModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {t('skillModal.title', { defaultValue: 'Choisir une compétence' })}
-            </Text>
+            <Text style={styles.modalTitle}>{t('skillModal.title')}</Text>
             <FlatList
               data={ALL_SKILLS}
               keyExtractor={item => item}
@@ -318,6 +264,7 @@ export const SearchScreen: React.FC = () => {
                   style={styles.skillItem}
                   onPress={() => {
                     setSelectedSkill(item)
+                    setActiveFilter('help')
                     setShowSkillModal(false)
                   }}
                 >
@@ -333,15 +280,29 @@ export const SearchScreen: React.FC = () => {
                 setSelectedSkill(null)
               }}
             >
-              <Text style={styles.modalCloseText}>
-                {t('common:cancel', { defaultValue: 'Annuler' })}
-              </Text>
+              <Text style={styles.modalCloseText}>{t('common:cancel')}</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
-      {/* BottomSheet pour profil sélectionné */}
+      {/* Distance modal (placeholder) */}
+      <Modal visible={showDistanceModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>{t('filters.selectDistance')}</Text>
+            <Text style={styles.modalSubtext}>{t('filters.featureComingSoon')}</Text>
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowDistanceModal(false)}
+            >
+              <Text style={styles.modalCloseText}>{t('common:cancel')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* BottomSheet for selected profile */}
       {selectedProfile && (
         <BottomSheet profile={selectedProfile} onClose={() => setSelectedProfile(null)} />
       )}
@@ -355,86 +316,116 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary.main,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingTop: 60,
     paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.lg,
+    paddingBottom: spacing.xl,
     backgroundColor: colors.primary.main,
   },
-  headerLeft: {
+  headerContent: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  headerLeft: {
+    flex: 1,
   },
   headerTitle: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.semibold,
+    fontSize: 32,
+    fontWeight: fontWeight.bold,
     color: colors.text.primary,
+    marginBottom: spacing.xs,
   },
-  filterButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
+  subtitleContainer: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.border.light,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
   },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  headerSubtitle: {
+    fontSize: fontSize.sm,
+    color: colors.text.secondary,
+    fontWeight: fontWeight.medium,
+  },
+  headerRight: {
+    marginLeft: spacing.md,
+  },
+  avatarWrapper: {
+    position: 'relative',
+  },
+  headerAvatar: {
+    width: 56,
+    height: 56,
+    borderRadius: borderRadius.full,
     backgroundColor: colors.white,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: colors.border.light,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    marginHorizontal: spacing.lg,
-    gap: spacing.sm,
+    borderWidth: 2,
+    borderColor: colors.white,
     ...shadows.small,
   },
-  searchInput: {
-    flex: 1,
-    fontSize: fontSize.base,
-    color: colors.text.primary,
-    padding: 0,
+  avatarPlaceholder: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.secondary.light,
   },
-  filtersScrollContainer: {
+  avatarText: {
+    fontSize: fontSize.xxl,
+    fontWeight: fontWeight.bold,
+    color: colors.white,
+  },
+  onlineDot: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: colors.success,
+    borderWidth: 2,
+    borderColor: colors.primary.main,
+  },
+  filterRow: {
     flexDirection: 'row',
     paddingHorizontal: spacing.lg,
-    marginTop: spacing.lg,
     gap: spacing.sm,
+    marginBottom: spacing.lg,
   },
-  filterPill: {
+  filterPillDropdown: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: colors.border.main,
-    borderRadius: borderRadius.round,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    gap: 6,
+    borderColor: colors.border.light,
+    borderRadius: borderRadius.xl,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    gap: spacing.xs,
+    ...shadows.small,
+    minHeight: 44,
   },
-  filterPillActive: {
-    backgroundColor: colors.secondary.main,
-    borderColor: colors.secondary.main,
-  },
-  filterPillText: {
+  filterPillLabel: {
+    flex: 1,
     fontSize: fontSize.sm,
     fontWeight: fontWeight.medium,
-    color: colors.text.primary,
+    color: colors.text.secondary,
   },
-  filterPillTextActive: {
-    color: colors.white,
-    fontWeight: fontWeight.semibold,
+  filterIconButton: {
+    width: 44,
+    height: 44,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...shadows.small,
   },
   listContent: {
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
     paddingBottom: 100,
   },
   separator: {
-    height: spacing.md,
+    height: spacing.lg,
   },
   loadingContainer: {
     flex: 1,
@@ -467,9 +458,9 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: colors.white,
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.xxl,
     padding: spacing.xl,
-    width: '80%',
+    width: '85%',
     maxHeight: '70%',
     ...shadows.large,
   },
@@ -479,6 +470,12 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     marginBottom: spacing.lg,
     textAlign: 'center',
+  },
+  modalSubtext: {
+    fontSize: fontSize.base,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    marginBottom: spacing.lg,
   },
   skillItem: {
     paddingVertical: spacing.md,
