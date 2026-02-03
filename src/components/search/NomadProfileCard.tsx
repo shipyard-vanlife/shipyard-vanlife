@@ -3,11 +3,19 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { colors, spacing, borderRadius, fontSize, fontWeight, shadows } from '../../styles/theme'
-import { UserProfile } from '../../types/user'
+import type { SkillType } from '../../types/user'
 import { SkillBadge } from '../SkillBadge'
 
+interface ProfileCardData {
+  id: string
+  username: string
+  avatar_url: string | null
+  bio?: string | null
+  skills: SkillType[]
+}
+
 interface NomadProfileCardProps {
-  profile: UserProfile
+  profile: ProfileCardData
   distance?: number // en mètres
   onAddFriend: () => void
   onPress: () => void

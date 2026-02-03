@@ -8,7 +8,14 @@
     "loading": "Chargement de la carte...",
     "noLocation": "Aucune localisation définie. Déclare ta position pour voir la carte.",
     "activities": "Activités",
-    "backToProfile": "Retour à {{username}}"
+    "vanlifers": "Vanlifers",
+    "backToProfile": "Retour à {{username}}",
+    "zone": {
+      "title": "{{count}} vanlifers dans cette zone",
+      "loading": "Chargement des profils...",
+      "empty": "Aucun profil trouvé",
+      "viewProfile": "Voir le profil"
+    }
   },
   "noLocation": {
     "title": "Aucune localisation définie",

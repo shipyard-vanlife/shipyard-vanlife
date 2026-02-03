@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { ActivitiesScreen } from '../screens/ActivitiesScreen'
 import { ChatScreen } from '../screens/ChatScreen'
@@ -15,50 +15,71 @@ export const MainNavigator: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabName>('home')
   const [tripToShow, setTripToShow] = useState<Trip | null>(null)
 
-  const handleViewTripOnMap = (trip: Trip) => {
-    setTripToShow(trip)
-    setActiveTab('home')
-  }
+  // Track which tabs have been visited for lazy mounting
+  const [mountedTabs, setMountedTabs] = useState<Set<TabName>>(() => new Set(['home']))
 
-  const handleClearTripToShow = () => {
+  const handleTabChange = useCallback((tab: TabName) => {
+    setMountedTabs(prev => {
+      if (prev.has(tab)) return prev
+      const next = new Set(prev)
+      next.add(tab)
+      return next
+    })
+    setActiveTab(tab)
+  }, [])
+
+  const handleViewTripOnMap = useCallback(
+    (trip: Trip) => {
+      setTripToShow(trip)
+      handleTabChange('home')
+    },
+    [handleTabChange]
+  )
+
+  const handleClearTripToShow = useCallback(() => {
     setTripToShow(null)
-  }
+  }, [])
 
-  const renderScreen = () => {
-    switch (activeTab) {
-      case 'trips':
-        return <TripsScreen onViewTripOnMap={handleViewTripOnMap} />
-      case 'home':
-        return (
-          <HomeScreen
-            tripToShow={tripToShow}
-            onClearTripToShow={handleClearTripToShow}
-            onNavigateToChat={() => setActiveTab('chat')}
-          />
-        )
-      case 'activities':
-        return <ActivitiesScreen />
-      case 'chat':
-        return <ChatScreen />
-      case 'search':
-        return <SearchScreen />
-      case 'profile':
-        return <ProfileScreen />
-      default:
-        return (
-          <HomeScreen
-            tripToShow={tripToShow}
-            onClearTripToShow={handleClearTripToShow}
-            onNavigateToChat={() => setActiveTab('chat')}
-          />
-        )
-    }
-  }
+  const handleNavigateToChat = useCallback(() => {
+    handleTabChange('chat')
+  }, [handleTabChange])
 
   return (
     <View style={styles.container}>
-      {renderScreen()}
-      <BottomTabNavigator activeTab={activeTab} onTabChange={setActiveTab} />
+      {/* All screens rendered simultaneously, hidden via display style.
+          Screens are lazy-mounted: only rendered after first visit. */}
+
+      <View style={activeTab === 'trips' ? styles.activeScreen : styles.hiddenScreen}>
+        {mountedTabs.has('trips') ? <TripsScreen onViewTripOnMap={handleViewTripOnMap} /> : null}
+      </View>
+
+      <View style={activeTab === 'home' ? styles.activeScreen : styles.hiddenScreen}>
+        {mountedTabs.has('home') ? (
+          <HomeScreen
+            tripToShow={tripToShow}
+            onClearTripToShow={handleClearTripToShow}
+            onNavigateToChat={handleNavigateToChat}
+          />
+        ) : null}
+      </View>
+
+      <View style={activeTab === 'activities' ? styles.activeScreen : styles.hiddenScreen}>
+        {mountedTabs.has('activities') ? <ActivitiesScreen /> : null}
+      </View>
+
+      <View style={activeTab === 'chat' ? styles.activeScreen : styles.hiddenScreen}>
+        {mountedTabs.has('chat') ? <ChatScreen /> : null}
+      </View>
+
+      <View style={activeTab === 'search' ? styles.activeScreen : styles.hiddenScreen}>
+        {mountedTabs.has('search') ? <SearchScreen /> : null}
+      </View>
+
+      <View style={activeTab === 'profile' ? styles.activeScreen : styles.hiddenScreen}>
+        {mountedTabs.has('profile') ? <ProfileScreen /> : null}
+      </View>
+
+      <BottomTabNavigator activeTab={activeTab} onTabChange={handleTabChange} />
     </View>
   )
 }
@@ -66,5 +87,13 @@ export const MainNavigator: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  activeScreen: {
+    flex: 1,
+  },
+  hiddenScreen: {
+    flex: 0,
+    height: 0,
+    overflow: 'hidden',
   },
 })

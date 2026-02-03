@@ -22,11 +22,12 @@ import {
 import { useMyProfile, profileKeys } from '../hooks/useProfiles'
 import { useRealtimeConnections } from '../hooks/useRealtimeConnections'
 import { Friend, ConnectionRequest } from '../types/chat'
-import { FriendProfileModal } from '../components/FriendProfileModal'
+import { VisitorProfileSheet } from '../components/visitor'
 import { ConversationScreen } from './ConversationScreen'
 import { ActivityChatScreen } from './ActivityChatScreen'
 import { useMyActivityChats } from '../hooks/useActivityChat'
 import { ACTIVITY_TYPE_ICONS, ACTIVITY_TYPE_COLORS } from '../types/activity'
+import type { ActivityChatPreview } from '../types/activityChat'
 import { colors } from '../styles/theme'
 
 type ChatTab = 'friends' | 'groups' | 'requests'
@@ -42,7 +43,6 @@ export const ChatScreen: React.FC = () => {
 
   const handleFriendSelect = useCallback(
     async (friendId: string, connectionId: string) => {
-      // Invalider le cache pour avoir les dernières données du profil
       await queryClient.invalidateQueries({ queryKey: profileKeys.byId(friendId) })
       setSelectedFriend({ friendId, connectionId })
     },
@@ -70,7 +70,6 @@ export const ChatScreen: React.FC = () => {
 
   const handleAcceptConnection = useCallback(
     (connectionId: string) => {
-      // Block if user is not verified
       if (myProfile?.verification_status !== 'approved') {
         Alert.alert(t('verification.requiredTitle'), t('verification.requiredMessage'))
         return
@@ -86,7 +85,7 @@ export const ChatScreen: React.FC = () => {
     [friends]
   )
 
-  // le realtime pour les connexions
+  // Realtime for connections
   useRealtimeConnections()
 
   // Refetch data when switching tabs
@@ -132,11 +131,11 @@ export const ChatScreen: React.FC = () => {
         >
           <View style={styles.friendNameRow}>
             <Text style={styles.friendName}>{item.friend_username}</Text>
-            {item.status === 'pending' && (
+            {item.status === 'pending' ? (
               <View style={styles.pendingBadge}>
                 <Text style={styles.pendingText}>{t('chat:status.pending')}</Text>
               </View>
-            )}
+            ) : null}
           </View>
           {item.last_message ? (
             <Text style={styles.lastMessage} numberOfLines={1}>
@@ -171,7 +170,6 @@ export const ChatScreen: React.FC = () => {
   const renderRequestItem = useCallback(
     ({ item }: { item: ConnectionRequest }) => (
       <View style={styles.requestCard}>
-        {/* Avatar cliquable pour voir le profil */}
         <TouchableOpacity
           onPress={() => {
             handleFriendSelect(item.sender_id, item.connection_id)
@@ -186,7 +184,6 @@ export const ChatScreen: React.FC = () => {
           )}
         </TouchableOpacity>
 
-        {/* Info de la demande */}
         <View style={styles.requestText}>
           <Text style={styles.requestName}>{item.sender_username}</Text>
           <Text style={styles.requestDate}>
@@ -194,7 +191,6 @@ export const ChatScreen: React.FC = () => {
           </Text>
         </View>
 
-        {/* Boutons d'action */}
         <View style={styles.requestActions}>
           <TouchableOpacity
             style={styles.acceptButton}
@@ -213,6 +209,52 @@ export const ChatScreen: React.FC = () => {
     ),
     [handleFriendSelect, handleAcceptConnection, rejectConnection]
   )
+
+  const renderActivityChatItem = useCallback(
+    ({ item }: { item: ActivityChatPreview }) => {
+      const iconName =
+        ACTIVITY_TYPE_ICONS[item.activity_type as keyof typeof ACTIVITY_TYPE_ICONS] ??
+        'ellipsis-horizontal'
+      const iconColor =
+        ACTIVITY_TYPE_COLORS[item.activity_type as keyof typeof ACTIVITY_TYPE_COLORS] ?? '#666666'
+
+      return (
+        <TouchableOpacity
+          style={styles.friendCard}
+          onPress={() => setOpenActivityChat(item.activity_id)}
+          activeOpacity={0.7}
+        >
+          <View style={[styles.activityIconContainer, { backgroundColor: iconColor }]}>
+            <Ionicons name={iconName as any} size={22} color={colors.white} />
+          </View>
+
+          <View style={styles.friendText}>
+            <Text style={styles.friendName} numberOfLines={1}>
+              {item.activity_title}
+            </Text>
+            {item.last_message ? (
+              <Text style={styles.lastMessage} numberOfLines={1}>
+                {item.last_message}
+              </Text>
+            ) : (
+              <Text style={styles.noMessage}>{t('chat:status.noMessage')}</Text>
+            )}
+          </View>
+
+          {item.unread_count > 0 ? (
+            <View style={styles.unreadBadge}>
+              <Text style={styles.unreadText}>{item.unread_count}</Text>
+            </View>
+          ) : null}
+        </TouchableOpacity>
+      )
+    },
+    [t]
+  )
+
+  const friendKeyExtractor = useCallback((item: Friend) => item.connection_id, [])
+  const requestKeyExtractor = useCallback((item: ConnectionRequest) => item.connection_id, [])
+  const activityChatKeyExtractor = useCallback((item: ActivityChatPreview) => item.activity_id, [])
 
   const renderContent = () => {
     if (activeTab === 'friends') {
@@ -238,8 +280,10 @@ export const ChatScreen: React.FC = () => {
         <FlatList
           data={friends}
           renderItem={renderFriendItem}
-          keyExtractor={item => item.connection_id}
+          keyExtractor={friendKeyExtractor}
           contentContainerStyle={styles.listContent}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={15}
         />
       )
     } else if (activeTab === 'groups') {
@@ -265,8 +309,10 @@ export const ChatScreen: React.FC = () => {
         <FlatList
           data={activityChats}
           renderItem={renderActivityChatItem}
-          keyExtractor={item => item.activity_id}
+          keyExtractor={activityChatKeyExtractor}
           contentContainerStyle={styles.listContent}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={15}
         />
       )
     } else {
@@ -292,8 +338,10 @@ export const ChatScreen: React.FC = () => {
         <FlatList
           data={requests}
           renderItem={renderRequestItem}
-          keyExtractor={item => item.connection_id}
+          keyExtractor={requestKeyExtractor}
           contentContainerStyle={styles.listContent}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={15}
         />
       )
     }
@@ -341,9 +389,9 @@ export const ChatScreen: React.FC = () => {
         >
           <Text style={[styles.tabText, activeTab === 'friends' && styles.tabTextActive]}>
             {t('chat:tabs.friends')}
-            {friends && friends.length > 0 && (
+            {friends && friends.length > 0 ? (
               <Text style={styles.tabBadge}> ({friends.length})</Text>
-            )}
+            ) : null}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -352,9 +400,9 @@ export const ChatScreen: React.FC = () => {
         >
           <Text style={[styles.tabText, activeTab === 'groups' && styles.tabTextActive]}>
             {t('chat:tabs.groups')}
-            {activityChats && activityChats.length > 0 && (
+            {activityChats && activityChats.length > 0 ? (
               <Text style={styles.tabBadge}> ({activityChats.length})</Text>
-            )}
+            ) : null}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -363,30 +411,31 @@ export const ChatScreen: React.FC = () => {
         >
           <Text style={[styles.tabText, activeTab === 'requests' && styles.tabTextActive]}>
             {t('chat:tabs.requests')}
-            {requests && requests.length > 0 && (
+            {requests && requests.length > 0 ? (
               <Text style={styles.tabBadge}> ({requests.length})</Text>
-            )}
+            ) : null}
           </Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.content}>{renderContent()}</View>
 
-      <FriendProfileModal
-        friendId={selectedFriend?.friendId ?? null}
-        connectionId={selectedFriend?.connectionId ?? null}
-        onClose={() => setSelectedFriend(null)}
-        onOpenConversation={(connectionId, friendName, friendAvatar) => {
-          const friend = friendsByConnectionId.get(connectionId)
-          setSelectedFriend(null)
-          setOpenConversation({
-            connectionId,
-            friendName,
-            friendAvatar,
-            friendId: friend?.friend_id || '',
-          })
-        }}
-      />
+      {selectedFriend ? (
+        <VisitorProfileSheet
+          profileId={selectedFriend.friendId}
+          onClose={() => setSelectedFriend(null)}
+          onMessage={(connectionId) => {
+            const friend = friendsByConnectionId.get(connectionId)
+            setSelectedFriend(null)
+            setOpenConversation({
+              connectionId,
+              friendName: friend?.friend_username || '',
+              friendAvatar: friend?.friend_avatar_url || null,
+              friendId: friend?.friend_id || selectedFriend.friendId,
+            })
+          }}
+        />
+      ) : null}
     </View>
   )
 }
@@ -471,6 +520,13 @@ const styles = StyleSheet.create({
   },
   avatarPlaceholder: {
     backgroundColor: colors.primary.main,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  activityIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },

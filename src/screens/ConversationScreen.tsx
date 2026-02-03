@@ -20,7 +20,7 @@ import { formatTime } from '../utils/formatDate'
 import { useInfiniteMessages, useSendMessage, useMarkMessagesAsRead } from '../hooks/useMessages'
 import { useMyProfile, useProfileById, profileKeys } from '../hooks/useProfiles'
 import { useRealtimeMessages } from '../hooks/useRealtimeMessages'
-import { FriendProfileModal } from '../components/FriendProfileModal'
+import { VisitorProfileSheet } from '../components/visitor'
 import { HelpRequestModal } from '../components/HelpRequestModal'
 import { HelpRequestCard } from '../components/HelpRequestCard'
 import {
@@ -290,13 +290,12 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
         </TouchableOpacity>
       </View>
 
-      {friendId && (
-        <FriendProfileModal
-          friendId={selectedFriend}
-          connectionId={connectionId}
+      {selectedFriend ? (
+        <VisitorProfileSheet
+          profileId={selectedFriend}
           onClose={() => setSelectedFriend(null)}
         />
-      )}
+      ) : null}
 
       <HelpRequestModal
         visible={showHelpModal}

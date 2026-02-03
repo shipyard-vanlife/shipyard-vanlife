@@ -1,5 +1,6 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react'
 import {
+  ActivityIndicator,
   Animated,
   Dimensions,
   PanResponder,
@@ -35,10 +36,14 @@ const SNAP_POINTS = {
 }
 
 interface VisitorProfileSheetProps {
-  /** Initial profile data from map (NearbyProfile with blurred coordinates) */
-  profile: NearbyProfile
+  /** Initial profile data from map/search (NearbyProfile with blurred coordinates) */
+  profile?: NearbyProfile
+  /** Alternative: load profile by ID (for chat/conversation screens) */
+  profileId?: string
   /** Callback when sheet is closed */
   onClose?: () => void
+  /** Callback to go back to previous context (e.g. zone list) */
+  onBack?: () => void
   /** Callback to navigate to conversation */
   onMessage?: (connectionId: string) => void
   /** Callback when user wants to view a trip stage on map */
@@ -49,14 +54,19 @@ interface VisitorProfileSheetProps {
 
 export const VisitorProfileSheet: React.FC<VisitorProfileSheetProps> = ({
   profile,
+  profileId: profileIdProp,
   onClose,
+  onBack,
   onMessage,
   onViewStageOnMap,
   onViewTripOnMap,
 }) => {
   const { t } = useTranslation(['common', 'home'])
 
-  // Sheet animation - starts at 0 and animates to HALF on mount
+  // Resolve profile ID from either prop
+  const resolvedId = profile?.id ?? profileIdProp ?? ''
+
+  // Sheet animation - starts at 0 and animates to EXPANDED on mount
   const [sheetHeight] = useState(new Animated.Value(0))
   const [isClosing, setIsClosing] = useState(false)
 
@@ -75,11 +85,11 @@ export const VisitorProfileSheet: React.FC<VisitorProfileSheetProps> = ({
 
   // Data hooks
   const { data: myProfile } = useMyProfile()
-  const { data: fullProfile, isLoading: isLoadingProfile } = useProfileById(profile.id)
+  const { data: fullProfile, isLoading: isLoadingProfile } = useProfileById(resolvedId || null)
   const { mutate: blockUser } = useBlockUser()
 
   // Use full profile if available, otherwise use initial NearbyProfile
-  const displayProfile = fullProfile ?? profile
+  const displayProfile = fullProfile ?? profile ?? null
 
   const isVerified = myProfile?.verification_status === 'approved'
 
@@ -92,8 +102,8 @@ export const VisitorProfileSheet: React.FC<VisitorProfileSheetProps> = ({
     connectionStatus,
     isLoading: connectionLoading,
   } = useConnectionHandlers({
-    profileId: profile.id,
-    username: displayProfile.username,
+    profileId: resolvedId,
+    username: displayProfile?.username ?? '',
   })
 
   // Handlers
@@ -120,6 +130,7 @@ export const VisitorProfileSheet: React.FC<VisitorProfileSheetProps> = ({
   }, [])
 
   const handleBlock = useCallback(() => {
+    if (!resolvedId || !displayProfile) return
     Alert.alert(
       t('moderation.blockConfirmTitle', { username: displayProfile.username }),
       t('moderation.blockConfirmMessage'),
@@ -129,7 +140,7 @@ export const VisitorProfileSheet: React.FC<VisitorProfileSheetProps> = ({
           text: t('moderation.blockUser'),
           style: 'destructive',
           onPress: () => {
-            blockUser(profile.id, {
+            blockUser(resolvedId, {
               onSuccess: () => {
                 Alert.alert(
                   t('moderation.blockSuccess'),
@@ -145,7 +156,7 @@ export const VisitorProfileSheet: React.FC<VisitorProfileSheetProps> = ({
         },
       ]
     )
-  }, [blockUser, profile.id, displayProfile.username, handleClose, t])
+  }, [blockUser, resolvedId, displayProfile, handleClose, t])
 
   // Store starting height for drag gesture
   const startHeightRef = useRef(SNAP_POINTS.EXPANDED)
@@ -233,6 +244,18 @@ export const VisitorProfileSheet: React.FC<VisitorProfileSheetProps> = ({
           <View style={styles.handle} />
         </View>
 
+        {/* Back button (e.g. back to zone list) */}
+        {onBack ? (
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={onBack}
+            activeOpacity={0.7}
+            disabled={isClosing}
+          >
+            <Ionicons name="arrow-back" size={20} color={colors.white} />
+          </TouchableOpacity>
+        ) : null}
+
         {/* Close button */}
         {onClose ? (
           <TouchableOpacity
@@ -253,33 +276,39 @@ export const VisitorProfileSheet: React.FC<VisitorProfileSheetProps> = ({
           showsVerticalScrollIndicator={false}
           bounces={true}
         >
-          <ProfileContentView
-            profile={displayProfile}
-            isLoading={isLoadingProfile}
-            onPhotoPress={setZoomedImage}
-            onViewStageOnMap={onViewStageOnMap}
-            onViewTripOnMap={onViewTripOnMap}
-            renderActions={() => (
-              <ConnectionActionButtons
-                connectionStatus={connectionStatus ?? null}
-                myProfileId={myProfile?.id ?? null}
-                targetUsername={displayProfile.username}
-                isVerified={isVerified}
-                onConnect={handleConnect}
-                onAccept={handleAccept}
-                onReject={handleReject}
-                onRemoveFriend={handleRemoveFriend}
-                onMessage={handleMessage}
-                isSending={connectionLoading.sending}
-                isAccepting={connectionLoading.accepting}
-                isRejecting={connectionLoading.rejecting}
-                isRemoving={connectionLoading.removing}
-              />
-            )}
-            renderModerationActions={() => (
-              <ModerationActions onReport={handleReport} onBlock={handleBlock} />
-            )}
-          />
+          {displayProfile ? (
+            <ProfileContentView
+              profile={displayProfile}
+              isLoading={isLoadingProfile}
+              onPhotoPress={setZoomedImage}
+              onViewStageOnMap={onViewStageOnMap}
+              onViewTripOnMap={onViewTripOnMap}
+              renderActions={() => (
+                <ConnectionActionButtons
+                  connectionStatus={connectionStatus ?? null}
+                  myProfileId={myProfile?.id ?? null}
+                  targetUsername={displayProfile.username}
+                  isVerified={isVerified}
+                  onConnect={handleConnect}
+                  onAccept={handleAccept}
+                  onReject={handleReject}
+                  onRemoveFriend={handleRemoveFriend}
+                  onMessage={handleMessage}
+                  isSending={connectionLoading.sending}
+                  isAccepting={connectionLoading.accepting}
+                  isRejecting={connectionLoading.rejecting}
+                  isRemoving={connectionLoading.removing}
+                />
+              )}
+              renderModerationActions={() => (
+                <ModerationActions onReport={handleReport} onBlock={handleBlock} />
+              )}
+            />
+          ) : (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={colors.secondary.main} />
+            </View>
+          )}
         </ScrollView>
       </Animated.View>
 
@@ -290,8 +319,8 @@ export const VisitorProfileSheet: React.FC<VisitorProfileSheetProps> = ({
       <ReportModal
         visible={showReportModal}
         onClose={() => setShowReportModal(false)}
-        userId={profile.id}
-        username={displayProfile.username}
+        userId={resolvedId}
+        username={displayProfile?.username ?? ''}
       />
     </>
   )
@@ -326,6 +355,23 @@ const styles = StyleSheet.create({
     backgroundColor: colors.tertiary.main,
     borderRadius: 3,
   },
+  backButton: {
+    position: 'absolute',
+    left: spacing.lg,
+    top: spacing.lg,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.secondary.main,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
   closeButton: {
     position: 'absolute',
     right: spacing.lg,
@@ -345,5 +391,11 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 100,
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 80,
   },
 })

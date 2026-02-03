@@ -3,7 +3,8 @@ import { supabase } from '../services/supabase'
 import type {
   NearbyProfile,
   NearbyProfilesParams,
-  ZoneProfilesParams,
+  ViewportProfilesParams,
+  ViewportZone,
   PublicProfile,
 } from '../types/location'
 import type { ProfileInput, UserProfile } from '../types/user'
@@ -26,7 +27,11 @@ export const profileKeys = {
   my: () => [...profileKeys.all, 'my'] as const,
   byId: (userId: string) => [...profileKeys.all, 'byId', userId] as const,
   nearby: (params: NearbyProfilesParams) => [...profileKeys.all, 'nearby', params] as const,
-  zone: (params: ZoneProfilesParams) => [...profileKeys.all, 'zone', params] as const,
+  viewport: (params: ViewportProfilesParams) => [...profileKeys.all, 'viewport', params] as const,
+  viewportData: (params: ViewportProfilesParams) =>
+    [...profileKeys.all, 'viewportData', params] as const,
+  zoneProfiles: (zoneLat: number, zoneLng: number) =>
+    [...profileKeys.all, 'zone', zoneLat, zoneLng] as const,
   allVisible: () => [...profileKeys.all, 'visible'] as const,
 }
 
@@ -48,6 +53,7 @@ export function useMyProfile() {
 
       return data as UserProfile
     },
+    staleTime: STALE_TIME,
   })
 }
 
@@ -118,26 +124,83 @@ export function useNearbyProfiles(params: NearbyProfilesParams | null) {
 }
 
 // ============================================
-// GET PROFILES IN ZONE
+// GET PROFILES IN VIEWPORT (bounding box, GiST-optimized)
 // ============================================
 
-export function useZoneProfiles(params: ZoneProfilesParams | null) {
+export function useViewportProfiles(params: ViewportProfilesParams | null) {
   return useQuery({
-    queryKey: params ? profileKeys.zone(params) : ['disabled'],
+    queryKey: params ? profileKeys.viewport(params) : ['disabled'],
     queryFn: async (): Promise<NearbyProfile[]> => {
       if (!params) return []
 
       const { data, error } = await supabase.rpc('get_profiles_in_zone', {
-        zone_lat: params.zoneLat,
-        zone_lng: params.zoneLng,
-        user_lat: params.userLat ?? null,
-        user_lng: params.userLng ?? null,
+        min_lat: params.minLat,
+        max_lat: params.maxLat,
+        min_lng: params.minLng,
+        max_lng: params.maxLng,
       })
 
       if (error) throw error
       return (data as NearbyProfile[]) ?? []
     },
     enabled: !!params,
+    staleTime: STALE_TIME,
+    placeholderData: prev => prev,
+  })
+}
+
+// ============================================
+// GET VIEWPORT DATA (zone counts + sample avatars for dense, full profiles for sparse)
+// ============================================
+
+export function useViewportData(params: ViewportProfilesParams | null) {
+  return useQuery({
+    queryKey: params ? profileKeys.viewportData(params) : ['disabled'],
+    queryFn: async (): Promise<ViewportZone[]> => {
+      if (!params) return []
+
+      const { data, error } = await supabase.rpc('get_viewport_data', {
+        min_lat: params.minLat,
+        max_lat: params.maxLat,
+        min_lng: params.minLng,
+        max_lng: params.maxLng,
+      })
+
+      if (error) throw error
+      return (data as ViewportZone[]) ?? []
+    },
+    enabled: !!params,
+    staleTime: STALE_TIME,
+    placeholderData: prev => prev,
+  })
+}
+
+// ============================================
+// GET ZONE PROFILES (on-demand when user taps a dense zone bubble)
+// ============================================
+
+export function useZoneProfiles(zoneLat: number | null, zoneLng: number | null) {
+  return useQuery({
+    queryKey:
+      zoneLat !== null && zoneLng !== null
+        ? profileKeys.zoneProfiles(zoneLat, zoneLng)
+        : ['disabled'],
+    queryFn: async (): Promise<NearbyProfile[]> => {
+      if (zoneLat === null || zoneLng === null) return []
+
+      // Query the exact grid cell (~0.1° around the zone center)
+      const { data, error } = await supabase.rpc('get_profiles_in_zone', {
+        min_lat: zoneLat - 0.05,
+        max_lat: zoneLat + 0.05,
+        min_lng: zoneLng - 0.05,
+        max_lng: zoneLng + 0.05,
+      })
+
+      if (error) throw error
+      return (data as NearbyProfile[]) ?? []
+    },
+    enabled: zoneLat !== null && zoneLng !== null,
+    staleTime: STALE_TIME,
   })
 }
 
