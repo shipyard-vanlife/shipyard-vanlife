@@ -9,6 +9,11 @@
     "requestSent": "Request sent",
     "noMessage": "No messages"
   },
+  "request": {
+    "title": "wants to connect!",
+    "accept": "Accept",
+    "reject": "Decline"
+  },
   "empty": {
     "friends": {
       "title": "No friends",

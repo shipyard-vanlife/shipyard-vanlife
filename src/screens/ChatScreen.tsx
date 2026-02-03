@@ -33,6 +33,7 @@ import { colors } from '../styles/theme'
 type ChatTab = 'friends' | 'groups' | 'requests'
 
 export const ChatScreen: React.FC = () => {
+  console.log('🟢 ChatScreen mounted')
   const { t } = useTranslation(['common', 'chat'])
   const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState<ChatTab>('friends')
@@ -170,25 +171,35 @@ export const ChatScreen: React.FC = () => {
   const renderRequestItem = useCallback(
     ({ item }: { item: ConnectionRequest }) => (
       <View style={styles.requestCard}>
-        <TouchableOpacity
-          onPress={() => {
-            handleFriendSelect(item.sender_id, item.connection_id)
-          }}
-        >
-          {item.sender_avatar_url ? (
-            <Image source={{ uri: item.sender_avatar_url }} style={styles.avatar} />
-          ) : (
-            <View style={[styles.avatar, styles.avatarPlaceholder]}>
-              <Ionicons name="person" size={24} color={colors.text.tertiary} />
-            </View>
-          )}
-        </TouchableOpacity>
+        <View style={styles.requestTopRow}>
+          <TouchableOpacity
+            onPress={() => {
+              handleFriendSelect(item.sender_id, item.connection_id)
+            }}
+          >
+            {item.sender_avatar_url ? (
+              <Image source={{ uri: item.sender_avatar_url }} style={styles.requestAvatar} />
+            ) : (
+              <View style={[styles.requestAvatar, styles.avatarPlaceholder]}>
+                <Ionicons name="person" size={28} color={colors.text.tertiary} />
+              </View>
+            )}
+          </TouchableOpacity>
 
-        <View style={styles.requestText}>
-          <Text style={styles.requestName}>{item.sender_username}</Text>
-          <Text style={styles.requestDate}>
-            {new Date(item.created_at).toLocaleDateString('fr-FR')}
-          </Text>
+          <View style={styles.requestTextContainer}>
+            <View style={styles.requestHeader}>
+              <Text style={styles.requestName}>{item.sender_username}</Text>
+              <Ionicons name="person-add" size={18} color={colors.secondary.main} />
+            </View>
+            <Text style={styles.requestMessage}>{t('chat:request.title')}</Text>
+            <Text style={styles.requestDate}>
+              {new Date(item.created_at).toLocaleDateString('fr-FR', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              })}
+            </Text>
+          </View>
         </View>
 
         <View style={styles.requestActions}>
@@ -196,18 +207,20 @@ export const ChatScreen: React.FC = () => {
             style={styles.acceptButton}
             onPress={() => handleAcceptConnection(item.connection_id)}
           >
-            <Ionicons name="checkmark" size={20} color={colors.white} />
+            <Ionicons name="checkmark" size={22} color={colors.white} />
+            <Text style={styles.actionButtonText}>{t('chat:request.accept')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.rejectButton}
             onPress={() => rejectConnection(item.connection_id)}
           >
-            <Ionicons name="close" size={20} color={colors.white} />
+            <Ionicons name="close" size={22} color={colors.white} />
+            <Text style={styles.actionButtonText}>{t('chat:request.reject')}</Text>
           </TouchableOpacity>
         </View>
       </View>
     ),
-    [handleFriendSelect, handleAcceptConnection, rejectConnection]
+    [t, handleFriendSelect, handleAcceptConnection, rejectConnection]
   )
 
   const renderActivityChatItem = useCallback(
@@ -579,49 +592,93 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   requestCard: {
+    flexDirection: 'column',
+    backgroundColor: colors.white,
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 16,
+    borderWidth: 2,
+    borderColor: colors.secondary.main + '20',
+    gap: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  requestTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.white,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: colors.primary.main,
-    gap: 12,
+    gap: 16,
   },
-  requestText: {
+  requestAvatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 3,
+    borderColor: colors.secondary.main,
+  },
+  requestTextContainer: {
     flex: 1,
   },
+  requestHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 6,
+  },
   requestName: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     color: colors.text.primary,
-    marginBottom: 4,
+  },
+  requestMessage: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: colors.secondary.main,
+    marginBottom: 6,
   },
   requestDate: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.text.tertiary,
+    fontStyle: 'italic',
   },
   requestActions: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 12,
+    width: '100%',
   },
   acceptButton: {
     backgroundColor: colors.secondary.main,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    flex: 1,
+    flexDirection: 'row',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 8,
+    shadowColor: colors.secondary.main,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   rejectButton: {
-    backgroundColor: colors.text.tertiary,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    backgroundColor: colors.border.medium,
+    flex: 1,
+    flexDirection: 'row',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 8,
+  },
+  actionButtonText: {
+    color: colors.white,
+    fontSize: 15,
+    fontWeight: '600',
   },
   cancelButton: {
     width: 32,

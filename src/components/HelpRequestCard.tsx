@@ -24,7 +24,7 @@ export const HelpRequestCard: React.FC<HelpRequestCardProps> = ({
   onCancel,
   isResponding = false,
 }) => {
-  const { t } = useTranslation('help')
+  const { t } = useTranslation(['help', 'skills'])
 
   if (request.status === 'accepted') {
     return (
@@ -34,9 +34,9 @@ export const HelpRequestCard: React.FC<HelpRequestCardProps> = ({
         </View>
         <View style={styles.content}>
           <Text style={styles.title}>
-            {isMyRequest ? t('requestAccepted') : t('requestAcceptedByMe', { name: requesterName })}
+            {isMyRequest ? t('help:requestAccepted') : t('help:requestAcceptedByMe', { name: requesterName })}
           </Text>
-          <Text style={styles.skill}>{request.skill_requested}</Text>
+          <Text style={styles.skill}>{t(`skills:${request.skill_requested}`)}</Text>
         </View>
       </View>
     )
@@ -50,9 +50,9 @@ export const HelpRequestCard: React.FC<HelpRequestCardProps> = ({
         </View>
         <View style={styles.content}>
           <Text style={styles.title}>
-            {isMyRequest ? t('requestDeclined') : t('requestDeclinedByMe', { name: requesterName })}
+            {isMyRequest ? t('help:requestDeclined') : t('help:requestDeclinedByMe', { name: requesterName })}
           </Text>
-          <Text style={styles.skill}>{request.skill_requested}</Text>
+          <Text style={styles.skill}>{t(`skills:${request.skill_requested}`)}</Text>
         </View>
       </View>
     )
@@ -65,16 +65,16 @@ export const HelpRequestCard: React.FC<HelpRequestCardProps> = ({
       </View>
       <View style={styles.content}>
         <Text style={styles.title}>
-          {isMyRequest ? t('requestedHelp') : t('needsHelp', { name: requesterName })}
+          {isMyRequest ? t('help:requestedHelp') : t('help:needsHelp', { name: requesterName })}
         </Text>
-        <Text style={styles.skill}>{request.skill_requested}</Text>
+        <Text style={styles.skill}>{t(`skills:${request.skill_requested}`)}</Text>
 
         {isMyRequest ? (
           <TouchableOpacity style={styles.cancelButton} onPress={onCancel} disabled={isResponding}>
             {isResponding ? (
               <ActivityIndicator size="small" color={colors.text.tertiary} />
             ) : (
-              <Text style={styles.cancelText}>{t('cancel')}</Text>
+              <Text style={styles.cancelText}>{t('help:cancel')}</Text>
             )}
           </TouchableOpacity>
         ) : (
@@ -89,7 +89,7 @@ export const HelpRequestCard: React.FC<HelpRequestCardProps> = ({
               ) : (
                 <>
                   <Ionicons name="checkmark" size={18} color={colors.white} />
-                  <Text style={styles.buttonText}>{t('accept')}</Text>
+                  <Text style={styles.buttonText}>{t('help:accept')}</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -100,7 +100,7 @@ export const HelpRequestCard: React.FC<HelpRequestCardProps> = ({
               disabled={isResponding}
             >
               <Ionicons name="close" size={18} color={colors.text.secondary} />
-              <Text style={styles.declineText}>{t('decline')}</Text>
+              <Text style={styles.declineText}>{t('help:decline')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -112,81 +112,110 @@ export const HelpRequestCard: React.FC<HelpRequestCardProps> = ({
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-    marginVertical: spacing.sm,
+    padding: spacing.lg,
+    borderRadius: borderRadius.xl,
+    marginVertical: spacing.md,
     marginHorizontal: spacing.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
   cardPending: {
-    backgroundColor: colors.primary.main,
-    borderWidth: 1,
+    backgroundColor: colors.white,
+    borderWidth: 2,
     borderColor: colors.secondary.main,
   },
   cardAccepted: {
-    backgroundColor: `${colors.success}15`,
-    borderWidth: 1,
+    backgroundColor: colors.white,
+    borderWidth: 2,
     borderColor: colors.success,
+    borderLeftWidth: 6,
   },
   cardDeclined: {
     backgroundColor: colors.primary.main,
-    borderWidth: 1,
-    borderColor: colors.border.light,
+    borderWidth: 2,
+    borderColor: colors.border.medium,
+    opacity: 0.7,
   },
   iconContainer: {
-    marginRight: spacing.md,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.primary.main,
     justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: spacing.md,
   },
   content: {
     flex: 1,
   },
   title: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
     color: colors.text.primary,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
   },
   skill: {
-    fontSize: fontSize.base,
+    fontSize: fontSize.lg,
     color: colors.secondary.main,
     fontWeight: fontWeight.bold,
     marginBottom: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    backgroundColor: colors.secondary.main + '15',
+    borderRadius: borderRadius.md,
+    alignSelf: 'flex-start',
   },
   actions: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    gap: spacing.md,
+    marginTop: spacing.sm,
   },
   button: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.md,
+    justifyContent: 'center',
+    gap: spacing.sm,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.lg,
   },
   acceptButton: {
     backgroundColor: colors.secondary.main,
+    shadowColor: colors.secondary.main,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
   },
   declineButton: {
     backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border.light,
+    borderWidth: 2,
+    borderColor: colors.border.medium,
   },
   buttonText: {
     color: colors.white,
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.bold,
   },
   declineText: {
     color: colors.text.secondary,
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.bold,
   },
   cancelButton: {
     alignSelf: 'flex-start',
     paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.primary.main,
   },
   cancelText: {
-    color: colors.text.tertiary,
+    color: colors.text.secondary,
     fontSize: fontSize.sm,
+    fontWeight: fontWeight.semibold,
   },
 })

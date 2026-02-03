@@ -6,6 +6,8 @@ import { colors, spacing, borderRadius, fontSize, fontWeight, shadows } from '..
 import type { SkillType } from '../../types/user'
 import { SkillBadge } from '../SkillBadge'
 import { useBlockUser } from '../../hooks/useModeration'
+import { ReportModal } from '../visitor/ReportModal'
+import { SKILL_COLORS } from '../../types/user'
 
 interface ProfileCardData {
   id: string
@@ -45,8 +47,9 @@ export const NomadProfileCard = memo(function NomadProfileCard({
   isReceived = false,
   connectionId,
 }: NomadProfileCardProps) {
-  const { t } = useTranslation(['search', 'common'])
+  const { t } = useTranslation(['search', 'common', 'skills'])
   const [showMenu, setShowMenu] = useState(false)
+  const [showReportModal, setShowReportModal] = useState(false)
   const { mutate: blockUser } = useBlockUser()
 
   const handleBlock = () => {
@@ -79,10 +82,7 @@ export const NomadProfileCard = memo(function NomadProfileCard({
 
   const handleReport = () => {
     setShowMenu(false)
-    Alert.alert(
-      t('common:moderation.reportProfile'),
-      t('common:moderation.reportMessage', { username: profile.username })
-    )
+    setShowReportModal(true)
   }
 
   return (
@@ -148,12 +148,14 @@ export const NomadProfileCard = memo(function NomadProfileCard({
       {/* Skill badges */}
       {profile.skills.length > 0 && (
         <View style={styles.tagsContainer}>
-          {profile.skills.slice(0, 3).map(skill => (
-            <SkillBadge key={skill} skill={skill} />
+          {profile.skills.slice(0, 4).map(skill => (
+            <View key={skill} style={[styles.compactSkillBadge, { backgroundColor: SKILL_COLORS[skill] }]}>
+              <Text style={styles.compactSkillText}>{t(`skills:${skill}`)}</Text>
+            </View>
           ))}
-          {profile.skills.length > 3 && (
+          {profile.skills.length > 4 && (
             <View style={styles.moreSkillsBadge}>
-              <Text style={styles.moreSkillsText}>+{profile.skills.length - 3}</Text>
+              <Text style={styles.moreSkillsText}>+{profile.skills.length - 4}</Text>
             </View>
           )}
         </View>
@@ -208,6 +210,14 @@ export const NomadProfileCard = memo(function NomadProfileCard({
           )}
         </View>
       </View>
+
+      {/* Report Modal */}
+      <ReportModal
+        visible={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        userId={profile.id}
+        username={profile.username}
+      />
     </TouchableOpacity>
   )
 })
@@ -289,18 +299,30 @@ const styles = StyleSheet.create({
   },
   tagsContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexWrap: 'nowrap',
     gap: spacing.xs,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
+    overflow: 'hidden',
+  },
+  compactSkillBadge: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: borderRadius.sm,
+    flexShrink: 1,
+  },
+  compactSkillText: {
+    fontSize: 10,
+    fontWeight: fontWeight.semibold,
+    color: colors.white,
   },
   moreSkillsBadge: {
     backgroundColor: colors.border.light,
     paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
+    paddingVertical: 4,
     borderRadius: borderRadius.sm,
   },
   moreSkillsText: {
-    fontSize: fontSize.xs,
+    fontSize: 10,
     fontWeight: fontWeight.medium,
     color: colors.text.tertiary,
   },

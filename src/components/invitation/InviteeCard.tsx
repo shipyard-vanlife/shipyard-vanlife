@@ -66,7 +66,7 @@ export const InviteeCard: React.FC<InviteeCardProps> = ({
 
       {/* Pending info */}
       <View style={styles.pendingInfo}>
-        <Text style={styles.pendingTitle}>{t('invitation:history.waitingTitle')}</Text>
+        <Text style={styles.pendingTitle}>{t('invitation:history.pendingTitle')}</Text>
         <Text style={styles.pendingSubtitle}>
           {t('invitation:history.createdAt', { date: formatDateCompact(createdAt) })}
         </Text>
