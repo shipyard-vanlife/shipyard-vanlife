@@ -12,6 +12,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { colors, spacing, fontSize, fontWeight, borderRadius } from '../../styles/theme'
@@ -68,12 +69,12 @@ export function ReportModal({ visible, onClose, userId, username }: ReportModalP
   }
 
   return (
-    <Modal visible={visible} animationType="slide" transparent statusBarTranslucent>
-      <KeyboardAvoidingView
-        style={styles.overlay}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <View style={styles.modal}>
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={handleClose}>
+      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+        <KeyboardAvoidingView
+          style={styles.modal}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
           <View style={styles.header}>
             <Text style={styles.title}>{t('moderation.reportProfile')}</Text>
             <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
@@ -152,24 +153,19 @@ export function ReportModal({ visible, onClose, userId, username }: ReportModalP
               <Text style={styles.submitButtonText}>{t('moderation.submitReport')}</Text>
             )}
           </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </Modal>
   )
 }
 
 const styles = StyleSheet.create({
-  overlay: {
+  container: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
+    backgroundColor: colors.white,
   },
   modal: {
-    backgroundColor: colors.white,
-    borderTopLeftRadius: borderRadius.xl,
-    borderTopRightRadius: borderRadius.xl,
-    paddingBottom: 40,
-    maxHeight: '85%',
+    flex: 1,
   },
   header: {
     flexDirection: 'row',

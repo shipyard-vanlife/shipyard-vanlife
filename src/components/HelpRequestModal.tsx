@@ -30,7 +30,7 @@ export const HelpRequestModal: React.FC<HelpRequestModalProps> = ({
   friendName,
   friendSkills,
 }) => {
-  const { t } = useTranslation(['help', 'common'])
+  const { t } = useTranslation(['help', 'common', 'skills'])
   const { mutate: createRequest, isPending } = useCreateHelpRequest()
   const [selectedSkill, setSelectedSkill] = useState<SkillType | null>(null)
 
@@ -83,17 +83,13 @@ export const HelpRequestModal: React.FC<HelpRequestModalProps> = ({
                 style={[styles.skillItem, selectedSkill === item && styles.skillItemSelected]}
                 onPress={() => setSelectedSkill(selectedSkill === item ? null : item)}
               >
-                <View
-                  style={[styles.skillBadge, selectedSkill === item && styles.skillBadgeSelected]}
+                <Text
+                  style={[styles.skillText, selectedSkill === item && styles.skillTextSelected]}
                 >
-                  <Text
-                    style={[styles.skillText, selectedSkill === item && styles.skillTextSelected]}
-                  >
-                    {item}
-                  </Text>
-                </View>
+                  {t(`skills:${item}`)}
+                </Text>
                 {selectedSkill === item && (
-                  <Ionicons name="checkmark-circle" size={20} color={colors.white} />
+                  <Ionicons name="checkmark-circle" size={24} color={colors.white} />
                 )}
               </TouchableOpacity>
             )}
@@ -122,77 +118,89 @@ export const HelpRequestModal: React.FC<HelpRequestModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
   },
   modal: {
     backgroundColor: colors.white,
-    borderTopLeftRadius: borderRadius.xl,
-    borderTopRightRadius: borderRadius.xl,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     paddingBottom: 40,
-    maxHeight: '80%',
+    maxHeight: '85%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border.light,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.lg,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.primary.main,
   },
   title: {
-    fontSize: fontSize.xl,
+    fontSize: fontSize['2xl'],
     fontWeight: fontWeight.bold,
     color: colors.text.primary,
   },
   closeButton: {
     padding: spacing.sm,
+    backgroundColor: colors.primary.main,
+    borderRadius: borderRadius.full,
   },
   questionContainer: {
-    backgroundColor: colors.primary.main,
-    padding: spacing.lg,
-    borderLeftWidth: 4,
+    backgroundColor: colors.secondary.main + '10',
+    paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.xl,
+    marginHorizontal: spacing.lg,
+    marginVertical: spacing.lg,
+    borderRadius: borderRadius.lg,
+    borderLeftWidth: 5,
     borderLeftColor: colors.secondary.main,
   },
   questionText: {
     fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
+    fontWeight: fontWeight.bold,
     color: colors.text.primary,
+    lineHeight: 24,
   },
   divider: {
-    height: 2,
+    height: 1,
     backgroundColor: colors.border.light,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
+    marginHorizontal: spacing.lg,
   },
   skillItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border.light,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xl,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.sm,
+    borderRadius: borderRadius.lg,
+    backgroundColor: colors.white,
+    borderWidth: 2,
+    borderColor: colors.border.light,
   },
   skillItemSelected: {
     backgroundColor: colors.secondary.main,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.secondary.main,
-  },
-  skillBadge: {
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
     borderColor: colors.secondary.main,
-    backgroundColor: colors.white,
-  },
-  skillBadgeSelected: {
-    backgroundColor: colors.secondary.main,
-    borderColor: colors.white,
+    shadowColor: colors.secondary.main,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   skillText: {
-    fontSize: fontSize.base,
+    fontSize: fontSize.lg,
     color: colors.text.primary,
+    fontWeight: fontWeight.bold,
+    flex: 1,
   },
   skillTextSelected: {
     fontWeight: fontWeight.bold,
@@ -203,22 +211,30 @@ const styles = StyleSheet.create({
     color: colors.text.tertiary,
     textAlign: 'center',
     padding: spacing.xl,
+    fontStyle: 'italic',
   },
   sendButton: {
     backgroundColor: colors.secondary.main,
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xl,
+    borderRadius: borderRadius.lg,
     alignItems: 'center',
-    marginHorizontal: spacing.lg,
-    marginTop: spacing.lg,
+    marginHorizontal: spacing.xl,
+    marginTop: spacing.xl,
+    shadowColor: colors.secondary.main,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   sendButtonDisabled: {
     backgroundColor: colors.text.tertiary,
     opacity: 0.5,
+    shadowOpacity: 0,
   },
   sendButtonText: {
     color: colors.white,
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
   },
 })

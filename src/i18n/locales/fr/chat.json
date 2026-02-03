@@ -9,6 +9,11 @@
     "requestSent": "Demande envoyée",
     "noMessage": "Aucun message"
   },
+  "request": {
+    "title": "veut te rejoindre !",
+    "accept": "Accepter",
+    "reject": "Refuser"
+  },
   "empty": {
     "friends": {
       "title": "Aucun ami",

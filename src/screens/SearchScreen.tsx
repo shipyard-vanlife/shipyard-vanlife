@@ -17,7 +17,8 @@ import { useQueryClient } from '@tanstack/react-query'
 import { colors, spacing, borderRadius, fontSize, fontWeight, shadows } from '../styles/theme'
 import { NomadProfileCard } from '../components/search/NomadProfileCard'
 import { VisitorProfileSheet } from '../components/visitor'
-import { useAllVisibleProfiles, useMyProfile, profileKeys } from '../hooks/useProfiles'
+import { useMyProfile, profileKeys } from '../hooks/useProfiles'
+import { supabase } from '../services/supabase'
 import { useSendConnectionRequest, useAllConnections } from '../hooks/useConnections'
 import { SkillType, ALL_SKILLS } from '../types/user'
 import type { NearbyProfile } from '../types/location'
@@ -74,17 +75,60 @@ export const SearchScreen: React.FC = () => {
   const { t } = useTranslation(['search', 'common'])
   const queryClient = useQueryClient()
   const { data: myProfile } = useMyProfile()
-  const { data: profiles, isLoading, refetch } = useAllVisibleProfiles()
   const { mutate: sendRequest } = useSendConnectionRequest()
   const { data: allConnections } = useAllConnections()
+
+  const [profiles, setProfiles] = useState<NearbyProfile[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [hasMore, setHasMore] = useState(true)
+  const [page, setPage] = useState(0)
+  const PAGE_SIZE = 25
 
   const [searchQuery, setSearchQuery] = useState('')
   const [activeFilter, setActiveFilter] = useState<FilterType>('all')
   const [selectedProfile, setSelectedProfile] = useState<NearbyProfile | null>(null)
-  const [selectedSkill, setSelectedSkill] = useState<SkillType | null>(null)
+  const [selectedSkills, setSelectedSkills] = useState<SkillType[]>([])
   const [showSkillModal, setShowSkillModal] = useState(false)
   const [showDistanceModal, setShowDistanceModal] = useState(false)
-  const [displayLimit, setDisplayLimit] = useState(25)
+
+  // Fetch profiles with pagination
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      setIsLoading(true)
+      try {
+        const { data, error } = await supabase.rpc('get_all_visible_profiles_paginated', {
+          p_limit: PAGE_SIZE,
+          p_offset: page * PAGE_SIZE,
+        })
+
+        if (error) throw error
+
+        const newProfiles = (data as NearbyProfile[]) ?? []
+
+        if (page === 0) {
+          setProfiles(newProfiles)
+        } else {
+          setProfiles(prev => [...prev, ...newProfiles])
+        }
+
+        setHasMore(newProfiles.length === PAGE_SIZE)
+      } catch (error) {
+        console.error('Error fetching profiles:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchProfiles()
+  }, [page])
+
+  // Reset when search query changes (need to refetch from server)
+  useEffect(() => {
+    if (searchQuery) {
+      // For search, we filter client-side, no need to reset
+      return
+    }
+  }, [searchQuery])
 
   // Build O(1) connection status map
   const connectionStatusMap = useMemo(() => {
@@ -134,9 +178,9 @@ export const SearchScreen: React.FC = () => {
       )
     }
 
-    // Filter by skill
-    if (activeFilter === 'help' && selectedSkill) {
-      result = result.filter(p => p.skills.includes(selectedSkill))
+    // Filter by skills (user must have ALL selected skills)
+    if (activeFilter === 'help' && selectedSkills.length > 0) {
+      result = result.filter(p => selectedSkills.every(skill => p.skills.includes(skill)))
     }
 
     // Compute distances once & sort
@@ -160,7 +204,7 @@ export const SearchScreen: React.FC = () => {
     myProfile?.location?.latitude,
     myProfile?.location?.longitude,
     activeFilter,
-    selectedSkill,
+    selectedSkills,
   ])
 
   const handleAddFriend = useCallback(
@@ -176,7 +220,7 @@ export const SearchScreen: React.FC = () => {
       sendRequest(profileId, {
         onSuccess: () => {
           Alert.alert(t('requestSent'), t('requestSentMessage', { name: username }))
-          refetch()
+          // Profiles will update automatically via React Query
         },
         onError: (error: any) => {
           if (error?.message?.includes('Connection already exists')) {
@@ -187,7 +231,7 @@ export const SearchScreen: React.FC = () => {
         },
       })
     },
-    [myProfile?.verification_status, t, sendRequest, refetch]
+    [myProfile?.verification_status, t, sendRequest]
   )
 
   const handleProfileSelect = useCallback(
@@ -221,22 +265,12 @@ export const SearchScreen: React.FC = () => {
     [connectionStatusMap, handleAddFriend, handleProfileSelect]
   )
 
-  // Paginated profiles - only show first N items
-  const paginatedProfiles = useMemo(() => {
-    return filteredProfiles.slice(0, displayLimit)
-  }, [filteredProfiles, displayLimit])
-
   // Load more when reaching end of list
   const handleLoadMore = useCallback(() => {
-    if (displayLimit < filteredProfiles.length) {
-      setDisplayLimit((prev) => prev + 25)
+    if (!isLoading && hasMore) {
+      setPage(prev => prev + 1)
     }
-  }, [displayLimit, filteredProfiles.length])
-
-  // Reset pagination when filters change
-  useEffect(() => {
-    setDisplayLimit(25)
-  }, [searchQuery, activeFilter, selectedSkill])
+  }, [isLoading, hasMore])
 
   return (
     <View style={styles.container}>
@@ -319,7 +353,7 @@ export const SearchScreen: React.FC = () => {
         </View>
       ) : (
         <FlatList
-          data={paginatedProfiles}
+          data={filteredProfiles}
           renderItem={renderProfileCard}
           keyExtractor={keyExtractor}
           contentContainerStyle={styles.listContent}
@@ -333,7 +367,7 @@ export const SearchScreen: React.FC = () => {
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
           ListFooterComponent={
-            displayLimit < filteredProfiles.length ? (
+            isLoading && page > 0 ? (
               <View style={styles.loadMoreContainer}>
                 <ActivityIndicator size="small" color={colors.secondary.main} />
               </View>
@@ -349,8 +383,6 @@ export const SearchScreen: React.FC = () => {
           activeOpacity={1}
           onPress={() => {
             setShowSkillModal(false)
-            setActiveFilter('all')
-            setSelectedSkill(null)
           }}
         >
           <TouchableOpacity
@@ -358,33 +390,75 @@ export const SearchScreen: React.FC = () => {
             activeOpacity={1}
             onPress={(e) => e.stopPropagation()}
           >
-            <Text style={styles.modalTitle}>{t('skillModal.title')}</Text>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{t('skillModal.title')}</Text>
+              {selectedSkills.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setSelectedSkills([])
+                    setActiveFilter('all')
+                  }}
+                  style={styles.clearButton}
+                >
+                  <Text style={styles.clearButtonText}>{t('filters.clearAll', { defaultValue: 'Tout effacer' })}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
             <FlatList
               data={ALL_SKILLS}
               keyExtractor={item => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.skillItem}
-                  onPress={() => {
-                    setSelectedSkill(item)
-                    setActiveFilter('help')
-                    setShowSkillModal(false)
-                  }}
-                >
-                  <Text style={styles.skillText}>{t(`skills:${item}`)}</Text>
-                </TouchableOpacity>
-              )}
-            />
-            <TouchableOpacity
-              style={styles.modalCloseButton}
-              onPress={() => {
-                setShowSkillModal(false)
-                setActiveFilter('all')
-                setSelectedSkill(null)
+              renderItem={({ item }) => {
+                const isSelected = selectedSkills.includes(item)
+                const canSelect = selectedSkills.length < 3 || isSelected
+                return (
+                  <TouchableOpacity
+                    style={[
+                      styles.skillItem,
+                      isSelected && styles.skillItemSelected,
+                      !canSelect && styles.skillItemDisabled,
+                    ]}
+                    onPress={() => {
+                      if (isSelected) {
+                        const newSkills = selectedSkills.filter(s => s !== item)
+                        setSelectedSkills(newSkills)
+                        if (newSkills.length === 0) {
+                          setActiveFilter('all')
+                        }
+                      } else if (canSelect) {
+                        setSelectedSkills(prev => [...prev, item])
+                        setActiveFilter('help')
+                      }
+                    }}
+                    disabled={!canSelect && !isSelected}
+                  >
+                    <Text style={[styles.skillText, isSelected && styles.skillTextSelected]}>
+                      {t(`skills:${item}`)}
+                    </Text>
+                    {isSelected && (
+                      <Ionicons name="checkmark-circle" size={20} color={colors.secondary.main} />
+                    )}
+                  </TouchableOpacity>
+                )
               }}
-            >
-              <Text style={styles.modalCloseText}>{t('filters.cancel')}</Text>
-            </TouchableOpacity>
+            />
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => {
+                  setShowSkillModal(false)
+                }}
+              >
+                <Text style={styles.modalCancelText}>{t('filters.cancel')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalValidateButton}
+                onPress={() => {
+                  setShowSkillModal(false)
+                }}
+              >
+                <Text style={styles.modalValidateText}>{t('filters.validate', { defaultValue: 'Valider' })}</Text>
+              </TouchableOpacity>
+            </View>
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
@@ -582,11 +656,25 @@ const styles = StyleSheet.create({
     maxHeight: '65%',
     ...shadows.large,
   },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.xl,
+  },
   modalTitle: {
     fontSize: fontSize.xxl,
     fontWeight: fontWeight.bold,
     color: colors.text.primary,
-    marginBottom: spacing.xl,
+  },
+  clearButton: {
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+  },
+  clearButtonText: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.semibold,
+    color: colors.secondary.main,
   },
   modalSubtext: {
     fontSize: fontSize.base,
@@ -595,26 +683,58 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   skillItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: spacing.lg,
     paddingHorizontal: spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: colors.border.light,
     borderRadius: borderRadius.sm,
   },
+  skillItemSelected: {
+    backgroundColor: colors.secondary.main,
+  },
+  skillItemDisabled: {
+    opacity: 0.4,
+  },
   skillText: {
     fontSize: fontSize.base,
     color: colors.text.primary,
     fontWeight: fontWeight.medium,
   },
-  modalCloseButton: {
+  skillTextSelected: {
+    color: colors.white,
+    fontWeight: fontWeight.bold,
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    gap: spacing.md,
     marginTop: spacing.xl,
+  },
+  modalCancelButton: {
+    flex: 1,
+    paddingVertical: spacing.lg,
+    backgroundColor: colors.white,
+    borderWidth: 1.5,
+    borderColor: colors.border.medium,
+    borderRadius: borderRadius.xl,
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    color: colors.text.primary,
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.semibold,
+  },
+  modalValidateButton: {
+    flex: 1,
     paddingVertical: spacing.lg,
     backgroundColor: colors.secondary.main,
     borderRadius: borderRadius.xl,
     alignItems: 'center',
     ...shadows.small,
   },
-  modalCloseText: {
+  modalValidateText: {
     color: colors.white,
     fontSize: fontSize.base,
     fontWeight: fontWeight.bold,

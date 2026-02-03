@@ -51,7 +51,12 @@ export function useRealtimeConnections() {
           queryClient.refetchQueries({ queryKey: connectionKeys.friends() })
         }
       )
-      .subscribe()
+      .subscribe((status, err) => {
+        console.log('🔵 Realtime subscription status:', status)
+        if (err) {
+          console.error('🔴 Realtime subscription error:', err)
+        }
+      })
 
     return () => {
       console.log('🔵 Cleaning up realtime for connections, messages, and help requests')
