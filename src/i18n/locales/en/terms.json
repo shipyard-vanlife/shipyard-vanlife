@@ -1,0 +1,40 @@
+{
+  "title": "Terms of Service",
+  "lastUpdated": "Last updated: {{date}}",
+  "accept": "Accept",
+  "close": "Close",
+  "sections": {
+    "acceptance": {
+      "title": "1. Acceptance of Terms",
+      "content": "By using the Nomli application, you accept these Terms of Service (ToS). If you do not accept these terms, please do not use the application."
+    },
+    "account": {
+      "title": "2. Account Creation",
+      "content": "To use Nomli, you must create an account by providing accurate and up-to-date information. You are responsible for the confidentiality of your login credentials.\n\nYou must:\n- Be at least 16 years old\n- Provide truthful information\n- Not create multiple accounts\n- Not impersonate others"
+    },
+    "usage": {
+      "title": "3. Acceptable Use",
+      "content": "You agree to use Nomli responsibly and respectfully. It is forbidden to:\n- Post offensive, defamatory or illegal content\n- Harass or threaten other users\n- Use the application for unauthorized commercial purposes\n- Collect data from other users without their consent\n- Attempt to bypass security measures"
+    },
+    "content": {
+      "title": "4. User Content",
+      "content": "You retain ownership of the content you post on Nomli. However, you grant Nomli a worldwide, non-exclusive, royalty-free license to use, reproduce and distribute your content as part of the operation of the application.\n\nNomli reserves the right to remove any content that violates these ToS."
+    },
+    "premium": {
+      "title": "5. Premium Services",
+      "content": "Nomli offers premium features accessible through a paid subscription of €7 per month.\n\nThe subscription is:\n- Billed monthly\n- Auto-renewable\n- Cancellable at any time\n\nNo refunds will be provided for unused periods."
+    },
+    "termination": {
+      "title": "6. Suspension and Termination",
+      "content": "Nomli reserves the right to suspend or terminate your account at any time in case of violation of these ToS, without notice or compensation.\n\nYou can also delete your account at any time from the application settings."
+    },
+    "modifications": {
+      "title": "7. Modifications to ToS",
+      "content": "Nomli reserves the right to modify these ToS at any time. Users will be informed of significant changes via the application or by email."
+    },
+    "law": {
+      "title": "8. Applicable Law",
+      "content": "These ToS are governed by French law. In case of dispute, French courts shall have sole jurisdiction."
+    }
+  }
+}

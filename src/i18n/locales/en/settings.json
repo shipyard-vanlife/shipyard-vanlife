@@ -1,0 +1,20 @@
+{
+  "title": "Settings",
+  "sections": {
+    "premium": {
+      "title": "Premium",
+      "button": "Go Premium",
+      "description": "Unlock all app features"
+    },
+    "account": {
+      "title": "Account",
+      "deleteProfile": "Delete Profile",
+      "deleteAccount": "Delete Account"
+    },
+    "legal": {
+      "title": "Legal Notice",
+      "view": "View legal notice",
+      "lastUpdated": "Last updated: {{date}}"
+    }
+  }
+}

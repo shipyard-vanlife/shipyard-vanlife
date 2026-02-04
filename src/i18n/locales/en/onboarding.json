@@ -1,0 +1,73 @@
+{
+  "skip": "Skip",
+  "next": "Next",
+  "dontShow": "Don't show again",
+  "slides": {
+    "map": {
+      "title": "Find users\naround you",
+      "description": "View the community in real-time. Check profiles, locations and connect with those on the same road.",
+      "badge": "12 Nomads nearby"
+    },
+    "trips": {
+      "title": "Document your\nadventures",
+      "description": "Create detailed trips with geolocated steps. Add photos and notes to organize your memories.",
+      "status": "Trip in progress",
+      "day": "Day 45: Crossing the Alps"
+    },
+    "community": {
+      "title": "Create connections",
+      "description": "Connect with travelers who share your values. Create lasting friendships at every stop"
+    },
+    "help": {
+      "title": "Help at your\nfingertips",
+      "description": "Need mechanical advice or a good tip? Ask the community for help via messaging.",
+      "avatar": "Alex",
+      "message": "\"Anyone near Lisbon for a mechanical issue?\""
+    },
+    "events": {
+      "title": "Join the\nevents",
+      "description": "Join community gatherings, workshops and meetups organized where you are."
+    },
+    "start": {
+      "title": "Ready to hit\nthe road?",
+      "description": "Join users who share their journey and help each other every day.",
+      "createAccount": "Create an account",
+      "continueGoogle": "Continue with Google",
+      "alreadyAccount": "Already have an account?",
+      "login": "Sign in"
+    }
+  },
+  "paywall": {
+    "heroTitle": "Unlock the complete\nexperience",
+    "heroSubtitle": "Join the community without limits.",
+    "features": {
+      "map": {
+        "title": "100% Visible Map",
+        "description": "Unlock visibility of all nearby profiles, not just 10."
+      },
+      "trips": {
+        "title": "Unlimited Trips",
+        "description": "Create as many trips and steps as you want."
+      },
+      "search": {
+        "title": "Advanced Search",
+        "description": "Filter nomads by skills (mechanics, cooking...)."
+      },
+      "friends": {
+        "title": "Unlimited Friends",
+        "description": "Create as many connections as you want. (Free: limited to 8)"
+      },
+      "helpRequest": {
+        "title": "Help Requests",
+        "description": "Access help requests via messaging to ask the community for assistance."
+      }
+    },
+    "dontShowAgain": "Don't show this screen at startup anymore",
+    "premiumButton": "Go Premium",
+    "price": "€7 / month",
+    "cancelText": "Cancellable at any time.",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "restore": "Restore"
+  }
+}

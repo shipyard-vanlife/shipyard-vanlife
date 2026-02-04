@@ -14,6 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { TermsModal } from '../components/TermsModal'
+import { LegalModal } from '../components/LegalModal'
 import { useSignUp } from '../hooks'
 import {
   sanitizeEmail,
@@ -36,7 +37,9 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
+  const [acceptedLegal, setAcceptedLegal] = useState(false)
   const [showTermsModal, setShowTermsModal] = useState(false)
+  const [showLegalModal, setShowLegalModal] = useState(false)
   const { mutateAsync: signUp, isPending: loading } = useSignUp()
 
   const handleRegister = async () => {
@@ -46,9 +49,14 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
       return
     }
 
-    // Vérification de l'acceptation des mentions légales
+    // Vérification de l'acceptation des CGU et mentions légales
     if (!acceptedTerms) {
       Alert.alert(t('common:errors.generic'), t('errors.termsRequired'))
+      return
+    }
+
+    if (!acceptedLegal) {
+      Alert.alert(t('common:errors.generic'), t('errors.legalRequired'))
       return
     }
 
@@ -178,6 +186,24 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
             </Text>
           </View>
 
+          <View style={styles.termsContainer}>
+            <TouchableOpacity
+              style={styles.checkboxTouchable}
+              onPress={() => setAcceptedLegal(!acceptedLegal)}
+              disabled={loading}
+            >
+              <View style={[styles.checkbox, acceptedLegal && styles.checkboxChecked]}>
+                {acceptedLegal && <Ionicons name="checkmark" size={18} color={colors.white} />}
+              </View>
+            </TouchableOpacity>
+            <Text style={styles.termsText}>
+              {t('legalPrefix')}{' '}
+              <Text style={styles.termsLink} onPress={() => setShowLegalModal(true)}>
+                {t('legalLink')}
+              </Text>
+            </Text>
+          </View>
+
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
             onPress={handleRegister}
@@ -204,6 +230,13 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
         visible={showTermsModal}
         onClose={() => setShowTermsModal(false)}
         onAccept={() => setAcceptedTerms(true)}
+      />
+
+      <LegalModal
+        visible={showLegalModal}
+        onClose={() => setShowLegalModal(false)}
+        onAccept={() => setAcceptedLegal(true)}
+        showAcceptButton={true}
       />
     </KeyboardAvoidingView>
   )

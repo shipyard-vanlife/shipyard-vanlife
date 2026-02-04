@@ -2,13 +2,13 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { PhotoSourceModal } from '../components/PhotoSourceModal'
 import { InvitationSection } from '../components/invitation'
@@ -28,12 +28,11 @@ import { useSignOut } from '../hooks'
 import { useImagePicker } from '../hooks/useImagePicker'
 import { useProfilePhotosUpload } from '../hooks/useProfilePhotos'
 import {
-  useDeleteAccount,
-  useDeleteProfile,
   useMyProfile,
   useUpdateProfile,
 } from '../hooks/useProfiles'
 import { borderRadius, colors, fontSize, fontWeight, spacing } from '../styles/theme'
+import { SettingsScreen } from './SettingsScreen'
 
 type PickerMode = 'avatar' | 'profile-photo' | null
 
@@ -42,11 +41,9 @@ export const ProfileScreen: React.FC = () => {
   const { user } = useAuth()
   const { mutateAsync: signOut } = useSignOut()
   const { data: profile, isLoading } = useMyProfile()
-  const { mutate: deleteProfile, isPending: isDeletingProfile } = useDeleteProfile()
-  const { mutate: deleteAccount, isPending: isDeletingAccount } = useDeleteAccount()
   const { mutate: updateProfile } = useUpdateProfile()
 
-  const isDeleting = isDeletingProfile || isDeletingAccount
+  const [showSettingsScreen, setShowSettingsScreen] = useState(false)
 
   // Single image picker instance for both avatar and profile photos
   const {
@@ -140,46 +137,6 @@ export const ProfileScreen: React.FC = () => {
     }
   }, [signOut])
 
-  const handleDeleteProfile = useCallback(() => {
-    Alert.alert(t('common:profile.deleteTitle'), t('common:profile.deleteConfirmation'), [
-      { text: t('common:buttons.cancel'), style: 'cancel' },
-      {
-        text: t('common:buttons.delete'),
-        style: 'destructive',
-        onPress: () => {
-          deleteProfile(undefined, {
-            onError: (error: Error) => {
-              Alert.alert(t('common:errors.generic'), error.message)
-            },
-          })
-        },
-      },
-    ])
-  }, [deleteProfile, t])
-
-  const handleDeleteAccount = useCallback(() => {
-    Alert.alert(
-      t('common:profile.deleteAccountTitle'),
-      t('common:profile.deleteAccountConfirmation'),
-      [
-        { text: t('common:buttons.cancel'), style: 'cancel' },
-        {
-          text: t('common:buttons.delete'),
-          style: 'destructive',
-          onPress: () => {
-            deleteAccount(undefined, {
-              onSuccess: async () => {
-                await signOut()
-              },
-              onError: (error: Error) => {
-                Alert.alert(t('common:errors.generic'), error.message)
-              },
-            })
-          },
-        },
-      ]
-    )
-  }, [deleteAccount, signOut, t])
 
   // Open edit modal
   const handleEditPress = useCallback(() => {
@@ -253,8 +210,21 @@ export const ProfileScreen: React.FC = () => {
     )
   }
 
+  // Show settings screen if active
+  if (showSettingsScreen) {
+    return <SettingsScreen onClose={() => setShowSettingsScreen(false)} />
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      {/* Settings Icon - Top Left */}
+      <TouchableOpacity
+        style={styles.settingsButton}
+        onPress={() => setShowSettingsScreen(true)}
+      >
+        <Ionicons name="settings-outline" size={28} color={colors.text.primary} />
+      </TouchableOpacity>
+
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -323,38 +293,13 @@ export const ProfileScreen: React.FC = () => {
           />
         </View>
 
-        {/* Admin actions */}
+        {/* Sign out button */}
         <View style={styles.adminActions}>
           <TouchableOpacity
             style={styles.signOutButton}
             onPress={handleSignOut}
-            disabled={isDeleting}
           >
             <Text style={styles.signOutText}>{t('actions.signOut')}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.deleteProfileButton, isDeleting && styles.buttonDisabled]}
-            onPress={handleDeleteProfile}
-            disabled={isDeleting}
-          >
-            {isDeletingProfile ? (
-              <ActivityIndicator color={colors.text.tertiary} size="small" />
-            ) : (
-              <Text style={styles.deleteProfileButtonText}>{t('actions.deleteProfile')}</Text>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.deleteAccountButton, isDeleting && styles.buttonDisabled]}
-            onPress={handleDeleteAccount}
-            disabled={isDeleting}
-          >
-            {isDeletingAccount ? (
-              <ActivityIndicator color={colors.error} size="small" />
-            ) : (
-              <Text style={styles.deleteAccountButtonText}>{t('actions.deleteAccount')}</Text>
-            )}
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -398,6 +343,20 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.primary.main,
   },
+  settingsButton: {
+    position: 'absolute',
+    top: 60,
+    left: spacing.xl,
+    zIndex: 10,
+    padding: spacing.xs,
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
   loadingContainer: {
     flex: 1,
     backgroundColor: colors.primary.main,
@@ -438,32 +397,5 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: fontSize.lg,
     fontWeight: fontWeight.semibold,
-  },
-  deleteProfileButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: colors.text.tertiary,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    alignItems: 'center',
-  },
-  deleteProfileButtonText: {
-    color: colors.text.tertiary,
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-  },
-  deleteAccountButton: {
-    backgroundColor: colors.error,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    alignItems: 'center',
-  },
-  deleteAccountButtonText: {
-    color: colors.white,
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
   },
 })

@@ -1,0 +1,40 @@
+{
+  "title": "Conditions Générales d'Utilisation",
+  "lastUpdated": "Dernière mise à jour : {{date}}",
+  "accept": "Accepter",
+  "close": "Fermer",
+  "sections": {
+    "acceptance": {
+      "title": "1. Acceptation des conditions",
+      "content": "En utilisant l'application Nomli, vous acceptez les présentes Conditions Générales d'Utilisation (CGU). Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser l'application."
+    },
+    "account": {
+      "title": "2. Création de compte",
+      "content": "Pour utiliser Nomli, vous devez créer un compte en fournissant des informations exactes et à jour. Vous êtes responsable de la confidentialité de vos identifiants de connexion.\n\nVous devez :\n- Être âgé d'au moins 16 ans\n- Fournir des informations véridiques\n- Ne pas créer plusieurs comptes\n- Ne pas usurper l'identité d'autrui"
+    },
+    "usage": {
+      "title": "3. Utilisation acceptable",
+      "content": "Vous vous engagez à utiliser Nomli de manière responsable et respectueuse. Il est interdit de :\n- Publier du contenu offensant, diffamatoire ou illégal\n- Harceler ou menacer d'autres utilisateurs\n- Utiliser l'application à des fins commerciales non autorisées\n- Collecter des données d'autres utilisateurs sans leur consentement\n- Tenter de contourner les mesures de sécurité"
+    },
+    "content": {
+      "title": "4. Contenu utilisateur",
+      "content": "Vous conservez la propriété du contenu que vous publiez sur Nomli. Cependant, vous accordez à Nomli une licence mondiale, non exclusive et gratuite pour utiliser, reproduire et diffuser votre contenu dans le cadre du fonctionnement de l'application.\n\nNomli se réserve le droit de supprimer tout contenu qui viole les présentes CGU."
+    },
+    "premium": {
+      "title": "5. Services Premium",
+      "content": "Nomli propose des fonctionnalités premium accessibles via un abonnement payant de 7€ par mois.\n\nL'abonnement est :\n- Facturé mensuellement\n- Renouvelable automatiquement\n- Annulable à tout moment\n\nAucun remboursement ne sera effectué pour les périodes non utilisées."
+    },
+    "termination": {
+      "title": "6. Suspension et résiliation",
+      "content": "Nomli se réserve le droit de suspendre ou de résilier votre compte à tout moment en cas de violation des présentes CGU, sans préavis ni indemnité.\n\nVous pouvez également supprimer votre compte à tout moment depuis les paramètres de l'application."
+    },
+    "modifications": {
+      "title": "7. Modifications des CGU",
+      "content": "Nomli se réserve le droit de modifier les présentes CGU à tout moment. Les utilisateurs seront informés des modifications importantes via l'application ou par email."
+    },
+    "law": {
+      "title": "8. Droit applicable",
+      "content": "Les présentes CGU sont régies par le droit français. En cas de litige, les tribunaux français seront seuls compétents."
+    }
+  }
+}

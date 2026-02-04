@@ -1,10 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { StatusBar } from 'expo-status-bar'
 import { useState } from 'react'
-import { ActivityIndicator, StyleSheet, View } from 'react-native'
+import { ActivityIndicator, StyleSheet, View, Text } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { AuthProvider, useAuth } from './src/contexts/AuthContext'
 import { useMyProfile } from './src/hooks/useProfiles'
+import { useOnboarding } from './src/hooks/useOnboarding'
 import './src/i18n'
 import { MainNavigator } from './src/navigation/MainNavigator'
 import { LoginScreen } from './src/screens/LoginScreen'
@@ -13,6 +14,8 @@ import { RegisterScreen } from './src/screens/RegisterScreen'
 import { VerificationScreen } from './src/screens/VerificationScreen'
 import { VerificationChoiceScreen } from './src/screens/VerificationChoiceScreen'
 import { InvitationCodeScreen } from './src/screens/InvitationCodeScreen'
+import { OnboardingScreen } from './src/screens/OnboardingScreen'
+import { OnboardingPricingScreen } from './src/screens/OnboardingPricingScreen'
 import { SplashScreen } from './src/components/SplashScreen'
 import { colors } from './src/styles/theme'
 
@@ -31,9 +34,12 @@ type VerificationFlow = 'choice' | 'invitation' | 'verification'
 // Composant pour les utilisateurs authentifiés
 function AuthenticatedApp() {
   const { data: profile, isLoading } = useMyProfile()
+  const { hasCompletedOnboarding, isLoading: isOnboardingLoading } = useOnboarding()
   const [verificationFlow, setVerificationFlow] = useState<VerificationFlow>('choice')
+  const [onboardingScreen, setOnboardingScreen] = useState<'slides' | 'pricing'>('slides')
+  const [skipOnboarding, setSkipOnboarding] = useState(false)
 
-  if (isLoading) {
+  if (isLoading || isOnboardingLoading) {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color={colors.secondary.main} />
@@ -80,7 +86,16 @@ function AuthenticatedApp() {
     return <ProfileSetupScreen />
   }
 
-  // Cas 3: Profil complet → Navigation principale
+  // Cas 3: Profil complet mais onboarding pas fait → Onboarding
+  // skipOnboarding permet de sauter temporairement sans sauvegarder
+  if (!hasCompletedOnboarding && !skipOnboarding) {
+    if (onboardingScreen === 'slides') {
+      return <OnboardingScreen onComplete={() => setOnboardingScreen('pricing')} />
+    }
+    return <OnboardingPricingScreen onComplete={() => setSkipOnboarding(true)} />
+  }
+
+  // Cas 4: Profil complet et onboarding fait → Navigation principale
   return <MainNavigator />
 }
 

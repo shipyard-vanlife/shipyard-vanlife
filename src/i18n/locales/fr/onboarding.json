@@ -1,0 +1,73 @@
+{
+  "skip": "Passer",
+  "next": "Suivant",
+  "dontShow": "Ne plus afficher",
+  "slides": {
+    "map": {
+      "title": "Repérez les utilisateurs\nautour de vous",
+      "description": "Visualisez la communauté en temps réel. Consultez les profils, la localisation et connectez-vous avec ceux sur la même route.",
+      "badge": "12 Nomades proches"
+    },
+    "trips": {
+      "title": "Documentez vos\naventures",
+      "description": "Créez des voyages détaillés avec étapes géolocalisées. Ajoutez photos et notes pour organiser vos souvenirs.",
+      "status": "Voyage en cours",
+      "day": "Jour 45 : Traversée des Alpes"
+    },
+    "community": {
+      "title": "Créez des liens",
+      "description": "Connectez-vous avec des voyageurs partageant vos valeurs. Créez des amitiés durables à chaque étape."
+    },
+    "help": {
+      "title": "L'entraide à portée\nde main",
+      "description": "Besoin d'un conseil mécanique ou d'un bon plan ? Demandez de l'aide à la communauté via la messagerie.",
+      "avatar": "Alex",
+      "message": "\"Quelqu'un près de Lisbonne pour une galère méca ?\""
+    },
+    "events": {
+      "title": "Participez aux\névénements",
+      "description": "Rejoignez des rassemblements communautaires, ateliers et rencontres organisés là où vous êtes."
+    },
+    "start": {
+      "title": "Prêt à prendre\nla route ?",
+      "description": "Rejoignez les utilisateurs qui partagent leur voyage et s'entraident au quotidien.",
+      "createAccount": "Créer un compte",
+      "continueGoogle": "Continuer avec Google",
+      "alreadyAccount": "Déjà un compte ?",
+      "login": "Se connecter"
+    }
+  },
+  "paywall": {
+    "heroTitle": "Débloquez l'expérience\ncomplète",
+    "heroSubtitle": "Rejoignez la communauté sans limites",
+    "features": {
+      "map": {
+        "title": "Carte 100% visible",
+        "description": "Débloquez la visibilité de tous les profils à proximité, pas seulement 10."
+      },
+      "trips": {
+        "title": "Voyages Illimités",
+        "description": "Créez autant de voyages et d'étapes que vous voulez."
+      },
+      "search": {
+        "title": "Recherche Avancée",
+        "description": "Filtrez les nomades par compétences (mécanique, cuisine...)."
+      },
+      "friends": {
+        "title": "Amis Illimités",
+        "description": "Créez autant de connexions que vous voulez. (Gratuit : limité à 8)"
+      },
+      "helpRequest": {
+        "title": "Demandes d'aide",
+        "description": "Accédez aux demandes d'aide via la messagerie pour solliciter la communauté."
+      }
+    },
+    "dontShowAgain": "Ne plus afficher cet écran au démarrage",
+    "premiumButton": "Passer Premium",
+    "price": "7€ / mois",
+    "cancelText": "Annulable à tout moment",
+    "terms": "CGU",
+    "privacy": "Confidentialité",
+    "restore": "Restaurer"
+  }
+}
