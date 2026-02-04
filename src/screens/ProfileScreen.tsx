@@ -29,7 +29,6 @@ import { useImagePicker } from '../hooks/useImagePicker'
 import { useProfilePhotosUpload } from '../hooks/useProfilePhotos'
 import {
   useDeleteAccount,
-  useDeleteProfile,
   useMyProfile,
   useUpdateProfile,
 } from '../hooks/useProfiles'
@@ -42,11 +41,8 @@ export const ProfileScreen: React.FC = () => {
   const { user } = useAuth()
   const { mutateAsync: signOut } = useSignOut()
   const { data: profile, isLoading } = useMyProfile()
-  const { mutate: deleteProfile, isPending: isDeletingProfile } = useDeleteProfile()
   const { mutate: deleteAccount, isPending: isDeletingAccount } = useDeleteAccount()
   const { mutate: updateProfile } = useUpdateProfile()
-
-  const isDeleting = isDeletingProfile || isDeletingAccount
 
   // Single image picker instance for both avatar and profile photos
   const {
@@ -71,7 +67,7 @@ export const ProfileScreen: React.FC = () => {
     uploadPhoto: uploadProfilePhoto,
     deletePhoto,
     isUploading: isUploadingPhoto,
-    isDeleting: isDeletingPhoto,
+    isDeletingAccount: isDeletingAccountPhoto,
   } = useProfilePhotosUpload()
 
   // Handle image picker errors
@@ -139,23 +135,6 @@ export const ProfileScreen: React.FC = () => {
       // Error during sign out is handled silently
     }
   }, [signOut])
-
-  const handleDeleteProfile = useCallback(() => {
-    Alert.alert(t('common:profile.deleteTitle'), t('common:profile.deleteConfirmation'), [
-      { text: t('common:buttons.cancel'), style: 'cancel' },
-      {
-        text: t('common:buttons.delete'),
-        style: 'destructive',
-        onPress: () => {
-          deleteProfile(undefined, {
-            onError: (error: Error) => {
-              Alert.alert(t('common:errors.generic'), error.message)
-            },
-          })
-        },
-      },
-    ])
-  }, [deleteProfile, t])
 
   const handleDeleteAccount = useCallback(() => {
     Alert.alert(
@@ -308,7 +287,7 @@ export const ProfileScreen: React.FC = () => {
           onAddPhoto={handleAddPhoto}
           onDeletePhoto={handleDeletePhoto}
           isUploading={isUploadingPhoto}
-          isDeleting={isDeletingPhoto}
+          isDeletingAccount={isDeletingAccountPhoto}
         />
 
         {/* Invitation section - only for verified users */}
@@ -328,27 +307,15 @@ export const ProfileScreen: React.FC = () => {
           <TouchableOpacity
             style={styles.signOutButton}
             onPress={handleSignOut}
-            disabled={isDeleting}
+            disabled={isDeletingAccount}
           >
             <Text style={styles.signOutText}>{t('actions.signOut')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.deleteProfileButton, isDeleting && styles.buttonDisabled]}
-            onPress={handleDeleteProfile}
-            disabled={isDeleting}
-          >
-            {isDeletingProfile ? (
-              <ActivityIndicator color={colors.text.tertiary} size="small" />
-            ) : (
-              <Text style={styles.deleteProfileButtonText}>{t('actions.deleteProfile')}</Text>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.deleteAccountButton, isDeleting && styles.buttonDisabled]}
+            style={[styles.deleteAccountButton, isDeletingAccount && styles.buttonDisabled]}
             onPress={handleDeleteAccount}
-            disabled={isDeleting}
+            disabled={isDeletingAccount}
           >
             {isDeletingAccount ? (
               <ActivityIndicator color={colors.error} size="small" />
@@ -436,19 +403,6 @@ const styles = StyleSheet.create({
   },
   signOutText: {
     color: colors.white,
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-  },
-  deleteProfileButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: colors.text.tertiary,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    alignItems: 'center',
-  },
-  deleteProfileButtonText: {
-    color: colors.text.tertiary,
     fontSize: fontSize.lg,
     fontWeight: fontWeight.semibold,
   },

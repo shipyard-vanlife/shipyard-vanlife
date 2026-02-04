@@ -20,7 +20,6 @@ import {
   useDeleteConnection,
 } from '../hooks/useConnections'
 import { useMyProfile, profileKeys } from '../hooks/useProfiles'
-import { useRealtimeConnections } from '../hooks/useRealtimeConnections'
 import { Friend, ConnectionRequest } from '../types/chat'
 import { VisitorProfileSheet } from '../components/visitor'
 import { ConversationScreen } from './ConversationScreen'
@@ -33,8 +32,7 @@ import { colors } from '../styles/theme'
 type ChatTab = 'friends' | 'groups' | 'requests'
 
 export const ChatScreen: React.FC = () => {
-  console.log('🟢 ChatScreen mounted')
-  const { t } = useTranslation(['common', 'chat'])
+const { t } = useTranslation(['common', 'chat'])
   const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState<ChatTab>('friends')
   const [selectedFriend, setSelectedFriend] = useState<{
@@ -85,9 +83,6 @@ export const ChatScreen: React.FC = () => {
     () => new Map(friends?.map(f => [f.connection_id, f]) ?? []),
     [friends]
   )
-
-  // Realtime for connections
-  useRealtimeConnections()
 
   // Refetch data when switching tabs
   useEffect(() => {

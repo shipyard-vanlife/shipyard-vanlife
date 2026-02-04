@@ -11,7 +11,7 @@ interface MyLocationMarkerProps {
   isVisible: boolean
 }
 
-const MARKER_SIZE = 44
+const MARKER_SIZE = 42
 
 export const MyLocationMarker = memo<MyLocationMarkerProps>(function MyLocationMarker({
   latitude,
@@ -21,18 +21,15 @@ export const MyLocationMarker = memo<MyLocationMarkerProps>(function MyLocationM
 }) {
   const [imageLoaded, setImageLoaded] = useState(false)
 
-  // Keep tracksViewChanges=true until remote image finishes loading
-  const shouldTrackChanges = !!avatarUrl && !imageLoaded
-
   return (
     <Marker
       coordinate={{ latitude, longitude }}
       anchor={{ x: 0.5, y: 0.5 }}
-      tracksViewChanges={shouldTrackChanges}
+      tracksViewChanges={!!avatarUrl && !imageLoaded}
     >
       <View style={styles.wrapper}>
-        {/* Soft glow ring */}
-        <View style={styles.glowRing} />
+        {/* Static glow ring (visible mode only) */}
+        {isVisible ? <View style={styles.glowRing} /> : null}
 
         {/* Main marker */}
         <View style={[styles.marker, !isVisible && styles.markerInvisible]}>
@@ -59,19 +56,21 @@ export const MyLocationMarker = memo<MyLocationMarkerProps>(function MyLocationM
   )
 })
 
+const GLOW_SIZE = MARKER_SIZE + 16
+
 const styles = StyleSheet.create({
   wrapper: {
-    width: MARKER_SIZE + 24,
-    height: MARKER_SIZE + 24,
+    width: GLOW_SIZE + 8,
+    height: GLOW_SIZE + 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   glowRing: {
     position: 'absolute',
-    width: MARKER_SIZE + 18,
-    height: MARKER_SIZE + 18,
-    borderRadius: (MARKER_SIZE + 18) / 2,
-    backgroundColor: `${colors.secondary.main}20`,
+    width: GLOW_SIZE,
+    height: GLOW_SIZE,
+    borderRadius: GLOW_SIZE / 2,
+    backgroundColor: 'rgba(224, 122, 95, 0.2)',
   },
   marker: {
     width: MARKER_SIZE,
