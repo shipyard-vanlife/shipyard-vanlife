@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { StyleSheet, TouchableOpacity, View, Text } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { colors, shadows } from '../styles/theme'
@@ -38,12 +38,15 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
   // Active le realtime pour mettre à jour le badge en temps réel
   useRealtimeConnections()
 
-  // Calculer le nombre total de messages non lus
-  const totalUnreadCount =
-    friends?.reduce((total, friend) => total + (friend.unread_count || 0), 0) || 0
+  const totalUnreadCount = useMemo(
+    () => friends?.reduce((total, friend) => total + (friend.unread_count || 0), 0) || 0,
+    [friends]
+  )
 
-  // Calculer le nombre d'invitations pending
-  const pendingInvitationsCount = invitations?.filter(inv => inv.status === 'pending').length || 0
+  const pendingInvitationsCount = useMemo(
+    () => invitations?.filter(inv => inv.status === 'pending').length || 0,
+    [invitations]
+  )
 
   return (
     <View style={styles.container}>

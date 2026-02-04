@@ -68,7 +68,7 @@ export const ProfileScreen: React.FC = () => {
     uploadPhoto: uploadProfilePhoto,
     deletePhoto,
     isUploading: isUploadingPhoto,
-    isDeleting: isDeletingPhoto,
+    isDeletingAccount: isDeletingAccountPhoto,
   } = useProfilePhotosUpload()
 
   // Handle image picker errors
@@ -278,7 +278,7 @@ export const ProfileScreen: React.FC = () => {
           onAddPhoto={handleAddPhoto}
           onDeletePhoto={handleDeletePhoto}
           isUploading={isUploadingPhoto}
-          isDeleting={isDeletingPhoto}
+          isDeletingAccount={isDeletingAccountPhoto}
         />
 
         {/* Invitation section - only for verified users */}

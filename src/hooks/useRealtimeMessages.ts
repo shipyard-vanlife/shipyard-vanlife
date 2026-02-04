@@ -10,11 +10,6 @@ export function useRealtimeMessages(connectionId: string | null) {
   useEffect(() => {
     if (!connectionId) return
 
-    console.log(
-      '🔵 Setting up realtime for messages and help requests in connection:',
-      connectionId
-    )
-
     const channel = supabase
       .channel(`conversation-${connectionId}`)
       .on(
@@ -25,9 +20,7 @@ export function useRealtimeMessages(connectionId: string | null) {
           table: 'messages',
           filter: `connection_id=eq.${connectionId}`,
         },
-        payload => {
-          console.log('🔴 Message change detected:', payload)
-
+        () => {
           queryClient.refetchQueries({
             queryKey: messageKeys.infinite(connectionId),
           })
@@ -41,9 +34,7 @@ export function useRealtimeMessages(connectionId: string | null) {
           table: 'help_requests',
           filter: `connection_id=eq.${connectionId}`,
         },
-        payload => {
-          console.log('🔴 Help request change detected:', payload)
-
+        () => {
           queryClient.refetchQueries({
             queryKey: helpRequestKeys.byConnection(connectionId),
           })
@@ -52,7 +43,6 @@ export function useRealtimeMessages(connectionId: string | null) {
       .subscribe()
 
     return () => {
-      console.log('🔵 Cleaning up realtime for conversation:', connectionId)
       supabase.removeChannel(channel)
     }
   }, [connectionId, queryClient])

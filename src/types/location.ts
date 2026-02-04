@@ -91,4 +91,6 @@ export interface ViewportProfilesParams {
   maxLat: number
   minLng: number
   maxLng: number
+  userLat?: number | null
+  userLng?: number | null
 }

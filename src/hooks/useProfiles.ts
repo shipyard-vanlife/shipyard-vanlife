@@ -164,6 +164,8 @@ export function useViewportData(params: ViewportProfilesParams | null) {
         max_lat: params.maxLat,
         min_lng: params.minLng,
         max_lng: params.maxLng,
+        user_lat: params.userLat ?? undefined,
+        user_lng: params.userLng ?? undefined,
       })
 
       if (error) throw error

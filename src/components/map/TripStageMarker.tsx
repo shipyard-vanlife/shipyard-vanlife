@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { Marker } from 'react-native-maps'
 import { colors } from '../../styles/theme'
@@ -11,13 +11,13 @@ interface TripStageMarkerProps {
   onPress: () => void
 }
 
-export const TripStageMarker: React.FC<TripStageMarkerProps> = ({
+export const TripStageMarker = memo<TripStageMarkerProps>(function TripStageMarker({
   coordinate,
   stageNumber,
   isFirst = false,
   isLast = false,
   onPress,
-}) => {
+}) {
   return (
     <Marker
       coordinate={coordinate}
@@ -30,7 +30,7 @@ export const TripStageMarker: React.FC<TripStageMarkerProps> = ({
       </View>
     </Marker>
   )
-}
+})
 
 const styles = StyleSheet.create({
   marker: {
@@ -49,10 +49,10 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   firstMarker: {
-    backgroundColor: '#4CAF50', // Green for start
+    backgroundColor: '#4CAF50',
   },
   lastMarker: {
-    backgroundColor: colors.secondary.main, // Coral for end
+    backgroundColor: colors.secondary.main,
   },
   number: {
     color: colors.white,

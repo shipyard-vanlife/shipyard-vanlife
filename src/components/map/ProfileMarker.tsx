@@ -19,15 +19,12 @@ export const ProfileMarker = memo<ProfileMarkerProps>(function ProfileMarker({
 }) {
   const [imageLoaded, setImageLoaded] = useState(false)
 
-  // Keep tracksViewChanges=true until remote image finishes loading
-  const shouldTrackChanges = !!profile.avatar_url && !imageLoaded
-
   return (
     <Marker
       coordinate={{ latitude, longitude }}
       anchor={{ x: 0.5, y: 0.5 }}
       onPress={onPress}
-      tracksViewChanges={shouldTrackChanges}
+      tracksViewChanges={!!profile.avatar_url && !imageLoaded}
     >
       <View style={styles.container}>
         {profile.avatar_url ? (

@@ -76,7 +76,7 @@ export const ProfileContentView: React.FC<ProfileContentViewProps> = ({
       {/* Stats */}
       <ProfileStats
         daysOnRoad={profile.days_on_road}
-        distanceKm={undefined} // Not available for visitor profiles
+        distanceKm={fullProfile?.total_distance_km}
         connectionsCount={fullProfile?.connections_count ?? profile.connections_count ?? 0}
         city={profile.city}
       />
