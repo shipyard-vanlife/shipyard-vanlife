@@ -69,8 +69,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [showProfiles, setShowProfiles] = useState(true)
 
   const handleViewportChange = useCallback((vp: ViewportProfilesParams) => {
-    setViewport(vp)
-  }, [])
+    setViewport({
+      ...vp,
+      userLat: profile?.location?.latitude ?? null,
+      userLng: profile?.location?.longitude ?? null,
+    })
+  }, [profile?.location?.latitude, profile?.location?.longitude])
 
   // Map overlay state (consolidated via useReducer hook)
   const overlay = useMapOverlay(tripToShow, onClearTripToShow)

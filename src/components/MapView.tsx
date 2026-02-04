@@ -1,22 +1,21 @@
 import { Ionicons } from '@expo/vector-icons'
-import React, { useCallback, useEffect, useRef, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import ClusteredMapView from 'react-native-map-clustering'
-import { Circle, Polyline, PROVIDER_GOOGLE } from 'react-native-maps'
-import type RNMapView from 'react-native-maps'
 import type { Region } from 'react-native-maps'
-import { colors, shadows, borderRadius, spacing } from '../styles/theme'
-import type { NearbyProfile, MapZone, ViewportProfilesParams } from '../types/location'
-import type { TripOverlayData, TripOverlayStage } from '../types/map'
+import RNMapView, { Polyline, PROVIDER_GOOGLE } from 'react-native-maps'
+import { borderRadius, colors, shadows, spacing } from '../styles/theme'
 import type { Activity } from '../types/activity'
-import { ProfileMarker } from './map/ProfileMarker'
-import { MyLocationMarker } from './map/MyLocationMarker'
+import type { MapZone, NearbyProfile, ViewportProfilesParams } from '../types/location'
+import type { TripOverlayData, TripOverlayStage } from '../types/map'
 import { ActivityMarker } from './map/ActivityMarker'
 import { ClusterMarker } from './map/ClusterMarker'
-import { ZoneBubble } from './map/ZoneBubble'
+import { MyLocationMarker } from './map/MyLocationMarker'
+import { ProfileMarker } from './map/ProfileMarker'
 import { TripMapOverlay } from './map/TripMapOverlay'
 import { TripStageMarker } from './map/TripStageMarker'
+import { ZoneBubble } from './map/ZoneBubble'
 
 /** Convert a map Region to bounding box params with 20% buffer */
 function regionToViewport(region: Region): ViewportProfilesParams {
@@ -198,21 +197,10 @@ export const MapView: React.FC<MapViewProps> = ({
         minPoints={3}
         clusterColor={colors.secondary.main}
         renderCluster={renderCluster}
-        animationEnabled
+        animationEnabled={false}
         preserveClusterPressBehavior={false}
         onRegionChangeComplete={handleRegionChangeComplete}
       >
-        {/* Circle around my position (hidden in trip mode) */}
-        {!isTripMode ? (
-          <Circle
-            center={{ latitude, longitude }}
-            radius={3000}
-            fillColor={`${colors.secondary.main}26`}
-            strokeColor={colors.secondary.main}
-            strokeWidth={0}
-          />
-        ) : null}
-
         {/* My marker (hidden in trip mode) */}
         {!isTripMode ? (
           <MyLocationMarker

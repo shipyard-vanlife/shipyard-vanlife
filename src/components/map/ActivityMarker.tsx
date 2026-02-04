@@ -3,7 +3,7 @@ import React, { memo } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { Marker } from 'react-native-maps'
 import { colors, shadows } from '../../styles/theme'
-import type { Activity, ActivityType } from '../../types/activity'
+import type { Activity } from '../../types/activity'
 import { ACTIVITY_TYPE_COLORS, ACTIVITY_TYPE_ICONS } from '../../types/activity'
 
 interface ActivityMarkerProps {

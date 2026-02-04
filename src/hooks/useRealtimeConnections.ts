@@ -7,8 +7,6 @@ export function useRealtimeConnections() {
   const queryClient = useQueryClient()
 
   useEffect(() => {
-    console.log('🔵 Setting up realtime for connections, messages, and help requests')
-
     const channel = supabase
       .channel('connections-and-messages-changes')
       .on(
@@ -18,11 +16,9 @@ export function useRealtimeConnections() {
           schema: 'public',
           table: 'connections',
         },
-        payload => {
-          console.log('🔴 Changement détecté dans connections:', payload)
-
-          queryClient.refetchQueries({ queryKey: connectionKeys.friends() })
-          queryClient.refetchQueries({ queryKey: connectionKeys.requests() })
+        () => {
+          queryClient.invalidateQueries({ queryKey: connectionKeys.friends() })
+          queryClient.invalidateQueries({ queryKey: connectionKeys.requests() })
         }
       )
       .on(
@@ -32,10 +28,8 @@ export function useRealtimeConnections() {
           schema: 'public',
           table: 'messages',
         },
-        payload => {
-          console.log('🔴 Nouveau message détecté:', payload)
-
-          queryClient.refetchQueries({ queryKey: connectionKeys.friends() })
+        () => {
+          queryClient.invalidateQueries({ queryKey: connectionKeys.friends() })
         }
       )
       .on(
@@ -45,21 +39,13 @@ export function useRealtimeConnections() {
           schema: 'public',
           table: 'help_requests',
         },
-        payload => {
-          console.log('🔴 Help request détecté:', payload)
-
-          queryClient.refetchQueries({ queryKey: connectionKeys.friends() })
+        () => {
+          queryClient.invalidateQueries({ queryKey: connectionKeys.friends() })
         }
       )
-      .subscribe((status, err) => {
-        console.log('🔵 Realtime subscription status:', status)
-        if (err) {
-          console.error('🔴 Realtime subscription error:', err)
-        }
-      })
+      .subscribe()
 
     return () => {
-      console.log('🔵 Cleaning up realtime for connections, messages, and help requests')
       supabase.removeChannel(channel)
     }
   }, [queryClient])
