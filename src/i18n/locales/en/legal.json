@@ -1,0 +1,42 @@
+{
+  "title": "Legal Notice",
+  "lastUpdated": "Last updated: {{date}}",
+  "accept": "Accept",
+  "close": "Close",
+  "checkboxLabel": "I accept the ",
+  "checkboxLink": "legal notice",
+  "sections": {
+    "editor": {
+      "title": "1. Application Publisher",
+      "content": "Nomli is a mobile application developed and published by [Your company/organization name].\n\nHeadquarters: [Address]\nContact email: contact@nomli.app\nPhone number: [Number]"
+    },
+    "purpose": {
+      "title": "2. Purpose of the Application",
+      "content": "Nomli is a social network application for nomadic travelers. It allows users to:\n- Locate and connect with other users\n- Share trips and travel journals\n- Request and offer help to the community\n- Participate in community events"
+    },
+    "data": {
+      "title": "3. Personal Data",
+      "content": "Personal data collected is processed in accordance with GDPR. You have the right to access, rectify and delete your data.\n\nData collected:\n- Profile information (name, photo)\n- Geographic location (with consent)\n- Messages and shared content\n- Connection data\n\nYour data is never sold to third parties."
+    },
+    "liability": {
+      "title": "4. Liability",
+      "content": "The publisher cannot be held responsible for:\n- Content published by users\n- Meetings organized via the application\n- Direct or indirect damages related to the use of the application\n\nUsers are responsible for their interactions and must exercise caution."
+    },
+    "thirdParty": {
+      "title": "5. Third-Party Platform Notice",
+      "content": "Apple Inc. and Google LLC are in no way organizers, sponsors or stakeholders of the Nomli application. They cannot be held responsible for the content, features or services offered by Nomli.\n\nThe application is distributed via the App Store (Apple Inc.) and Google Play Store (Google LLC) but remains under the sole responsibility of its publisher."
+    },
+    "intellectualProperty": {
+      "title": "6. Intellectual Property",
+      "content": "All content, trademarks, logos, design and graphic elements of the Nomli application are protected by intellectual property rights.\n\nAny reproduction, distribution or use without authorization is prohibited."
+    },
+    "modifications": {
+      "title": "7. Modifications",
+      "content": "The publisher reserves the right to modify this legal notice at any time. Users will be informed of any substantial changes."
+    },
+    "law": {
+      "title": "8. Applicable Law",
+      "content": "This legal notice is governed by French law. Any dispute will be submitted to the competent French courts."
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "title": "Privacy Policy",
+  "lastUpdated": "Last updated: {{date}}",
+  "accept": "Accept",
+  "close": "Close",
+  "sections": {
+    "introduction": {
+      "title": "1. Introduction",
+      "content": "Protecting your personal data is a priority for Nomli. This privacy policy explains how we collect, use and protect your data."
+    },
+    "dataCollected": {
+      "title": "2. Data Collected",
+      "content": "We collect the following data:\n\n• Account data: name, email, profile picture\n• Location data: geographic position (with your explicit consent)\n• Travel data: itineraries, stops, travel photos\n• Communication data: messages, help requests\n• Technical data: device type, operating system, connection logs"
+    },
+    "dataUsage": {
+      "title": "3. Data Usage",
+      "content": "Your data is used to:\n\n• Provide and improve our services\n• Connect you with other nomadic users\n• Display your location on the map (with your consent)\n• Personalize your experience\n• Ensure application security\n• Send you important notifications\n\nWe never sell your data to third parties."
+    },
+    "dataSharing": {
+      "title": "4. Data Sharing",
+      "content": "Your data may be shared with:\n\n• Other users: public profile, location (if enabled), shared content\n• Technical providers: hosting (Supabase), authentication\n• Legal authorities: in case of legal or judicial request\n\nWe never share your data for marketing purposes without your consent."
+    },
+    "dataRetention": {
+      "title": "5. Data Retention",
+      "content": "Your data is retained as long as your account is active. In case of account deletion:\n\n• Your personal data is deleted within 30 days\n• Some data may be retained for legal reasons\n• Anonymized content may be retained for statistical purposes"
+    },
+    "rights": {
+      "title": "6. Your Rights (GDPR)",
+      "content": "In accordance with GDPR, you have the following rights:\n\n• Right of access to your data\n• Right of rectification\n• Right to erasure (right to be forgotten)\n• Right to portability\n• Right to object to processing\n• Right to restriction of processing\n\nTo exercise your rights, contact us at: privacy@nomli.app"
+    },
+    "security": {
+      "title": "7. Security",
+      "content": "We implement appropriate security measures to protect your data:\n\n• Encryption of data in transit (HTTPS/TLS)\n• Secure authentication\n• Restricted access to sensitive data\n• Regular security audits\n\nHowever, no system is completely secure. We recommend protecting your credentials."
+    },
+    "cookies": {
+      "title": "8. Cookies and Similar Technologies",
+      "content": "Nomli uses local storage technologies to:\n\n• Maintain your logged-in session\n• Remember your preferences\n• Improve application performance\n\nYou can disable these features in your device settings."
+    },
+    "minors": {
+      "title": "9. Minors",
+      "content": "Nomli is reserved for users aged 16 and over. We do not knowingly collect data concerning minors under 16."
+    },
+    "contact": {
+      "title": "10. Contact",
+      "content": "For any questions regarding this privacy policy or your personal data, contact us:\n\nEmail: privacy@nomli.app\nMail: [Head office address]"
+    }
+  }
+}

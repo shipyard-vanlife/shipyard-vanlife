@@ -1,0 +1,48 @@
+{
+  "title": "Politique de Confidentialité",
+  "lastUpdated": "Dernière mise à jour : {{date}}",
+  "accept": "Accepter",
+  "close": "Fermer",
+  "sections": {
+    "introduction": {
+      "title": "1. Introduction",
+      "content": "La protection de vos données personnelles est une priorité pour Nomli. Cette politique de confidentialité explique comment nous collectons, utilisons et protégeons vos données."
+    },
+    "dataCollected": {
+      "title": "2. Données collectées",
+      "content": "Nous collectons les données suivantes :\n\n• Données de compte : nom, prénom, email, photo de profil\n• Données de localisation : position géographique (avec votre consentement explicite)\n• Données de voyage : itinéraires, étapes, photos de voyages\n• Données de communication : messages, demandes d'aide\n• Données techniques : type d'appareil, système d'exploitation, logs de connexion"
+    },
+    "dataUsage": {
+      "title": "3. Utilisation des données",
+      "content": "Vos données sont utilisées pour :\n\n• Fournir et améliorer nos services\n• Vous connecter avec d'autres utilisateurs nomades\n• Afficher votre localisation sur la carte (avec votre consentement)\n• Personnaliser votre expérience\n• Assurer la sécurité de l'application\n• Vous envoyer des notifications importantes\n\nNous ne vendons jamais vos données à des tiers."
+    },
+    "dataSharing": {
+      "title": "4. Partage des données",
+      "content": "Vos données peuvent être partagées avec :\n\n• Autres utilisateurs : profil public, localisation (si activée), contenus partagés\n• Prestataires techniques : hébergement (Supabase), authentification\n• Autorités légales : en cas de demande légale ou judiciaire\n\nNous ne partageons jamais vos données à des fins marketing sans votre consentement."
+    },
+    "dataRetention": {
+      "title": "5. Conservation des données",
+      "content": "Vos données sont conservées tant que votre compte est actif. En cas de suppression de compte :\n\n• Vos données personnelles sont supprimées sous 30 jours\n• Certaines données peuvent être conservées pour des raisons légales\n• Les contenus anonymisés peuvent être conservés à des fins statistiques"
+    },
+    "rights": {
+      "title": "6. Vos droits (RGPD)",
+      "content": "Conformément au RGPD, vous disposez des droits suivants :\n\n• Droit d'accès à vos données\n• Droit de rectification\n• Droit à l'effacement (droit à l'oubli)\n• Droit à la portabilité\n• Droit d'opposition au traitement\n• Droit de limitation du traitement\n\nPour exercer vos droits, contactez-nous à : privacy@nomli.app"
+    },
+    "security": {
+      "title": "7. Sécurité",
+      "content": "Nous mettons en œuvre des mesures de sécurité appropriées pour protéger vos données :\n\n• Chiffrement des données en transit (HTTPS/TLS)\n• Authentification sécurisée\n• Accès restreint aux données sensibles\n• Audits de sécurité réguliers\n\nCependant, aucun système n'est totalement sécurisé. Nous vous recommandons de protéger vos identifiants."
+    },
+    "cookies": {
+      "title": "8. Cookies et technologies similaires",
+      "content": "Nomli utilise des technologies de stockage local pour :\n\n• Maintenir votre session connectée\n• Mémoriser vos préférences\n• Améliorer les performances de l'application\n\nVous pouvez désactiver ces fonctionnalités dans les paramètres de votre appareil."
+    },
+    "minors": {
+      "title": "9. Mineurs",
+      "content": "Nomli est réservé aux utilisateurs âgés de 16 ans et plus. Nous ne collectons pas sciemment de données concernant des mineurs de moins de 16 ans."
+    },
+    "contact": {
+      "title": "10. Contact",
+      "content": "Pour toute question relative à cette politique de confidentialité ou à vos données personnelles, contactez-nous :\n\nEmail : privacy@nomli.app\nCourrier : [Adresse du siège social]"
+    }
+  }
+}

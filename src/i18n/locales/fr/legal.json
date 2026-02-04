@@ -1,0 +1,42 @@
+{
+  "title": "Mentions Légales",
+  "lastUpdated": "Dernière mise à jour : {{date}}",
+  "accept": "Accepter",
+  "close": "Fermer",
+  "checkboxLabel": "J'accepte les ",
+  "checkboxLink": "mentions légales",
+  "sections": {
+    "editor": {
+      "title": "1. Éditeur de l'application",
+      "content": "Nomli est une application mobile développée et éditée par [Nom de votre société/organisation].\n\nSiège social : [Adresse]\nEmail de contact : contact@nomli.app\nNuméro de téléphone : [Numéro]"
+    },
+    "purpose": {
+      "title": "2. Objet de l'application",
+      "content": "Nomli est une application de réseau social destinée aux voyageurs nomades. Elle permet de :\n- Localiser et connecter avec d'autres utilisateurs\n- Partager ses voyages et carnets de route\n- Demander et offrir de l'aide à la communauté\n- Participer à des événements communautaires"
+    },
+    "data": {
+      "title": "3. Données personnelles",
+      "content": "Les données personnelles collectées sont traitées conformément au RGPD. Vous disposez d'un droit d'accès, de rectification et de suppression de vos données.\n\nDonnées collectées :\n- Informations de profil (nom, prénom, photo)\n- Localisation géographique (avec consentement)\n- Messages et contenus partagés\n- Données de connexion\n\nVos données ne sont jamais vendues à des tiers."
+    },
+    "liability": {
+      "title": "4. Responsabilité",
+      "content": "L'éditeur ne saurait être tenu responsable :\n- Des contenus publiés par les utilisateurs\n- Des rencontres organisées via l'application\n- Des dommages directs ou indirects liés à l'utilisation de l'application\n\nLes utilisateurs sont responsables de leurs interactions et doivent faire preuve de prudence."
+    },
+    "thirdParty": {
+      "title": "5. Mentions relatives aux plateformes",
+      "content": "Apple Inc. et Google LLC ne sont en aucun cas organisateurs, sponsors ou parties prenantes de l'application Nomli. Ils ne peuvent être tenus responsables du contenu, des fonctionnalités ou des services proposés par Nomli.\n\nL'application est distribuée via l'App Store (Apple Inc.) et Google Play Store (Google LLC) mais reste sous la seule responsabilité de son éditeur."
+    },
+    "intellectualProperty": {
+      "title": "6. Propriété intellectuelle",
+      "content": "L'ensemble des contenus, marques, logos, design et éléments graphiques de l'application Nomli sont protégés par les droits de propriété intellectuelle.\n\nToute reproduction, distribution ou utilisation sans autorisation est interdite."
+    },
+    "modifications": {
+      "title": "7. Modifications",
+      "content": "L'éditeur se réserve le droit de modifier les présentes mentions légales à tout moment. Les utilisateurs seront informés de toute modification substantielle."
+    },
+    "law": {
+      "title": "8. Droit applicable",
+      "content": "Les présentes mentions légales sont régies par le droit français. Tout litige sera soumis aux tribunaux compétents français."
+    }
+  }
+}

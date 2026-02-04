@@ -1,0 +1,20 @@
+{
+  "title": "Paramètres",
+  "sections": {
+    "premium": {
+      "title": "Premium",
+      "button": "Passer Premium",
+      "description": "Débloquez toutes les fonctionnalités de l'application"
+    },
+    "account": {
+      "title": "Compte",
+      "deleteProfile": "Supprimer le profil",
+      "deleteAccount": "Supprimer le compte"
+    },
+    "legal": {
+      "title": "Mentions Légales",
+      "view": "Voir les mentions légales",
+      "lastUpdated": "Dernière mise à jour : {{date}}"
+    }
+  }
+}

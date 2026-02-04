@@ -6,6 +6,8 @@
   "passwordRequirements": "8 caractères min, 1 majuscule, 1 chiffre, 1 caractère spécial",
   "termsPrefix": "J'accepte les",
   "termsLink": "conditions générales d'utilisation",
+  "legalPrefix": "J'accepte les",
+  "legalLink": "mentions légales",
   "submit": "S'inscrire",
   "hasAccount": "Déjà un compte ? Se connecter",
   "success": {
@@ -19,6 +21,7 @@
     "passwordRequirements": "Le mot de passe ne respecte pas les exigences",
     "invalidEmail": "L'adresse email n'est pas valide",
     "suspiciousInput": "Caractères invalides détectés dans les données saisies",
-    "termsRequired": "Vous devez accepter les conditions générales pour créer un compte"
+    "termsRequired": "Vous devez accepter les conditions générales pour créer un compte",
+    "legalRequired": "Vous devez accepter les mentions légales pour créer un compte"
   }
 }

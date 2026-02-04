@@ -6,6 +6,8 @@
   "passwordRequirements": "Min 8 chars, 1 uppercase, 1 number, 1 special character",
   "termsPrefix": "I accept the",
   "termsLink": "terms and conditions",
+  "legalPrefix": "I accept the",
+  "legalLink": "legal notice",
   "submit": "Sign up",
   "hasAccount": "Already have an account? Sign in",
   "success": {
@@ -19,6 +21,7 @@
     "passwordRequirements": "Password does not meet requirements",
     "invalidEmail": "Email address is not valid",
     "suspiciousInput": "Invalid characters detected in input data",
-    "termsRequired": "You must accept the terms and conditions to create an account"
+    "termsRequired": "You must accept the terms and conditions to create an account",
+    "legalRequired": "You must accept the legal notice to create an account"
   }
 }

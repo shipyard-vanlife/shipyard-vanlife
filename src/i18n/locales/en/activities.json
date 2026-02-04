@@ -53,6 +53,7 @@
     "titleField": "Title",
     "titlePlaceholder": "e.g. Hiking at Mont Blanc",
     "titleRequired": "Title is required",
+    "pastDateError": "Start date cannot be in the past",
     "description": "Description",
     "descriptionPlaceholder": "Describe your activity...",
     "type": "Activity type",

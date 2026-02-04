@@ -64,6 +64,17 @@ export const CreateActivityModal: React.FC<CreateActivityModalProps> = ({ visibl
       return
     }
 
+    // Vérifier que la date de début n'est pas dans le passé
+    const now = new Date()
+    now.setHours(0, 0, 0, 0)
+    const startDateOnly = new Date(startDate)
+    startDateOnly.setHours(0, 0, 0, 0)
+
+    if (startDateOnly < now) {
+      Alert.alert(t('common:errors.generic'), t('create.pastDateError'))
+      return
+    }
+
     createActivity(
       {
         title: title.trim(),
@@ -204,6 +215,7 @@ export const CreateActivityModal: React.FC<CreateActivityModalProps> = ({ visibl
                 value={startDate}
                 mode="datetime"
                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                minimumDate={new Date()}
                 onChange={(event, date) => {
                   setShowStartPicker(Platform.OS === 'ios')
                   if (date) setStartDate(date)
@@ -234,6 +246,7 @@ export const CreateActivityModal: React.FC<CreateActivityModalProps> = ({ visibl
                 value={endDate || new Date()}
                 mode="datetime"
                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                minimumDate={startDate}
                 onChange={(event, date) => {
                   setShowEndPicker(Platform.OS === 'ios')
                   if (date) setEndDate(date)
