@@ -114,7 +114,7 @@ export function useEndTrip() {
       if (error) throw error
       return data as boolean
     },
-    invalidateKeys: [tripKeys.list(), tripKeys.active()],
+    invalidateKeys: [tripKeys.list(), tripKeys.active(), (tripId) => tripKeys.detail(tripId)],
   })
 }
 

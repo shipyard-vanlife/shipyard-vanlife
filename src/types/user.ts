@@ -123,6 +123,21 @@ export const SKILL_COLORS: Record<SkillType, string> = {
   photo: '#8B7355',
 }
 
+// Skill icons for map markers and badges (Ionicons names)
+export const SKILL_ICONS: Record<SkillType, string> = {
+  mechanic: 'construct',
+  plumbing: 'water',
+  decoration: 'color-palette',
+  construction: 'hammer',
+  electricity: 'flash',
+  carpentry: 'cut',
+  hiking: 'trail-sign',
+  tech: 'hardware-chip',
+  cooking: 'restaurant',
+  languages: 'chatbubbles',
+  photo: 'camera',
+}
+
 // All available skills (for forms/filters)
 export const ALL_SKILLS: SkillType[] = [
   'mechanic',

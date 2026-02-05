@@ -5,23 +5,40 @@ import { Marker } from 'react-native-maps'
 import { colors } from '../../styles/theme'
 import type { MapZone } from '../../types/location'
 
-/** Max sample avatars shown inside the bubble */
-const MAX_AVATARS = 3
-
 interface ZoneBubbleProps {
   zone: MapZone
   onPress: () => void
 }
 
+/**
+ * Smooth sizing with a good minimum for small counts (2-3).
+ * count=2 → 46px, count=5 → 50px, count=20 → 58px, count=100+ → 72px
+ */
+function getBubbleSize(count: number): number {
+  if (count <= 1) return 44
+  const minSize = 46
+  const maxSize = 72
+  const scale = Math.min(Math.log2(count) / Math.log2(200), 1)
+  return Math.round(minSize + (maxSize - minSize) * scale)
+}
+
+/** For small counts (2-5), show fewer/no avatars to keep it clean */
+function getMaxAvatars(count: number): number {
+  if (count <= 3) return 2
+  return 3
+}
+
 export const ZoneBubble = memo<ZoneBubbleProps>(function ZoneBubble({ zone, onPress }) {
   const [imagesLoaded, setImagesLoaded] = useState(0)
 
-  // Use pre-fetched sample avatar URLs from DB (up to 3)
-  const avatarUrls = zone.sampleAvatars.slice(0, MAX_AVATARS)
+  const maxAvatars = getMaxAvatars(zone.count)
+  const avatarUrls = zone.sampleAvatars.slice(0, maxAvatars)
   const shouldTrackChanges = avatarUrls.length > 0 && imagesLoaded < avatarUrls.length
 
   const size = getBubbleSize(zone.count)
   const innerSize = size - 6
+  const glowSize = size + 12
+  const isSmall = zone.count <= 5
 
   return (
     <Marker
@@ -33,13 +50,20 @@ export const ZoneBubble = memo<ZoneBubbleProps>(function ZoneBubble({ zone, onPr
       onPress={onPress}
       tracksViewChanges={shouldTrackChanges}
     >
-      {/* Outer glow */}
       <View
         style={[
-          styles.outerGlow,
-          { width: size + 12, height: size + 12, borderRadius: (size + 12) / 2 },
+          styles.wrapper,
+          { width: glowSize + 4, height: glowSize + 4 },
         ]}
       >
+        {/* Outer glow */}
+        <View
+          style={[
+            styles.outerGlow,
+            { width: glowSize, height: glowSize, borderRadius: glowSize / 2 },
+          ]}
+        />
+
         {/* White border ring */}
         <View style={[styles.borderRing, { width: size, height: size, borderRadius: size / 2 }]}>
           {/* Inner coral circle */}
@@ -53,33 +77,43 @@ export const ZoneBubble = memo<ZoneBubbleProps>(function ZoneBubble({ zone, onPr
               },
             ]}
           >
-            {/* Sample avatars row */}
-            {avatarUrls.length > 0 ? (
-              <View style={styles.avatarsRow}>
-                {avatarUrls.map((url, i) => (
-                  <View
-                    key={url}
-                    style={[
-                      styles.miniAvatarContainer,
-                      i > 0 ? { marginLeft: -6 } : null,
-                      { zIndex: MAX_AVATARS - i },
-                    ]}
-                  >
-                    <Image
-                      source={{ uri: url }}
-                      style={styles.miniAvatar}
-                      resizeMode="cover"
-                      onLoad={() => setImagesLoaded(prev => prev + 1)}
-                    />
-                  </View>
-                ))}
-              </View>
+            {/* Small counts: just icon + count, no avatars */}
+            {isSmall ? (
+              <>
+                <Ionicons name="people" size={14} color={colors.white} />
+                <Text style={styles.countSmall}>{zone.count}</Text>
+              </>
             ) : (
-              <Ionicons name="people" size={16} color={colors.white} />
-            )}
+              <>
+                {/* Sample avatars row */}
+                {avatarUrls.length > 0 ? (
+                  <View style={styles.avatarsRow}>
+                    {avatarUrls.map((url, i) => (
+                      <View
+                        key={url}
+                        style={[
+                          styles.miniAvatarContainer,
+                          i > 0 ? { marginLeft: -5 } : null,
+                          { zIndex: maxAvatars - i },
+                        ]}
+                      >
+                        <Image
+                          source={{ uri: url }}
+                          style={styles.miniAvatar}
+                          resizeMode="cover"
+                          onLoad={() => setImagesLoaded(prev => prev + 1)}
+                        />
+                      </View>
+                    ))}
+                  </View>
+                ) : (
+                  <Ionicons name="people" size={16} color={colors.white} />
+                )}
 
-            {/* Count badge */}
-            <Text style={styles.count}>{zone.count}</Text>
+                {/* Count badge */}
+                <Text style={styles.count}>{zone.count}</Text>
+              </>
+            )}
           </View>
         </View>
       </View>
@@ -87,28 +121,24 @@ export const ZoneBubble = memo<ZoneBubbleProps>(function ZoneBubble({ zone, onPr
   )
 })
 
-function getBubbleSize(count: number): number {
-  if (count < 20) return 52
-  if (count < 50) return 60
-  if (count < 100) return 68
-  return 76
-}
-
 const styles = StyleSheet.create({
-  outerGlow: {
-    backgroundColor: `${colors.secondary.main}18`,
+  wrapper: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  outerGlow: {
+    position: 'absolute',
+    backgroundColor: `${colors.secondary.main}18`,
   },
   borderRing: {
     backgroundColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.18,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
     shadowRadius: 6,
-    elevation: 5,
+    elevation: 6,
   },
   inner: {
     backgroundColor: colors.secondary.main,
@@ -122,10 +152,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   miniAvatarContainer: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    borderWidth: 1,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 1.5,
     borderColor: colors.white,
     overflow: 'hidden',
     backgroundColor: colors.tertiary.main,
@@ -136,8 +166,14 @@ const styles = StyleSheet.create({
   },
   count: {
     color: colors.white,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '800',
-    lineHeight: 15,
+    lineHeight: 14,
+  },
+  countSmall: {
+    color: colors.white,
+    fontSize: 11,
+    fontWeight: '800',
+    lineHeight: 13,
   },
 })

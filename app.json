@@ -13,7 +13,8 @@
       "backgroundColor": "#F3ECDC"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.medy.nomli"
     },
     "android": {
       "adaptiveIcon": {
@@ -47,7 +48,8 @@
           "photosPermission": "L'application a besoin d'accéder à vos photos pour choisir une photo de profil.",
           "cameraPermission": "L'application a besoin d'accéder à votre caméra pour prendre une photo de profil."
         }
-      ]
+      ],
+      "react-native-purchases"
     ]
   }
 }

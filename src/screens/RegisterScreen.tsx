@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
+  Pressable,
   StyleSheet,
   Alert,
   ActivityIndicator,
@@ -41,6 +42,9 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
   const [showTermsModal, setShowTermsModal] = useState(false)
   const [showLegalModal, setShowLegalModal] = useState(false)
   const { mutateAsync: signUp, isPending: loading } = useSignUp()
+  const emailRef = useRef<TextInput>(null)
+  const passwordRef = useRef<TextInput>(null)
+  const confirmPasswordRef = useRef<TextInput>(null)
 
   const handleRegister = async () => {
     // Vérification des champs requis
@@ -105,21 +109,28 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
         <View style={styles.content}>
           <Text style={styles.title}>{t('title')}</Text>
 
-          <TextInput
-            style={styles.input}
-            placeholder={t('email')}
-            placeholderTextColor={colors.text.muted}
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            textContentType="emailAddress"
-            autoComplete="email"
-            editable={!loading}
-          />
-
-          <View style={styles.passwordContainer}>
+          <Pressable onPress={() => emailRef.current?.focus()}>
             <TextInput
+              ref={emailRef}
+              style={styles.input}
+              placeholder={t('email')}
+              placeholderTextColor={colors.text.muted}
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              textContentType="emailAddress"
+              autoComplete="email"
+              editable={!loading}
+            />
+          </Pressable>
+
+          <Pressable
+            style={styles.passwordContainer}
+            onPress={() => passwordRef.current?.focus()}
+          >
+            <TextInput
+              ref={passwordRef}
               style={styles.passwordInput}
               placeholder={t('password')}
               placeholderTextColor={colors.text.muted}
@@ -140,10 +151,14 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
                 color={colors.text.tertiary}
               />
             </TouchableOpacity>
-          </View>
+          </Pressable>
 
-          <View style={styles.passwordContainer}>
+          <Pressable
+            style={styles.passwordContainer}
+            onPress={() => confirmPasswordRef.current?.focus()}
+          >
             <TextInput
+              ref={confirmPasswordRef}
               style={styles.passwordInput}
               placeholder={t('confirmPassword')}
               placeholderTextColor={colors.text.muted}
@@ -164,7 +179,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
                 color={colors.text.tertiary}
               />
             </TouchableOpacity>
-          </View>
+          </Pressable>
 
           <Text style={styles.passwordRequirements}>{t('passwordRequirements')}</Text>
 

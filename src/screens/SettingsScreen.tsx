@@ -1,21 +1,17 @@
 import React, { useState, useCallback } from 'react'
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-} from 'react-native'
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { colors, spacing, fontSize, fontWeight, borderRadius } from '../styles/theme'
-import { useDeleteAccount, useDeleteProfile } from '../hooks/useProfiles'
+import { useDeleteAccount } from '../hooks/useProfiles'
 import { useSignOut } from '../hooks'
+import { useRevenueCat } from '../hooks/useRevenueCat'
 import { LegalModal } from '../components/LegalModal'
-import { OnboardingPricingScreen } from './OnboardingPricingScreen'
+import { PremiumActiveCard } from '../components/settings/PremiumActiveCard'
+import { PremiumUpgradeCard } from '../components/settings/PremiumUpgradeCard'
+import { ManageSubscriptionCard } from '../components/settings/ManageSubscriptionCard'
+import { DeleteAccountModal } from '../components/settings/DeleteAccountModal'
 
 interface SettingsScreenProps {
   onClose: () => void
@@ -24,34 +20,11 @@ interface SettingsScreenProps {
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
   const { t } = useTranslation(['settings', 'common'])
   const { mutateAsync: signOut } = useSignOut()
-  const { mutate: deleteProfile, isPending: isDeletingProfile } = useDeleteProfile()
   const { mutate: deleteAccount, isPending: isDeletingAccount } = useDeleteAccount()
+  const { isPro, presentPaywall, presentCustomerCenter } = useRevenueCat()
 
   const [showLegalModal, setShowLegalModal] = useState(false)
-  const [showPremiumScreen, setShowPremiumScreen] = useState(false)
-
-  const isDeleting = isDeletingProfile || isDeletingAccount
-
-  const handleDeleteProfile = useCallback(() => {
-    Alert.alert(
-      t('common:profile.deleteTitle'),
-      t('common:profile.deleteConfirmation'),
-      [
-        { text: t('common:buttons.cancel'), style: 'cancel' },
-        {
-          text: t('common:buttons.delete'),
-          style: 'destructive',
-          onPress: () => {
-            deleteProfile(undefined, {
-              onError: (error: Error) => {
-                Alert.alert(t('common:errors.generic'), error.message)
-              },
-            })
-          },
-        },
-      ]
-    )
-  }, [deleteProfile, t])
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   const handleDeleteAccount = useCallback(() => {
     Alert.alert(
@@ -60,33 +33,20 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
       [
         { text: t('common:buttons.cancel'), style: 'cancel' },
         {
-          text: t('common:buttons.delete'),
+          text: t('common:buttons.continue'),
           style: 'destructive',
-          onPress: () => {
-            deleteAccount(undefined, {
-              onSuccess: async () => {
-                await signOut()
-              },
-              onError: (error: Error) => {
-                Alert.alert(t('common:errors.generic'), error.message)
-              },
-            })
-          },
+          onPress: () => setShowDeleteModal(true),
         },
       ]
     )
-  }, [deleteAccount, signOut, t])
+  }, [t])
 
-  const handlePremiumPress = () => {
-    setShowPremiumScreen(true)
+  const handlePremiumPress = async () => {
+    await presentPaywall()
   }
 
-  const handleClosePremium = () => {
-    setShowPremiumScreen(false)
-  }
-
-  if (showPremiumScreen) {
-    return <OnboardingPricingScreen onComplete={handleClosePremium} />
+  const handleManageSubscription = async () => {
+    await presentCustomerCenter()
   }
 
   return (
@@ -111,19 +71,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
         {/* Premium Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('sections.premium.title')}</Text>
-          <TouchableOpacity
-            style={styles.premiumCard}
-            onPress={handlePremiumPress}
-          >
-            <View style={styles.premiumIconContainer}>
-              <Ionicons name="star" size={28} color="#E07856" />
-            </View>
-            <View style={styles.premiumContent}>
-              <Text style={styles.premiumTitle}>{t('sections.premium.button')}</Text>
-              <Text style={styles.premiumDescription}>{t('sections.premium.description')}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={24} color={colors.text.tertiary} />
-          </TouchableOpacity>
+          {isPro ? (
+            <>
+              <PremiumActiveCard />
+              <ManageSubscriptionCard onPress={handleManageSubscription} />
+            </>
+          ) : (
+            <PremiumUpgradeCard onPress={handlePremiumPress} />
+          )}
         </View>
 
         {/* Legal Section */}
@@ -148,37 +103,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
           <Text style={styles.sectionTitle}>{t('sections.account.title')}</Text>
 
           <TouchableOpacity
-            style={[styles.deleteProfileButton, isDeleting && styles.buttonDisabled]}
-            onPress={handleDeleteProfile}
-            disabled={isDeleting}
-          >
-            {isDeletingProfile ? (
-              <ActivityIndicator color={colors.text.tertiary} size="small" />
-            ) : (
-              <>
-                <Ionicons name="trash-outline" size={20} color={colors.text.tertiary} />
-                <Text style={styles.deleteProfileButtonText}>
-                  {t('sections.account.deleteProfile')}
-                </Text>
-              </>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.deleteAccountButton, isDeleting && styles.buttonDisabled]}
+            style={[styles.deleteAccountButton, isDeletingAccount && styles.buttonDisabled]}
             onPress={handleDeleteAccount}
-            disabled={isDeleting}
+            disabled={isDeletingAccount}
           >
-            {isDeletingAccount ? (
-              <ActivityIndicator color={colors.error} size="small" />
-            ) : (
-              <>
-                <Ionicons name="warning-outline" size={20} color={colors.error} />
-                <Text style={styles.deleteAccountButtonText}>
-                  {t('sections.account.deleteAccount')}
-                </Text>
-              </>
-            )}
+            <Ionicons name="warning-outline" size={20} color={colors.error} />
+            <Text style={styles.deleteAccountButtonText}>
+              {t('sections.account.deleteAccount')}
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -188,6 +120,24 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
         visible={showLegalModal}
         onClose={() => setShowLegalModal(false)}
         showAcceptButton={false}
+      />
+
+      {/* Delete Account Modal (step 2) */}
+      <DeleteAccountModal
+        visible={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        isDeleting={isDeletingAccount}
+        onConfirm={() => {
+          deleteAccount(undefined, {
+            onSuccess: async () => {
+              setShowDeleteModal(false)
+              await signOut()
+            },
+            onError: (error: Error) => {
+              Alert.alert(t('common:errors.generic'), error.message)
+            },
+          })
+        }}
       />
     </SafeAreaView>
   )
@@ -205,7 +155,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.border.light,
   },
   backButton: {
     padding: spacing.xs,
@@ -234,35 +184,6 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     marginBottom: spacing.md,
   },
-  premiumCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF4E8',
-    padding: spacing.lg,
-    borderRadius: borderRadius.xl,
-    gap: spacing.md,
-  },
-  premiumIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.white,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  premiumContent: {
-    flex: 1,
-  },
-  premiumTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-    color: colors.text.primary,
-    marginBottom: spacing.xs,
-  },
-  premiumDescription: {
-    fontSize: fontSize.sm,
-    color: colors.text.secondary,
-  },
   legalCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -271,7 +192,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.xl,
     gap: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.border.light,
   },
   legalIconContainer: {
     width: 48,
@@ -288,23 +209,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.base,
     fontWeight: fontWeight.semibold,
     color: colors.text.primary,
-  },
-  deleteProfileButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: colors.text.tertiary,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    marginBottom: spacing.md,
-  },
-  deleteProfileButtonText: {
-    color: colors.text.tertiary,
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
   },
   deleteAccountButton: {
     flexDirection: 'row',

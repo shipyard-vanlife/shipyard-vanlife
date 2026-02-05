@@ -10,11 +10,13 @@ import { fr, enUS } from 'date-fns/locale'
 interface ActivityCardProps {
   activity: Activity
   onPress: () => void
+  isRestricted?: boolean
 }
 
 export const ActivityCard: React.FC<ActivityCardProps> = memo(function ActivityCard({
   activity,
   onPress,
+  isRestricted = false,
 }) {
   const { t, i18n } = useTranslation('activities')
   const locale = i18n.language === 'fr' ? fr : enUS
@@ -61,7 +63,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = memo(function ActivityC
             {activity.title}
           </Text>
           <Text style={styles.creator} numberOfLines={1}>
-            {t('card.by')} {activity.creator_username}
+            {isRestricted ? t('card.restrictedCreator') : `${t('card.by')} ${activity.creator_username}`}
           </Text>
         </View>
         <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
@@ -72,12 +74,25 @@ export const ActivityCard: React.FC<ActivityCardProps> = memo(function ActivityC
       {/* Location and date */}
       <View style={styles.infoRow}>
         <View style={styles.infoItem}>
-          <Ionicons name="location" size={14} color={colors.text.tertiary} />
-          <Text style={styles.infoText} numberOfLines={1}>
-            {activity.location_name}
-            {activity.distance_km !== null && activity.distance_km !== undefined ? (
-              <Text style={styles.distance}> · {activity.distance_km}km</Text>
-            ) : null}
+          <Ionicons
+            name={isRestricted ? 'lock-closed' : 'location'}
+            size={14}
+            color={isRestricted ? colors.secondary.main : colors.text.tertiary}
+          />
+          <Text
+            style={[styles.infoText, isRestricted && { color: colors.secondary.main, fontStyle: 'italic' }]}
+            numberOfLines={1}
+          >
+            {isRestricted
+              ? t('card.restrictedLocation')
+              : (
+                  <>
+                    {activity.location_name}
+                    {activity.distance_km !== null && activity.distance_km !== undefined ? (
+                      <Text style={styles.distance}> · {activity.distance_km}km</Text>
+                    ) : null}
+                  </>
+                )}
           </Text>
         </View>
       </View>
@@ -94,25 +109,33 @@ export const ActivityCard: React.FC<ActivityCardProps> = memo(function ActivityC
         <View style={styles.participants}>
           <Ionicons name="people" size={16} color={colors.text.tertiary} />
           <Text style={styles.participantsText}>
-            {activity.current_participants || 0}
-            {activity.max_participants ? `/${activity.max_participants}` : null}{' '}
-            {t('card.participants')}
+            {isRestricted
+              ? `? ${t('card.participants')}`
+              : (
+                  <>
+                    {activity.current_participants || 0}
+                    {activity.max_participants ? `/${activity.max_participants}` : null}{' '}
+                    {t('card.participants')}
+                  </>
+                )}
           </Text>
         </View>
 
         {/* Badges */}
-        <View style={styles.badges}>
-          {activity.is_creator ? (
-            <View style={[styles.badge, styles.creatorBadge]}>
-              <Text style={styles.badgeText}>{t('card.creator')}</Text>
-            </View>
-          ) : null}
-          {activity.is_participant ? (
-            <View style={[styles.badge, styles.participantBadge]}>
-              <Text style={styles.badgeText}>{t('card.participating')}</Text>
-            </View>
-          ) : null}
-        </View>
+        {!isRestricted ? (
+          <View style={styles.badges}>
+            {activity.is_creator ? (
+              <View style={[styles.badge, styles.creatorBadge]}>
+                <Text style={styles.badgeText}>{t('card.creator')}</Text>
+              </View>
+            ) : null}
+            {activity.is_participant ? (
+              <View style={[styles.badge, styles.participantBadge]}>
+                <Text style={styles.badgeText}>{t('card.participating')}</Text>
+              </View>
+            ) : null}
+          </View>
+        ) : null}
       </View>
     </TouchableOpacity>
   )

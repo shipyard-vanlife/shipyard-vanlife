@@ -1,28 +1,25 @@
 import { Ionicons } from '@expo/vector-icons'
 import { useQueryClient } from '@tanstack/react-query'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { ActivityDetailSheet } from '../components/map/ActivityDetailSheet'
+import { Alert, ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityDetailModal } from '../components/activities/ActivityDetailModal'
 import { StageDetailModal } from '../components/map/StageDetailModal'
-import { ZoneProfilesSheet } from '../components/map/ZoneProfilesSheet'
 import { MapView } from '../components/MapView'
 import { VisitorProfileSheet } from '../components/visitor'
 import { useNearbyActivities } from '../hooks/useActivities'
-import { useDebouncedValue } from '../hooks/useDebouncedValue'
+import { useMyFriends } from '../hooks/useConnections'
 import { useLocation } from '../hooks/useLocation'
 import { useMapOverlay } from '../hooks/useMapOverlay'
 import {
   profileKeys,
-  useViewportData,
-  useZoneProfiles,
+  useAllVisibleProfiles,
   useMyProfile,
   useUpdateLocation,
 } from '../hooks/useProfiles'
-import { useProfileZones } from '../hooks/useProfileZones'
+import { usePremiumGate } from '../hooks/usePremiumGate'
 import { colors } from '../styles/theme'
-import type { Activity } from '../types/activity'
-import type { MapZone, NearbyProfile, ViewportProfilesParams } from '../types/location'
+import type { NearbyProfile } from '../types/location'
 import type { Trip } from '../types/trip'
 
 interface HomeScreenProps {
@@ -41,21 +38,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const { data: profile, isLoading } = useMyProfile()
   const { mutate: updateLocation } = useUpdateLocation()
   const { isLoading: locationLoading, requestLocation } = useLocation()
+  const { canViewProfile, canViewNonFriendActivity, showPaywall } = usePremiumGate()
 
-  // Viewport-based profile loading (only fetch what's visible on map)
-  const [viewport, setViewport] = useState<ViewportProfilesParams | null>(null)
-  const debouncedViewport = useDebouncedValue(viewport, 500)
-  const { data: viewportData, isLoading: profilesLoading } = useViewportData(debouncedViewport)
+  // Track viewed profiles for free users (first 10 taps are free per session)
+  const viewedProfilesRef = useRef(new Set<string>())
 
-  // Split viewport data into dense zones + sparse individual profiles
-  const { zones, individualProfiles } = useProfileZones(viewportData ?? [])
-
-  // Zone profiles sheet state (on-demand loading when tapping a zone bubble)
-  const [selectedZone, setSelectedZone] = useState<MapZone | null>(null)
-  const [zoneSourceZone, setZoneSourceZone] = useState<MapZone | null>(null)
-  const { data: zoneProfiles, isLoading: zoneProfilesLoading } = useZoneProfiles(
-    selectedZone?.center.latitude ?? zoneSourceZone?.center.latitude ?? null,
-    selectedZone?.center.longitude ?? zoneSourceZone?.center.longitude ?? null
+  // Fetch ALL visible profiles within 20km — supercluster handles grouping on the map
+  const { data: allProfiles, isLoading: profilesLoading } = useAllVisibleProfiles(
+    profile?.location?.latitude ?? null,
+    profile?.location?.longitude ?? null
   )
 
   // Activities state
@@ -64,22 +55,43 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     profile?.location?.longitude ?? null,
     100
   )
-  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null)
+  const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null)
   const [showActivities, setShowActivities] = useState(true)
   const [showProfiles, setShowProfiles] = useState(true)
 
-  const handleViewportChange = useCallback((vp: ViewportProfilesParams) => {
-    setViewport({
-      ...vp,
-      userLat: profile?.location?.latitude ?? null,
-      userLng: profile?.location?.longitude ?? null,
-    })
-  }, [profile?.location?.latitude, profile?.location?.longitude])
+  // Friends for activity gating
+  const { data: friends } = useMyFriends()
+  const friendIds = useMemo(
+    () => new Set(friends?.filter(f => f.status === 'accepted').map(f => f.friend_id) ?? []),
+    [friends]
+  )
+
+  // Compute restriction for selected activity modal
+  const selectedActivityRestricted = useMemo(() => {
+    if (!selectedActivityId || !nearbyActivities) return false
+    const activity = nearbyActivities.find(a => a.id === selectedActivityId)
+    if (!activity) return false
+    return (
+      activity.creator_id !== profile?.id &&
+      !friendIds.has(activity.creator_id) &&
+      !canViewNonFriendActivity
+    )
+  }, [selectedActivityId, nearbyActivities, profile?.id, friendIds, canViewNonFriendActivity])
 
   // Map overlay state (consolidated via useReducer hook)
   const overlay = useMapOverlay(tripToShow, onClearTripToShow)
 
   const handleProfileSelect = async (selectedProf: NearbyProfile) => {
+    const viewed = viewedProfilesRef.current
+    // If this profile was already viewed, allow re-viewing for free
+    if (!viewed.has(selectedProf.id)) {
+      if (!canViewProfile(viewed.size)) {
+        Alert.alert(t('premium.upgradeTitle'), t('premium.mapLimit'))
+        await showPaywall()
+        return
+      }
+      viewed.add(selectedProf.id)
+    }
     await queryClient.invalidateQueries({ queryKey: profileKeys.byId(selectedProf.id) })
     overlay.selectProfile(selectedProf)
   }
@@ -91,41 +103,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const handleToggleActivities = useCallback(() => {
     setShowActivities(prev => !prev)
   }, [])
-
-  const handleZonePress = useCallback((zone: MapZone) => {
-    setSelectedZone(zone)
-  }, [])
-
-  const handleCloseZoneSheet = useCallback(() => {
-    setSelectedZone(null)
-    setZoneSourceZone(null)
-  }, [])
-
-  const handleZoneProfileSelect = useCallback(
-    async (selectedProf: NearbyProfile) => {
-      // Store the zone so we can come back to it
-      setZoneSourceZone(selectedZone)
-      // Close the zone list sheet
-      setSelectedZone(null)
-      // Open the profile
-      await queryClient.invalidateQueries({ queryKey: profileKeys.byId(selectedProf.id) })
-      overlay.selectProfile(selectedProf)
-    },
-    [selectedZone, queryClient, overlay]
-  )
-
-  const handleBackToZoneList = useCallback(() => {
-    // Close the profile and re-open the zone list
-    overlay.closeProfile()
-    setSelectedZone(zoneSourceZone)
-    setZoneSourceZone(null)
-  }, [overlay, zoneSourceZone])
-
-  const handleCloseProfileFromZone = useCallback(() => {
-    // Close everything — profile + zone context
-    overlay.closeProfile()
-    setZoneSourceZone(null)
-  }, [overlay])
 
   const handleEnableLocation = async () => {
     const loc = await requestLocation()
@@ -184,14 +161,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             city={profile.city}
             myAvatarUrl={profile.avatar_url}
             isProfileVisible={profile.is_visible}
-            zones={zones}
-            individualProfiles={individualProfiles}
+            profiles={allProfiles ?? []}
             onProfileSelect={handleProfileSelect}
-            onZonePress={handleZonePress}
             showProfiles={showProfiles}
             onToggleProfiles={handleToggleProfiles}
             nearbyActivities={nearbyActivities ?? []}
-            onActivitySelect={setSelectedActivity}
+            onActivitySelect={a => setSelectedActivityId(a.id)}
             showActivities={showActivities}
             onToggleActivities={handleToggleActivities}
             isDataLoading={isMapDataLoading}
@@ -200,7 +175,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             onStagePress={overlay.selectStage}
             onBackToProfile={overlay.sourceProfile ? overlay.backToProfile : undefined}
             sourceProfileUsername={overlay.sourceProfile?.username}
-            onViewportChange={handleViewportChange}
           />
 
           {/* City overlay */}
@@ -214,11 +188,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           {overlay.selectedProfile ? (
             <VisitorProfileSheet
               profile={overlay.selectedProfile}
-              onClose={zoneSourceZone ? handleCloseProfileFromZone : overlay.closeProfile}
-              onBack={zoneSourceZone ? handleBackToZoneList : undefined}
+              onClose={overlay.closeProfile}
               onMessage={() => {
                 overlay.closeProfile()
-                setZoneSourceZone(null)
                 onNavigateToChat?.()
               }}
               onViewStageOnMap={overlay.viewStageOnMap}
@@ -235,24 +207,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             />
           ) : null}
 
-          {/* Activity Detail Sheet */}
-          {selectedActivity ? (
-            <ActivityDetailSheet
-              activity={selectedActivity}
-              onClose={() => setSelectedActivity(null)}
-            />
-          ) : null}
-
-          {/* Zone Profiles Sheet */}
-          {selectedZone ? (
-            <ZoneProfilesSheet
-              profiles={zoneProfiles ?? []}
-              count={selectedZone.count}
-              isLoading={zoneProfilesLoading}
-              onProfileSelect={handleZoneProfileSelect}
-              onClose={handleCloseZoneSheet}
-            />
-          ) : null}
+          {/* Activity Detail Modal */}
+          <ActivityDetailModal
+            activityId={selectedActivityId}
+            onClose={() => setSelectedActivityId(null)}
+            isRestricted={selectedActivityRestricted}
+          />
         </>
       ) : (
         <View style={styles.noLocationContainer}>

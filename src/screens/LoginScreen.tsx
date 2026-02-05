@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -26,6 +27,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister }
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const { mutateAsync: signIn, isPending: loading } = useSignIn()
+  const emailRef = useRef<TextInput>(null)
+  const passwordRef = useRef<TextInput>(null)
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -55,21 +58,25 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister }
       <View style={styles.content}>
         <Text style={styles.title}>{t('title')}</Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder={t('email')}
-          placeholderTextColor={colors.text.muted}
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          textContentType="emailAddress"
-          autoComplete="email"
-          editable={!loading}
-        />
-
-        <View style={styles.passwordContainer}>
+        <Pressable onPress={() => emailRef.current?.focus()}>
           <TextInput
+            ref={emailRef}
+            style={styles.input}
+            placeholder={t('email')}
+            placeholderTextColor={colors.text.muted}
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            textContentType="emailAddress"
+            autoComplete="email"
+            editable={!loading}
+          />
+        </Pressable>
+
+        <Pressable style={styles.passwordContainer} onPress={() => passwordRef.current?.focus()}>
+          <TextInput
+            ref={passwordRef}
             style={styles.passwordInput}
             placeholder={t('password')}
             placeholderTextColor={colors.text.muted}
@@ -87,7 +94,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister }
               color={colors.text.tertiary}
             />
           </TouchableOpacity>
-        </View>
+        </Pressable>
 
         <TouchableOpacity
           style={[styles.button, loading && styles.buttonDisabled]}

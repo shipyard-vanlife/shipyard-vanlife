@@ -31,10 +31,11 @@ export {
   profileKeys,
   useAllVisibleProfiles,
   useCreateProfile,
-  useDeleteProfile,
   useMyProfile,
   useNearbyProfiles,
   useUpdateLocation,
   useUpdateProfile,
   useViewportProfiles,
 } from './useProfiles'
+export { usePremiumGate } from './usePremiumGate'
+export { useRevenueCat } from './useRevenueCat'

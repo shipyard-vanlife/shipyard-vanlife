@@ -5,7 +5,7 @@
     "logout": "Log out",
     "back": "Back",
     "delete": "Delete",
-    "deleteProfile": "Delete profile",
+    "continue": "Continue",
     "createProfile": "Create my profile",
     "save": "Save",
     "completeProfile": "Create my profile"
@@ -35,8 +35,6 @@
     "bioMax": "Maximum 500 characters"
   },
   "profile": {
-    "deleteTitle": "Delete profile?",
-    "deleteConfirmation": "You can create a new profile with the same account.",
     "deleteAccountTitle": "Delete your account?",
     "deleteAccountConfirmation": "This action is irreversible. Your account, profile, trips and photos will be permanently deleted.",
     "setupTitle": "Welcome!",
@@ -78,6 +76,12 @@
       "unavailable": "Location is not available on this device",
       "timeout": "Location request timed out. Try again.",
       "unknown": "An error occurred while getting location"
+    },
+    "tripRequiresLocation": {
+      "title": "Location required",
+      "message": "To create a trip, you need to allow location access. This is used to geolocate your stages and share your itinerary.",
+      "openSettings": "Open settings",
+      "cancel": "Cancel"
     }
   },
   "trip": {
@@ -166,7 +170,8 @@
     "accept": "Accept",
     "rejecting": "Declining...",
     "friend": "Friend",
-    "sending": "Sending..."
+    "sending": "Sending...",
+    "verificationRequired": "Verification required"
   },
   "moderation": {
     "reportProfile": "Report this profile",
@@ -197,5 +202,16 @@
   },
   "search": {
     "title": "Search"
+  },
+  "premium": {
+    "upgradeTitle": "Premium Feature",
+    "friendsLimit": "You've reached the limit of 8 friends. Upgrade to Nomli Pro to add more!",
+    "tripsLimit": "Create unlimited trips with Nomli Pro",
+    "stagesLimit": "You've reached the limit of {{max}} stages. Upgrade to Nomli Pro for up to 50!",
+    "mapLimit": "Discover all profiles around you with Nomli Pro",
+    "activitiesCreate": "Create your own activities with Nomli Pro",
+    "activitiesView": "Discover all activities with Nomli Pro",
+    "proBadge": "Pro",
+    "stagesCounter": "{{current}}/{{max}} stages"
   }
 }

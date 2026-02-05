@@ -4,6 +4,7 @@ import {
   Alert,
   Image,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -24,17 +25,20 @@ import {
   useCancelActivity,
 } from '../../hooks/useActivities'
 import { useMyProfile } from '../../hooks/useProfiles'
+import { usePremiumGate } from '../../hooks/usePremiumGate'
 import { ACTIVITY_TYPE_ICONS, ACTIVITY_TYPE_COLORS } from '../../types/activity'
 import { InviteFriendsModal } from './InviteFriendsModal'
 
 interface ActivityDetailModalProps {
   activityId: string | null
   onClose: () => void
+  isRestricted?: boolean
 }
 
 export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
   activityId,
   onClose,
+  isRestricted = false,
 }) => {
   const { t, i18n } = useTranslation('activities')
   const locale = i18n.language === 'fr' ? fr : enUS
@@ -46,8 +50,14 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
   const { mutate: joinActivity, isPending: isJoining } = useJoinActivity()
   const { mutate: leaveActivity, isPending: isLeaving } = useLeaveActivity()
   const { mutate: cancelActivity, isPending: isCancelling } = useCancelActivity()
+  const { showPaywall } = usePremiumGate()
 
   if (!activityId) return null
+
+  const handleUpgrade = async () => {
+    Alert.alert(t('common:premium.upgradeTitle'), t('common:premium.activitiesView'))
+    await showPaywall()
+  }
 
   const handleJoin = () => {
     joinActivity(activityId, {
@@ -160,16 +170,25 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
           {/* Organizer */}
           <View style={styles.organizerSection}>
             <Text style={styles.sectionTitle}>{t('detail.organizer')}</Text>
-            <View style={styles.organizer}>
-              {activity.creator_avatar ? (
-                <Image source={{ uri: activity.creator_avatar }} style={styles.organizerAvatar} />
-              ) : (
-                <View style={[styles.organizerAvatar, styles.organizerAvatarPlaceholder]}>
-                  <Ionicons name="person" size={20} color={colors.text.tertiary} />
+            {isRestricted ? (
+              <View style={styles.organizer}>
+                <View style={[styles.organizerAvatar, styles.restrictedAvatarPlaceholder]}>
+                  <Ionicons name="lock-closed" size={20} color={colors.secondary.main} />
                 </View>
-              )}
-              <Text style={styles.organizerName}>{activity.creator_username}</Text>
-            </View>
+                <Text style={styles.restrictedText}>{t('detail.restrictedOrganizer')}</Text>
+              </View>
+            ) : (
+              <View style={styles.organizer}>
+                {activity.creator_avatar ? (
+                  <Image source={{ uri: activity.creator_avatar }} style={styles.organizerAvatar} />
+                ) : (
+                  <View style={[styles.organizerAvatar, styles.organizerAvatarPlaceholder]}>
+                    <Ionicons name="person" size={20} color={colors.text.tertiary} />
+                  </View>
+                )}
+                <Text style={styles.organizerName}>{activity.creator_username}</Text>
+              </View>
+            )}
           </View>
 
           {/* When */}
@@ -184,30 +203,39 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
           {/* Location */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('detail.location')}</Text>
-            <View style={styles.infoRow}>
-              <Ionicons name="location" size={20} color={colors.secondary.main} />
-              <Text style={styles.infoText}>{activity.location_name}</Text>
-            </View>
-            {activity.location && (
-              <MapView
-                style={styles.map}
-                provider={PROVIDER_GOOGLE}
-                initialRegion={{
-                  latitude: activity.location.latitude,
-                  longitude: activity.location.longitude,
-                  latitudeDelta: 0.01,
-                  longitudeDelta: 0.01,
-                }}
-                scrollEnabled={false}
-                zoomEnabled={false}
-              >
-                <Marker
-                  coordinate={{
-                    latitude: activity.location.latitude,
-                    longitude: activity.location.longitude,
-                  }}
-                />
-              </MapView>
+            {isRestricted ? (
+              <View style={styles.restrictedLocationBox}>
+                <Ionicons name="lock-closed" size={24} color={colors.secondary.main} />
+                <Text style={styles.restrictedText}>{t('detail.restrictedLocation')}</Text>
+              </View>
+            ) : (
+              <>
+                <View style={styles.infoRow}>
+                  <Ionicons name="location" size={20} color={colors.secondary.main} />
+                  <Text style={styles.infoText}>{activity.location_name}</Text>
+                </View>
+                {activity.location && (
+                  <MapView
+                    style={styles.map}
+                    provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+                    initialRegion={{
+                      latitude: activity.location.latitude,
+                      longitude: activity.location.longitude,
+                      latitudeDelta: 0.01,
+                      longitudeDelta: 0.01,
+                    }}
+                    scrollEnabled={false}
+                    zoomEnabled={false}
+                  >
+                    <Marker
+                      coordinate={{
+                        latitude: activity.location.latitude,
+                        longitude: activity.location.longitude,
+                      }}
+                    />
+                  </MapView>
+                )}
+              </>
             )}
           </View>
 
@@ -222,100 +250,127 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
           {/* Participants */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>
-              {t('detail.participants')} ({participants?.length || 0}
-              {activity.max_participants ? `/${activity.max_participants}` : ''})
+              {t('detail.participants')}{' '}
+              {!isRestricted
+                ? `(${participants?.length || 0}${activity.max_participants ? `/${activity.max_participants}` : ''})`
+                : null}
             </Text>
-            {!activity.max_participants && (
-              <Text style={styles.unlimitedText}>{t('detail.unlimitedParticipants')}</Text>
-            )}
-            <View style={styles.participantsList}>
-              {participants?.map(participant => (
-                <View key={participant.id} style={styles.participantItem}>
-                  {participant.avatar_url ? (
-                    <Image
-                      source={{ uri: participant.avatar_url }}
-                      style={styles.participantAvatar}
-                    />
-                  ) : (
-                    <View style={[styles.participantAvatar, styles.participantAvatarPlaceholder]}>
-                      <Ionicons name="person" size={16} color={colors.text.tertiary} />
+            {isRestricted ? (
+              <View style={styles.restrictedLocationBox}>
+                <Ionicons name="lock-closed" size={24} color={colors.secondary.main} />
+                <Text style={styles.restrictedText}>{t('detail.restrictedParticipants')}</Text>
+              </View>
+            ) : (
+              <>
+                {!activity.max_participants && (
+                  <Text style={styles.unlimitedText}>{t('detail.unlimitedParticipants')}</Text>
+                )}
+                <View style={styles.participantsList}>
+                  {participants?.map(participant => (
+                    <View key={participant.id} style={styles.participantItem}>
+                      {participant.avatar_url ? (
+                        <Image
+                          source={{ uri: participant.avatar_url }}
+                          style={styles.participantAvatar}
+                        />
+                      ) : (
+                        <View
+                          style={[styles.participantAvatar, styles.participantAvatarPlaceholder]}
+                        >
+                          <Ionicons name="person" size={16} color={colors.text.tertiary} />
+                        </View>
+                      )}
+                      <Text style={styles.participantName}>{participant.username}</Text>
                     </View>
-                  )}
-                  <Text style={styles.participantName}>{participant.username}</Text>
+                  ))}
                 </View>
-              ))}
-            </View>
+              </>
+            )}
           </View>
         </ScrollView>
 
         {/* Action Buttons */}
         <View style={styles.footer}>
-          {/* Invite button for creator and participants */}
-          {(isCreator || isParticipant) && activity.status === 'open' && (
+          {isRestricted ? (
             <TouchableOpacity
-              style={[styles.actionButton, styles.inviteButton]}
-              onPress={() => setShowInviteModal(true)}
+              style={[styles.actionButton, styles.upgradeButton]}
+              onPress={handleUpgrade}
             >
-              <Ionicons name="person-add" size={20} color={colors.white} />
-              <Text style={styles.actionButtonText}>{t('actions.invite')}</Text>
-            </TouchableOpacity>
-          )}
-
-          {isCreator ? (
-            // Creator actions
-            <>
-              <TouchableOpacity
-                style={[styles.actionButton, styles.cancelButton]}
-                onPress={handleCancel}
-                disabled={isCancelling}
-              >
-                <Text style={styles.actionButtonText}>
-                  {isCancelling ? 'Annulation...' : t('actions.cancel')}
-                </Text>
-              </TouchableOpacity>
-            </>
-          ) : isParticipant ? (
-            // Participant actions
-            <TouchableOpacity
-              style={[styles.actionButton, styles.leaveButton]}
-              onPress={handleLeave}
-              disabled={isLeaving}
-            >
-              <Text style={styles.actionButtonText}>
-                {isLeaving ? 'Désinscription...' : t('actions.leave')}
-              </Text>
+              <Ionicons name="star" size={20} color={colors.white} />
+              <Text style={styles.actionButtonText}>{t('detail.upgradeToPro')}</Text>
             </TouchableOpacity>
           ) : (
-            // Non-participant actions
-            <TouchableOpacity
-              style={[
-                styles.actionButton,
-                styles.joinButton,
-                (isFull || activity.status !== 'open') && styles.actionButtonDisabled,
-              ]}
-              onPress={handleJoin}
-              disabled={isJoining || isFull || activity.status !== 'open'}
-            >
-              <Text style={styles.actionButtonText}>
-                {isJoining
-                  ? 'Inscription...'
-                  : isFull
-                    ? t('status.full')
-                    : activity.status === 'cancelled'
-                      ? t('status.cancelled')
-                      : t('actions.join')}
-              </Text>
-            </TouchableOpacity>
+            <>
+              {/* Invite button for creator and participants */}
+              {(isCreator || isParticipant) && activity.status === 'open' && (
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.inviteButton]}
+                  onPress={() => setShowInviteModal(true)}
+                >
+                  <Ionicons name="person-add" size={20} color={colors.white} />
+                  <Text style={styles.actionButtonText}>{t('actions.invite')}</Text>
+                </TouchableOpacity>
+              )}
+
+              {isCreator ? (
+                // Creator actions
+                <>
+                  <TouchableOpacity
+                    style={[styles.actionButton, styles.cancelButton]}
+                    onPress={handleCancel}
+                    disabled={isCancelling}
+                  >
+                    <Text style={styles.actionButtonText}>
+                      {isCancelling ? 'Annulation...' : t('actions.cancel')}
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              ) : isParticipant ? (
+                // Participant actions
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.leaveButton]}
+                  onPress={handleLeave}
+                  disabled={isLeaving}
+                >
+                  <Text style={styles.actionButtonText}>
+                    {isLeaving ? 'Désinscription...' : t('actions.leave')}
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                // Non-participant actions
+                <TouchableOpacity
+                  style={[
+                    styles.actionButton,
+                    styles.joinButton,
+                    (isFull || activity.status !== 'open') && styles.actionButtonDisabled,
+                  ]}
+                  onPress={handleJoin}
+                  disabled={isJoining || isFull || activity.status !== 'open'}
+                >
+                  <Text style={styles.actionButtonText}>
+                    {isJoining
+                      ? 'Inscription...'
+                      : isFull
+                        ? t('status.full')
+                        : activity.status === 'cancelled'
+                          ? t('status.cancelled')
+                          : t('actions.join')}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </>
           )}
         </View>
       </View>
 
       {/* Invite Friends Modal */}
-      <InviteFriendsModal
-        visible={showInviteModal}
-        activityId={activityId}
-        onClose={() => setShowInviteModal(false)}
-      />
+      {!isRestricted && (
+        <InviteFriendsModal
+          visible={showInviteModal}
+          activityId={activityId}
+          onClose={() => setShowInviteModal(false)}
+        />
+      )}
     </Modal>
   )
 }
@@ -479,9 +534,30 @@ const styles = StyleSheet.create({
   actionButtonDisabled: {
     opacity: 0.5,
   },
+  upgradeButton: {
+    backgroundColor: colors.secondary.main,
+  },
   actionButtonText: {
     fontSize: fontSize.lg,
     fontWeight: '600',
     color: colors.white,
+  },
+  restrictedAvatarPlaceholder: {
+    backgroundColor: colors.secondary.light + '30',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  restrictedText: {
+    fontSize: fontSize.md,
+    color: colors.secondary.main,
+    fontStyle: 'italic',
+  },
+  restrictedLocationBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.secondary.light + '15',
+    padding: spacing.lg,
+    borderRadius: borderRadius.md,
   },
 })

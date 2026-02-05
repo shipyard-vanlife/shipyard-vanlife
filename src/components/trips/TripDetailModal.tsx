@@ -198,7 +198,13 @@ export function TripDetailModal({ visible, tripId, onClose, onViewOnMap }: TripD
           {/* Actions */}
           <View style={styles.actions}>
             {/* Add Stage Button (only for active trips) */}
-            {trip.is_active ? <AddStageButton onSuccess={() => {}} /> : null}
+            {trip.is_active ? (
+              <AddStageButton
+                stagesCount={trip.stages_count}
+                lastStageLocation={trip.stages.length > 0 ? trip.stages[trip.stages.length - 1].location : null}
+                onSuccess={() => {}}
+              />
+            ) : null}
 
             {/* End Trip Button (only for active trips) */}
             {trip.is_active ? (

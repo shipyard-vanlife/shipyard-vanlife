@@ -9,7 +9,9 @@
     "by": "By",
     "participants": "participants",
     "creator": "Creator",
-    "participating": "Participating"
+    "participating": "Participating",
+    "restrictedCreator": "Vanlife community",
+    "restrictedLocation": "Upgrade to Pro to see"
   },
   "status": {
     "open": "Open",
@@ -38,7 +40,11 @@
     "participants": "Participants",
     "organizer": "Organizer",
     "noDescription": "No description",
-    "unlimitedParticipants": "Unlimited spots"
+    "unlimitedParticipants": "Unlimited spots",
+    "restrictedOrganizer": "Visible with Pro",
+    "restrictedLocation": "Location reserved for Pro members",
+    "restrictedParticipants": "Participants visible with Pro",
+    "upgradeToPro": "Upgrade to Pro"
   },
   "actions": {
     "join": "Join",

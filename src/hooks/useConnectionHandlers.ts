@@ -6,11 +6,13 @@ import {
   useAcceptConnection,
   useCheckConnection,
   useDeleteConnection,
+  useMyFriends,
   useRejectConnection,
   useSendConnectionRequest,
   connectionKeys,
 } from './useConnections'
 import { useMyProfile } from './useProfiles'
+import { usePremiumGate } from './usePremiumGate'
 
 interface UseConnectionHandlersOptions {
   /** Target profile ID */
@@ -68,9 +70,11 @@ export function useConnectionHandlers(
 
   const { t } = useTranslation('common')
   const queryClient = useQueryClient()
+  const { canAddFriend, showPaywall } = usePremiumGate()
 
   // Data hooks
   const { data: myProfile } = useMyProfile()
+  const { data: friends } = useMyFriends()
   const { data: connectionStatus, refetch: refetchConnection } = useCheckConnection(profileId)
 
   // Mutation hooks
@@ -106,6 +110,14 @@ export function useConnectionHandlers(
   // Send connection request
   const handleConnect = useCallback(async () => {
     if (!checkVerification()) return
+
+    // Check friend limit for free users
+    const friendsCount = friends?.filter(f => f.status === 'accepted').length ?? 0
+    if (!canAddFriend(friendsCount)) {
+      Alert.alert(t('premium.upgradeTitle'), t('premium.friendsLimit'))
+      await showPaywall()
+      return
+    }
 
     try {
       const { data: freshStatus } = await refetchConnection()
@@ -160,12 +172,23 @@ export function useConnectionHandlers(
     username,
     invalidateAndRefetch,
     onConnectSuccess,
+    friends,
+    canAddFriend,
+    showPaywall,
     t,
   ])
 
   // Accept connection request
-  const handleAccept = useCallback(() => {
+  const handleAccept = useCallback(async () => {
     if (!connectionStatus?.id) return
+
+    // Check friend limit for free users
+    const friendsCount = friends?.filter(f => f.status === 'accepted').length ?? 0
+    if (!canAddFriend(friendsCount)) {
+      Alert.alert(t('premium.upgradeTitle'), t('premium.friendsLimit'))
+      await showPaywall()
+      return
+    }
 
     acceptConnection(connectionStatus.id, {
       onSuccess: async () => {
@@ -177,7 +200,7 @@ export function useConnectionHandlers(
         Alert.alert(t('errors.error'), t('connection.acceptError'))
       },
     })
-  }, [connectionStatus?.id, acceptConnection, invalidateAndRefetch, username, onAcceptSuccess, t])
+  }, [connectionStatus?.id, acceptConnection, invalidateAndRefetch, username, onAcceptSuccess, friends, canAddFriend, showPaywall, t])
 
   // Reject connection request (with confirmation)
   const handleReject = useCallback(() => {

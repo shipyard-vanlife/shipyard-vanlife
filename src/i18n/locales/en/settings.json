@@ -4,11 +4,14 @@
     "premium": {
       "title": "Premium",
       "button": "Go Premium",
-      "description": "Unlock all app features"
+      "description": "Unlock all app features",
+      "active": "Your Nomli Pro subscription is active",
+      "activeDescription": "You have access to all features",
+      "manage": "Manage Subscription",
+      "manageDescription": "Modify, cancel, or view your subscription"
     },
     "account": {
       "title": "Account",
-      "deleteProfile": "Delete Profile",
       "deleteAccount": "Delete Account"
     },
     "legal": {
@@ -16,5 +19,14 @@
       "view": "View legal notice",
       "lastUpdated": "Last updated: {{date}}"
     }
+  },
+  "deleteAccount": {
+    "title": "Delete your account?",
+    "description": "This action is permanent and irreversible. All your data will be deleted.",
+    "consequence1": "Your profile and personal information",
+    "consequence2": "Your trips, stages and photos",
+    "consequence3": "Your connections and messages",
+    "inputLabel": "Type \"{{word}}\" to confirm",
+    "confirmWord": "DELETE"
   }
 }

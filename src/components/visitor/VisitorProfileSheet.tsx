@@ -125,6 +125,34 @@ export const VisitorProfileSheet: React.FC<VisitorProfileSheetProps> = ({
     }
   }, [connectionStatus?.id, onMessage])
 
+  const handleViewStageOnMap = useCallback(
+    (stage: PublicTripStage, trip: PublicTrip) => {
+      if (!isVerified) {
+        Alert.alert(
+          t('verification.mapBlockedTitle'),
+          t('verification.mapBlockedMessage') + '\n' + t('verification.mapBlockedNote')
+        )
+        return
+      }
+      onViewStageOnMap?.(stage, trip)
+    },
+    [isVerified, onViewStageOnMap, t]
+  )
+
+  const handleViewTripOnMap = useCallback(
+    (trip: PublicTrip) => {
+      if (!isVerified) {
+        Alert.alert(
+          t('verification.mapBlockedTitle'),
+          t('verification.mapBlockedMessage') + '\n' + t('verification.mapBlockedNote')
+        )
+        return
+      }
+      onViewTripOnMap?.(trip)
+    },
+    [isVerified, onViewTripOnMap, t]
+  )
+
   const handleReport = useCallback(() => {
     setShowReportModal(true)
   }, [])
@@ -281,8 +309,8 @@ export const VisitorProfileSheet: React.FC<VisitorProfileSheetProps> = ({
               profile={displayProfile}
               isLoading={isLoadingProfile}
               onPhotoPress={setZoomedImage}
-              onViewStageOnMap={onViewStageOnMap}
-              onViewTripOnMap={onViewTripOnMap}
+              onViewStageOnMap={handleViewStageOnMap}
+              onViewTripOnMap={handleViewTripOnMap}
               renderActions={() => (
                 <ConnectionActionButtons
                   connectionStatus={connectionStatus ?? null}

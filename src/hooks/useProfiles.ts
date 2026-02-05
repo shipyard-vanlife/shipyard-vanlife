@@ -87,15 +87,22 @@ export function useProfileById(userId: string | null) {
 // GET ALL VISIBLE PROFILES (returns BLURRED zone_center for privacy)
 // ============================================
 
-export function useAllVisibleProfiles() {
+export function useAllVisibleProfiles(
+  userLat: number | null = null,
+  userLng: number | null = null
+) {
   return useQuery({
     queryKey: profileKeys.allVisible(),
     queryFn: async (): Promise<NearbyProfile[]> => {
-      const { data, error } = await supabase.rpc('get_all_visible_profiles')
+      const { data, error } = await supabase.rpc('get_all_visible_profiles', {
+        user_lat: userLat ?? undefined,
+        user_lng: userLng ?? undefined,
+      })
 
       if (error) throw error
       return (data as NearbyProfile[]) ?? []
     },
+    enabled: userLat !== null && userLng !== null,
     staleTime: STALE_TIME,
   })
 }
@@ -181,7 +188,11 @@ export function useViewportData(params: ViewportProfilesParams | null) {
 // GET ZONE PROFILES (on-demand when user taps a dense zone bubble)
 // ============================================
 
-export function useZoneProfiles(zoneLat: number | null, zoneLng: number | null) {
+export function useZoneProfiles(
+  zoneLat: number | null,
+  zoneLng: number | null,
+  queryRadius: number = 0.01
+) {
   return useQuery({
     queryKey:
       zoneLat !== null && zoneLng !== null
@@ -190,12 +201,12 @@ export function useZoneProfiles(zoneLat: number | null, zoneLng: number | null) 
     queryFn: async (): Promise<NearbyProfile[]> => {
       if (zoneLat === null || zoneLng === null) return []
 
-      // Query the exact grid cell (~0.1° around the zone center)
+      // Query around zone center — radius adapts for merged zones
       const { data, error } = await supabase.rpc('get_profiles_in_zone', {
-        min_lat: zoneLat - 0.05,
-        max_lat: zoneLat + 0.05,
-        min_lng: zoneLng - 0.05,
-        max_lng: zoneLng + 0.05,
+        min_lat: zoneLat - queryRadius,
+        max_lat: zoneLat + queryRadius,
+        min_lng: zoneLng - queryRadius,
+        max_lng: zoneLng + queryRadius,
       })
 
       if (error) throw error

@@ -4,11 +4,14 @@
     "premium": {
       "title": "Premium",
       "button": "Passer Premium",
-      "description": "Débloquez toutes les fonctionnalités de l'application"
+      "description": "Débloquez toutes les fonctionnalités de l'application",
+      "active": "Votre abonnement Nomli Pro est actif",
+      "activeDescription": "Vous avez accès à toutes les fonctionnalités",
+      "manage": "Gérer mon abonnement",
+      "manageDescription": "Modifier, annuler ou consulter votre abonnement"
     },
     "account": {
       "title": "Compte",
-      "deleteProfile": "Supprimer le profil",
       "deleteAccount": "Supprimer le compte"
     },
     "legal": {
@@ -16,5 +19,14 @@
       "view": "Voir les mentions légales",
       "lastUpdated": "Dernière mise à jour : {{date}}"
     }
+  },
+  "deleteAccount": {
+    "title": "Supprimer ton compte ?",
+    "description": "Cette action est définitive et irréversible. Toutes tes données seront supprimées.",
+    "consequence1": "Ton profil et tes informations personnelles",
+    "consequence2": "Tes voyages, étapes et photos",
+    "consequence3": "Tes connexions et messages",
+    "inputLabel": "Tape « {{word}} » pour confirmer",
+    "confirmWord": "SUPPRIMER"
   }
 }
