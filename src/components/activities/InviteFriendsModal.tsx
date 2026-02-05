@@ -61,8 +61,9 @@ export const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
           setMessage('')
           onClose()
         },
-        onError: () => {
-          Alert.alert(t('alerts.error'))
+        onError: (error: any) => {
+          console.error('Invitation error:', error)
+          Alert.alert(t('alerts.error'), error?.message || 'Une erreur est survenue')
         },
       }
     )

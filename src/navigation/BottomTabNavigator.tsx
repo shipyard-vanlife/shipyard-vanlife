@@ -5,6 +5,7 @@ import { colors, shadows } from '../styles/theme'
 import { useMyFriends } from '../hooks/useConnections'
 import { useRealtimeConnections } from '../hooks/useRealtimeConnections'
 import { useMyInvitations } from '../hooks/useActivities'
+import { useMyActivityChats } from '../hooks/useActivityChat'
 
 type TabName = 'trips' | 'home' | 'activities' | 'chat' | 'search' | 'profile'
 
@@ -34,14 +35,16 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
 }) => {
   const { data: friends } = useMyFriends()
   const { data: invitations } = useMyInvitations()
+  const { data: activityChats } = useMyActivityChats()
 
   // Active le realtime pour mettre à jour le badge en temps réel
   useRealtimeConnections()
 
-  const totalUnreadCount = useMemo(
-    () => friends?.reduce((total, friend) => total + (friend.unread_count || 0), 0) || 0,
-    [friends]
-  )
+  const totalUnreadCount = useMemo(() => {
+    const friendsUnread = friends?.reduce((total, friend) => total + (friend.unread_count || 0), 0) || 0
+    const activityUnread = activityChats?.reduce((total, chat) => total + (chat.unread_count || 0), 0) || 0
+    return friendsUnread + activityUnread
+  }, [friends, activityChats])
 
   const pendingInvitationsCount = useMemo(
     () => invitations?.filter(inv => inv.status === 'pending').length || 0,

@@ -73,18 +73,32 @@ export function useSendActivityMessage() {
       } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      const { error } = await supabase.from('activity_messages').insert({
+      console.log('Sending message:', { activity_id: input.activity_id, sender_id: user.id, content: input.content })
+
+      const { data, error } = await supabase.from('activity_messages').insert({
         activity_id: input.activity_id,
         sender_id: user.id,
         content: input.content,
-      })
+      }).select()
 
-      if (error) throw error
+      console.log('Insert result:', { data, error })
+
+      if (error) {
+        console.error('Error sending message:', error)
+        throw error
+      }
     },
     onSuccess: (_, variables) => {
+      console.log('Message sent successfully, invalidating queries')
       queryClient.invalidateQueries({
         queryKey: activityChatKeys.messages(variables.activity_id),
       })
+      queryClient.invalidateQueries({
+        queryKey: activityChatKeys.myChats(),
+      })
+    },
+    onError: (error) => {
+      console.error('Send message mutation error:', error)
     },
   })
 }
@@ -143,7 +157,9 @@ export function useRealtimeActivityMessages(activityId: string | null) {
 // ============================================
 
 export function useMyActivityChats() {
-  return useQuery({
+  const queryClient = useQueryClient()
+
+  const query = useQuery({
     queryKey: activityChatKeys.myChats(),
     queryFn: async (): Promise<ActivityChatPreview[]> => {
       const { data, error } = await supabase.rpc('get_my_activity_chats')
@@ -152,5 +168,66 @@ export function useMyActivityChats() {
       return (data as ActivityChatPreview[]) ?? []
     },
     staleTime: 1000 * 30, // 30 seconds
+  })
+
+  // Realtime pour rafraîchir quand des messages arrivent
+  const {
+    data: session,
+  } = useQuery({
+    queryKey: ['session'],
+    queryFn: async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+      return session
+    },
+  })
+
+  const userId = session?.user?.id
+
+  useEffect(() => {
+    if (!userId) return
+
+    const channel = supabase
+      .channel(`my-activity-chats-${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'activity_messages',
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: activityChatKeys.myChats() })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [userId, queryClient])
+
+  return query
+}
+
+// ============================================
+// MARK ACTIVITY CHAT AS READ
+// ============================================
+
+export function useMarkActivityChatAsRead() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (activityId: string): Promise<void> => {
+      const { data, error } = await supabase.rpc('mark_activity_messages_as_read', {
+        p_activity_id: activityId,
+      })
+
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: activityChatKeys.myChats() })
+    },
   })
 }

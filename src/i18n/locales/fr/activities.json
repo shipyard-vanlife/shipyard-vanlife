@@ -119,5 +119,11 @@
     "invitationDeclined": "Invitation refusée",
     "activityFull": "L'activité est complète",
     "error": "Une erreur est survenue"
+  },
+  "chat": {
+    "groupTitle": "Chat de groupe",
+    "subtitle": "Groupe d'activité",
+    "placeholder": "Écris un message...",
+    "empty": "Aucun message pour le moment"
   }
 }
