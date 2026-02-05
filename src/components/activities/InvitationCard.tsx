@@ -35,8 +35,9 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({ invitation, onPr
             Alert.alert(t('alerts.error'), data.error)
           }
         },
-        onError: () => {
-          Alert.alert(t('alerts.error'))
+        onError: (error: any) => {
+          console.error('Accept invitation error:', error)
+          Alert.alert(t('alerts.error'), error?.message || 'Une erreur est survenue')
         },
       }
     )

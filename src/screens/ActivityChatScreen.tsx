@@ -11,6 +11,7 @@ import {
   Platform,
   ActivityIndicator,
   Image,
+  Alert,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
@@ -20,8 +21,9 @@ import {
   useSendActivityMessage,
   useEnsureActivityChat,
   useRealtimeActivityMessages,
+  useMarkActivityChatAsRead,
 } from '../hooks/useActivityChat'
-import { useActivityById } from '../hooks/useActivities'
+import { useActivityById, useLeaveActivity } from '../hooks/useActivities'
 import { ActivityMessage } from '../types/activityChat'
 import { format } from 'date-fns'
 import { fr, enUS } from 'date-fns/locale'
@@ -50,9 +52,30 @@ export const ActivityChatScreen: React.FC<ActivityChatScreenProps> = ({ route, n
   const { data: activity } = useActivityById(activityId)
   const { data: messages, isLoading: loadingMessages } = useActivityMessages(activityId)
   const { mutate: sendMessage, isPending: sending } = useSendActivityMessage()
+  const { mutate: leaveActivity, isPending: isLeaving } = useLeaveActivity()
+  const { mutate: markAsRead } = useMarkActivityChatAsRead()
 
   // Subscribe to realtime
   useRealtimeActivityMessages(activityId)
+
+  // Marquer comme lu quand on ouvre le chat
+  useEffect(() => {
+    markAsRead(activityId)
+  }, [activityId, markAsRead])
+
+  // Marquer comme lu quand on reçoit de nouveaux messages
+  useEffect(() => {
+    if (messages && messages.length > 0) {
+      markAsRead(activityId)
+    }
+  }, [messages?.length, activityId, markAsRead])
+
+  // Marquer comme lu quand on ferme le chat (cleanup)
+  useEffect(() => {
+    return () => {
+      markAsRead(activityId)
+    }
+  }, [activityId, markAsRead])
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -78,6 +101,28 @@ export const ActivityChatScreen: React.FC<ActivityChatScreenProps> = ({ route, n
         },
       }
     )
+  }
+
+  const handleLeave = () => {
+    Alert.alert(t('alerts.leaveConfirm'), '', [
+      { text: t('common:buttons.cancel'), style: 'cancel' },
+      {
+        text: t('actions.leave'),
+        style: 'destructive',
+        onPress: () => {
+          leaveActivity(activityId, {
+            onSuccess: () => {
+              Alert.alert(t('alerts.leaveSuccess'))
+              navigation.goBack()
+            },
+            onError: (error: any) => {
+              console.error('Leave activity error:', error)
+              Alert.alert(t('alerts.error'), error?.message || 'Une erreur est survenue')
+            },
+          })
+        },
+      },
+    ])
   }
 
   const renderMessage = ({ item }: { item: ActivityMessage }) => {
@@ -119,12 +164,12 @@ export const ActivityChatScreen: React.FC<ActivityChatScreenProps> = ({ route, n
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
-      >
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? -90 : 0}
+    >
+      <SafeAreaView style={styles.container} edges={['top']}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
@@ -132,10 +177,15 @@ export const ActivityChatScreen: React.FC<ActivityChatScreenProps> = ({ route, n
           </TouchableOpacity>
           <View style={styles.headerInfo}>
             <Text style={styles.headerTitle} numberOfLines={1}>
-              {activity?.title || t('chat.title')}
+              {activity?.title || t('chat.groupTitle')}
             </Text>
-            <Text style={styles.headerSubtitle}>{t('chat.title')}</Text>
+            <Text style={styles.headerSubtitle}>{t('chat.subtitle')}</Text>
           </View>
+          {!activity?.is_creator && activity?.is_participant && (
+            <TouchableOpacity onPress={handleLeave} style={styles.leaveButton} disabled={isLeaving}>
+              <Ionicons name="exit-outline" size={24} color="#EF4444" />
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Messages */}
@@ -180,8 +230,8 @@ export const ActivityChatScreen: React.FC<ActivityChatScreenProps> = ({ route, n
             )}
           </TouchableOpacity>
         </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   )
 }
 
@@ -206,6 +256,10 @@ const styles = StyleSheet.create({
   },
   backButton: {
     marginRight: spacing.md,
+  },
+  leaveButton: {
+    marginLeft: spacing.md,
+    padding: spacing.xs,
   },
   headerInfo: {
     flex: 1,
@@ -294,19 +348,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: 100,
     backgroundColor: colors.white,
     borderTopWidth: 1,
     borderTopColor: colors.border.light,
-    gap: spacing.sm,
+    gap: spacing.md,
   },
   input: {
     flex: 1,
-    backgroundColor: colors.primary.light,
-    borderRadius: borderRadius.lg,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    fontSize: fontSize.md,
+    backgroundColor: colors.primary.main,
+    borderRadius: borderRadius.xl,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    fontSize: fontSize.base,
     color: colors.text.primary,
     maxHeight: 100,
   },
@@ -315,10 +370,11 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     backgroundColor: colors.secondary.main,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
   },
   sendButtonDisabled: {
+    backgroundColor: colors.text.tertiary,
     opacity: 0.5,
   },
 })
