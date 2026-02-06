@@ -10,6 +10,7 @@ import type {
 } from '../types/activity'
 import { isRlsPolicyError } from '../utils/validation/errors'
 import { useRevenueCatContext } from '../contexts/RevenueCatContext'
+import { activityChatKeys } from './useActivityChat'
 
 // Query keys
 export const activityKeys = {
@@ -177,6 +178,11 @@ export function useActivityById(activityId: string | null) {
     queryFn: async (): Promise<Activity | null> => {
       if (!activityId) return null
 
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      const userId = user?.id
+
       const { data, error } = await supabase
         .from('activities')
         .select(
@@ -223,11 +229,23 @@ export function useActivityById(activityId: string | null) {
         }
       }
 
+      // Check if user is participant
+      const { data: participantData } = await supabase
+        .from('activity_participants')
+        .select('id')
+        .eq('activity_id', activityId)
+        .eq('user_id', userId || '')
+        .single()
+
+      const creator = data.creator as unknown as { username: string; avatar_url: string } | null
+
       return {
         ...data,
-        creator_username: data.creator?.username,
-        creator_avatar: data.creator?.avatar_url,
+        creator_username: creator?.username,
+        creator_avatar: creator?.avatar_url,
         location,
+        is_creator: data.creator_id === userId,
+        is_participant: !!participantData,
       } as Activity
     },
     enabled: !!activityId,
@@ -307,10 +325,17 @@ export function useCreateActivity() {
         }
         throw error
       }
+
+      // Ensure activity chat exists when creating
+      await supabase.rpc('ensure_activity_chat', {
+        p_activity_id: data.id,
+      })
+
       return data.id
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: activityKeys.all })
+      queryClient.invalidateQueries({ queryKey: activityChatKeys.myChats() })
     },
   })
 }
@@ -374,6 +399,14 @@ export function useJoinActivity() {
       })
 
       if (error) throw error
+
+      // Ensure activity chat exists when joining
+      if ((data as { success: boolean }).success) {
+        await supabase.rpc('ensure_activity_chat', {
+          p_activity_id: activityId,
+        })
+      }
+
       return data as { success: boolean; error?: string }
     },
     onSuccess: (data, activityId) => {
@@ -381,6 +414,7 @@ export function useJoinActivity() {
         queryClient.invalidateQueries({ queryKey: activityKeys.all })
         queryClient.invalidateQueries({ queryKey: activityKeys.byId(activityId) })
         queryClient.invalidateQueries({ queryKey: activityKeys.participants(activityId) })
+        queryClient.invalidateQueries({ queryKey: activityChatKeys.myChats() })
       }
     },
   })
@@ -410,6 +444,7 @@ export function useLeaveActivity() {
       queryClient.invalidateQueries({ queryKey: activityKeys.all })
       queryClient.invalidateQueries({ queryKey: activityKeys.byId(activityId) })
       queryClient.invalidateQueries({ queryKey: activityKeys.participants(activityId) })
+      queryClient.invalidateQueries({ queryKey: activityChatKeys.myChats() })
     },
   })
 }
@@ -423,6 +458,14 @@ export function useCancelActivity() {
 
   return useMutation({
     mutationFn: async (activityId: string): Promise<void> => {
+      // Supprimer toutes les invitations pending pour cette activité
+      await supabase
+        .from('activity_invitations')
+        .delete()
+        .eq('activity_id', activityId)
+        .eq('status', 'pending')
+
+      // Mettre à jour le statut de l'activité
       const { error } = await supabase
         .from('activities')
         .update({ status: 'cancelled' })
@@ -433,6 +476,7 @@ export function useCancelActivity() {
     onSuccess: (_, activityId) => {
       queryClient.invalidateQueries({ queryKey: activityKeys.all })
       queryClient.invalidateQueries({ queryKey: activityKeys.byId(activityId) })
+      queryClient.invalidateQueries({ queryKey: activityKeys.invitations() })
     },
   })
 }
@@ -521,6 +565,13 @@ export function useSendInvitation() {
       } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
+      // Supprimer les anciennes invitations pour éviter les doublons
+      await supabase
+        .from('activity_invitations')
+        .delete()
+        .eq('activity_id', activityId)
+        .in('invitee_id', inviteeIds)
+
       const invitations = inviteeIds.map(inviteeId => ({
         activity_id: activityId,
         inviter_id: user.id,
@@ -552,18 +603,36 @@ export function useRespondToInvitation() {
     }: {
       invitationId: string
       response: 'accepted' | 'declined'
-    }): Promise<{ success: boolean; error?: string; status?: string }> => {
+    }): Promise<{ success: boolean; error?: string; status?: string; activityId?: string }> => {
+      // Get the invitation details first to get the activity_id
+      const { data: invitation } = await supabase
+        .from('activity_invitations')
+        .select('activity_id')
+        .eq('id', invitationId)
+        .single()
+
       const { data, error } = await supabase.rpc('respond_to_activity_invitation', {
         p_invitation_id: invitationId,
         p_response: response,
       })
 
       if (error) throw error
-      return data as { success: boolean; error?: string; status?: string }
+
+      const result = data as { success: boolean; error?: string; status?: string }
+
+      // Ensure activity chat exists when accepting invitation
+      if (response === 'accepted' && result.success && invitation?.activity_id) {
+        await supabase.rpc('ensure_activity_chat', {
+          p_activity_id: invitation.activity_id,
+        })
+      }
+
+      return { ...result, activityId: invitation?.activity_id }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: activityKeys.all })
       queryClient.invalidateQueries({ queryKey: activityKeys.invitations() })
+      queryClient.invalidateQueries({ queryKey: activityChatKeys.myChats() })
     },
   })
 }
@@ -583,6 +652,28 @@ export function useDeclineInvitation() {
 
       if (error) throw error
       return data as { success: boolean; error?: string }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: activityKeys.invitations() })
+    },
+  })
+}
+
+// ============================================
+// DELETE INVITATION (pour l'inviteur)
+// ============================================
+
+export function useDeleteInvitation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (invitationId: string): Promise<void> => {
+      const { error } = await supabase
+        .from('activity_invitations')
+        .delete()
+        .eq('id', invitationId)
+
+      if (error) throw error
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: activityKeys.invitations() })

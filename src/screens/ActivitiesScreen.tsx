@@ -174,7 +174,7 @@ export const ActivitiesScreen: React.FC = () => {
               <View
                 style={{
                   position: 'absolute',
-                  top: -5,
+                  top: -15,
                   right: -10,
                   backgroundColor: colors.secondary.main,
                   borderRadius: 10,

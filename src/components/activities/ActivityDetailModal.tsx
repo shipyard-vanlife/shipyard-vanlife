@@ -66,12 +66,15 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
           Alert.alert(t('alerts.joinSuccess'))
         } else if (data.error === 'Activity is full') {
           Alert.alert(t('alerts.activityFull'))
+        } else if (data.error === 'Already a participant') {
+          Alert.alert(t('alerts.error'), 'Tu participes déjà à cette activité')
         } else {
           Alert.alert(t('alerts.error'), data.error)
         }
       },
-      onError: () => {
-        Alert.alert(t('alerts.error'))
+      onError: (error: any) => {
+        console.error('Join activity error:', error)
+        Alert.alert(t('alerts.error'), error?.message || 'Une erreur est survenue')
       },
     })
   }
@@ -86,9 +89,11 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
           leaveActivity(activityId, {
             onSuccess: () => {
               Alert.alert(t('alerts.leaveSuccess'))
+              onClose()
             },
-            onError: () => {
-              Alert.alert(t('alerts.error'))
+            onError: (error: any) => {
+              console.error('Leave activity error:', error)
+              Alert.alert(t('alerts.error'), error?.message || 'Une erreur est survenue')
             },
           })
         },
@@ -482,17 +487,22 @@ const styles = StyleSheet.create({
   participantsList: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.md,
+    gap: spacing.sm,
   },
   participantItem: {
+    flexDirection: 'row',
     alignItems: 'center',
-    width: 60,
+    backgroundColor: colors.background.card,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.full,
+    marginBottom: spacing.xs,
   },
   participantAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginBottom: spacing.xs,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: spacing.xs,
   },
   participantAvatarPlaceholder: {
     backgroundColor: colors.primary.light,
@@ -500,9 +510,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   participantName: {
-    fontSize: fontSize.xs,
-    color: colors.text.secondary,
-    textAlign: 'center',
+    fontSize: fontSize.sm,
+    color: colors.text.primary,
+    fontWeight: '500',
+    maxWidth: 120,
   },
   footer: {
     padding: spacing.lg,
@@ -510,6 +521,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border.light,
     gap: spacing.sm,
+    marginBottom: spacing.md
   },
   actionButton: {
     flexDirection: 'row',
