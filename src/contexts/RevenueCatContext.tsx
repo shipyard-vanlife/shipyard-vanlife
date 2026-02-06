@@ -4,6 +4,7 @@ import type { CustomerInfo, PurchasesOfferings, PurchasesPackage } from 'react-n
 import RevenueCatUI, { PAYWALL_RESULT } from 'react-native-purchases-ui'
 import { useAuth } from './AuthContext'
 import { initializeRevenueCat, hasProEntitlement } from '../services/revenueCat'
+import { useMyProfile } from '../hooks/useProfiles'
 import type { RevenueCatContextType } from '../types/subscription'
 
 const RevenueCatContext = createContext<RevenueCatContextType | undefined>(undefined)
@@ -18,6 +19,7 @@ function createDeferred() {
 
 export const RevenueCatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth()
+  const { data: myProfile } = useMyProfile()
 
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null)
   const [offerings, setOfferings] = useState<PurchasesOfferings | null>(null)
@@ -27,7 +29,8 @@ export const RevenueCatProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   // Resolves once SDK's internal getCustomerInfo (from configure) completes
   const sdkReadyRef = useRef(createDeferred())
 
-  const isPro = hasProEntitlement(customerInfo)
+  // Hybrid sync: SDK entitlement OR server-side is_pro flag
+  const isPro = hasProEntitlement(customerInfo) || myProfile?.is_pro === true
 
   // 1. Register listener FIRST — catches configure()'s internal fetch + real-time updates
   useEffect(() => {

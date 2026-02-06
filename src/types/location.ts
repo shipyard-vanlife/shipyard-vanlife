@@ -77,6 +77,7 @@ export interface PublicProfile {
   bio: string | null
   photos: string[]
   verification_status: import('./verification').VerificationStatus | null
+  is_pro?: boolean
 }
 
 // Parameters for nearby profiles query

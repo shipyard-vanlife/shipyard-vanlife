@@ -8,6 +8,8 @@ import type {
   UpdateStageNoteInput,
 } from '../types/trip'
 import { useQueryMutation } from './useQueryMutation'
+import { isRlsPolicyError } from '../utils/validation/errors'
+import { useRevenueCatContext } from '../contexts/RevenueCatContext'
 
 // Query keys
 export const tripKeys = {
@@ -83,6 +85,8 @@ export function useTripDetail(tripId: string | null) {
 // ============================================
 
 export function useCreateTrip() {
+  const { presentPaywall } = useRevenueCatContext()
+
   return useQueryMutation({
     mutationFn: async (input: CreateTripInput): Promise<string> => {
       const { data, error } = await supabase.rpc('create_new_trip', {
@@ -93,7 +97,13 @@ export function useCreateTrip() {
         p_country: input.country ?? null,
       })
 
-      if (error) throw error
+      if (error) {
+        if (isRlsPolicyError(error)) {
+          presentPaywall()
+          throw new Error('PREMIUM_REQUIRED')
+        }
+        throw error
+      }
       return data as string
     },
     invalidateKeys: [tripKeys.list(), tripKeys.active()],
@@ -123,6 +133,8 @@ export function useEndTrip() {
 // ============================================
 
 export function useAddStage() {
+  const { presentPaywall } = useRevenueCatContext()
+
   return useQueryMutation({
     mutationFn: async (input: AddStageInput): Promise<string> => {
       const { data, error } = await supabase.rpc('add_trip_stage', {
@@ -132,7 +144,13 @@ export function useAddStage() {
         country_code: input.country ?? null,
       })
 
-      if (error) throw error
+      if (error) {
+        if (isRlsPolicyError(error)) {
+          presentPaywall()
+          throw new Error('PREMIUM_REQUIRED')
+        }
+        throw error
+      }
       return data as string
     },
     // Invalidate all trip-related queries to refresh list, active, and detail views

@@ -53,6 +53,9 @@ export interface UserProfile {
   invitation_count: number
   // Username update tracking
   username_last_updated_at: string | null
+  // Premium subscription
+  is_pro: boolean
+  pro_expires_at: string | null
 }
 
 // Profile creation/update payload

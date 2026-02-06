@@ -8,6 +8,8 @@ import type {
   CreateActivityInput,
   UpdateActivityInput,
 } from '../types/activity'
+import { isRlsPolicyError } from '../utils/validation/errors'
+import { useRevenueCatContext } from '../contexts/RevenueCatContext'
 
 // Query keys
 export const activityKeys = {
@@ -273,6 +275,7 @@ export function useActivityParticipants(activityId: string | null) {
 
 export function useCreateActivity() {
   const queryClient = useQueryClient()
+  const { presentPaywall } = useRevenueCatContext()
 
   return useMutation({
     mutationFn: async (input: CreateActivityInput): Promise<string> => {
@@ -297,7 +300,13 @@ export function useCreateActivity() {
         .select('id')
         .single()
 
-      if (error) throw error
+      if (error) {
+        if (isRlsPolicyError(error)) {
+          presentPaywall()
+          throw new Error('PREMIUM_REQUIRED')
+        }
+        throw error
+      }
       return data.id
     },
     onSuccess: () => {
