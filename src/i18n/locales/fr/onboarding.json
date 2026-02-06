@@ -6,7 +6,7 @@
     "map": {
       "title": "Repérez les utilisateurs\nautour de vous",
       "description": "Visualisez la communauté en temps réel. Consultez les profils, la localisation et connectez-vous avec ceux sur la même route.",
-      "badge": "12 Nomades proches"
+      "badge": "12 utilisateurs proches"
     },
     "trips": {
       "title": "Documentez vos\naventures",
@@ -51,7 +51,7 @@
       },
       "search": {
         "title": "Recherche Avancée",
-        "description": "Filtrez les nomades par compétences (mécanique, cuisine...)."
+        "description": "Filtrez les utilisateurs par compétences (mécanique, cuisine...)."
       },
       "friends": {
         "title": "Amis Illimités",
@@ -64,7 +64,8 @@
     },
     "dontShowAgain": "Ne plus afficher cet écran au démarrage",
     "premiumButton": "Passer Premium",
-    "price": "7€ / mois",
+    "priceMonthly": "4,99€ / mois",
+    "priceYearly": "39,99€ / an",
     "cancelText": "Annulable à tout moment",
     "terms": "CGU",
     "privacy": "Confidentialité",

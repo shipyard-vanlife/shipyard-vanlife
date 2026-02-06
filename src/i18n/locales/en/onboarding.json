@@ -6,7 +6,7 @@
     "map": {
       "title": "Find users\naround you",
       "description": "View the community in real-time. Check profiles, locations and connect with those on the same road.",
-      "badge": "12 Nomads nearby"
+      "badge": "12 users nearby"
     },
     "trips": {
       "title": "Document your\nadventures",
@@ -51,7 +51,7 @@
       },
       "search": {
         "title": "Advanced Search",
-        "description": "Filter nomads by skills (mechanics, cooking...)."
+        "description": "Filter users by skills (mechanics, cooking...)."
       },
       "friends": {
         "title": "Unlimited Friends",
@@ -64,7 +64,8 @@
     },
     "dontShowAgain": "Don't show this screen at startup anymore",
     "premiumButton": "Go Premium",
-    "price": "€7 / month",
+    "priceMonthly": "€4.99 / month",
+    "priceYearly": "€39.99 / year",
     "cancelText": "Cancellable at any time.",
     "terms": "Terms",
     "privacy": "Privacy",
