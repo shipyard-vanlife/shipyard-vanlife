@@ -69,6 +69,8 @@
     "cancelText": "Annulable à tout moment",
     "terms": "CGU",
     "privacy": "Confidentialité",
-    "restore": "Restaurer"
+    "restore": "Restaurer",
+    "devTitle": "Mode développement",
+    "devMessage": "Les achats ne sont pas disponibles en mode développement. Utilisez un build natif pour tester."
   }
 }

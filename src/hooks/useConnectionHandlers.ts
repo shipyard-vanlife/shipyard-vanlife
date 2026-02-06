@@ -5,8 +5,8 @@ import { useQueryClient } from '@tanstack/react-query'
 import {
   useAcceptConnection,
   useCheckConnection,
+  useConnectionSlotsUsed,
   useDeleteConnection,
-  useMyFriends,
   useRejectConnection,
   useSendConnectionRequest,
   connectionKeys,
@@ -74,7 +74,7 @@ export function useConnectionHandlers(
 
   // Data hooks
   const { data: myProfile } = useMyProfile()
-  const { data: friends } = useMyFriends()
+  const slotsUsed = useConnectionSlotsUsed()
   const { data: connectionStatus, refetch: refetchConnection } = useCheckConnection(profileId)
 
   // Mutation hooks
@@ -111,9 +111,8 @@ export function useConnectionHandlers(
   const handleConnect = useCallback(async () => {
     if (!checkVerification()) return
 
-    // Check friend limit for free users
-    const friendsCount = friends?.filter(f => f.status === 'accepted').length ?? 0
-    if (!canAddFriend(friendsCount)) {
+    // Check friend limit for free users (accepted + pending sent)
+    if (!canAddFriend(slotsUsed)) {
       Alert.alert(t('premium.upgradeTitle'), t('premium.friendsLimit'))
       await showPaywall()
       return
@@ -172,7 +171,7 @@ export function useConnectionHandlers(
     username,
     invalidateAndRefetch,
     onConnectSuccess,
-    friends,
+    slotsUsed,
     canAddFriend,
     showPaywall,
     t,
@@ -182,9 +181,8 @@ export function useConnectionHandlers(
   const handleAccept = useCallback(async () => {
     if (!connectionStatus?.id) return
 
-    // Check friend limit for free users
-    const friendsCount = friends?.filter(f => f.status === 'accepted').length ?? 0
-    if (!canAddFriend(friendsCount)) {
+    // Check friend limit for free users (accepted + pending sent)
+    if (!canAddFriend(slotsUsed)) {
       Alert.alert(t('premium.upgradeTitle'), t('premium.friendsLimit'))
       await showPaywall()
       return
@@ -200,7 +198,7 @@ export function useConnectionHandlers(
         Alert.alert(t('errors.error'), t('connection.acceptError'))
       },
     })
-  }, [connectionStatus?.id, acceptConnection, invalidateAndRefetch, username, onAcceptSuccess, friends, canAddFriend, showPaywall, t])
+  }, [connectionStatus?.id, acceptConnection, invalidateAndRefetch, username, onAcceptSuccess, slotsUsed, canAddFriend, showPaywall, t])
 
   // Reject connection request (with confirmation)
   const handleReject = useCallback(() => {

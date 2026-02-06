@@ -28,6 +28,7 @@ import {
   useRespondToHelpRequest,
   useCancelHelpRequest,
 } from '../hooks/useHelpRequests'
+import { usePremiumGate } from '../hooks/usePremiumGate'
 import { Message, HelpRequest } from '../types/chat'
 
 interface ConversationScreenProps {
@@ -50,6 +51,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
   const queryClient = useQueryClient()
   const { data: myProfile } = useMyProfile()
   const { data: friendProfile } = useProfileById(friendId || null)
+  const { isPro, showPaywall } = usePremiumGate()
 
   const [selectedFriend, setSelectedFriend] = useState<string | null>(null)
   const [showHelpModal, setShowHelpModal] = useState(false)
@@ -220,8 +222,21 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ route, n
           <Text style={styles.headerTitle}>{friendName}</Text>
         </View>
 
-        <TouchableOpacity style={styles.helpButton} onPress={() => setShowHelpModal(true)}>
-          <Ionicons name="help-circle-outline" size={28} color={colors.secondary.main} />
+        <TouchableOpacity
+          style={styles.helpButton}
+          onPress={() => {
+            if (!isPro) {
+              showPaywall()
+              return
+            }
+            setShowHelpModal(true)
+          }}
+        >
+          <Ionicons
+            name={isPro ? 'help-circle-outline' : 'lock-closed'}
+            size={isPro ? 28 : 22}
+            color={isPro ? colors.secondary.main : colors.text.muted}
+          />
         </TouchableOpacity>
       </View>
 

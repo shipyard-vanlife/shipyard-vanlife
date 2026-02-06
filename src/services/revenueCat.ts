@@ -1,11 +1,20 @@
-import Purchases, { LOG_LEVEL } from 'react-native-purchases'
+import Constants from 'expo-constants'
 import type { CustomerInfo } from 'react-native-purchases'
+import Purchases, { LOG_LEVEL } from 'react-native-purchases'
 import { ENTITLEMENT_ID } from '../types/subscription'
 
 const API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY || ''
 
+/** True when running inside Expo Go (native SDK unavailable) */
+export const isExpoGo = Constants.appOwnership === 'expo'
+
 /** Initialize RevenueCat SDK. Call once at app startup. */
 export async function initializeRevenueCat(): Promise<void> {
+  if (isExpoGo) {
+    console.warn('[RevenueCat] Running in Expo Go — SDK disabled, using DB-only isPro')
+    return
+  }
+
   if (__DEV__) {
     Purchases.setLogLevel(LOG_LEVEL.VERBOSE)
   }

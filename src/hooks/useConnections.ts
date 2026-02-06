@@ -1,10 +1,11 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { supabase } from '../services/supabase'
-import { Connection, ConnectionRequest, Friend } from '../types/chat'
+import { Connection, ConnectionRequest, ConnectionWithProfiles, Friend } from '../types/chat'
 import { useQueryMutation } from './useQueryMutation'
 import { isRlsPolicyError } from '../utils/validation/errors'
 import { useRevenueCatContext } from '../contexts/RevenueCatContext'
+import { useAuth } from '../contexts/AuthContext'
 
 // Query keys
 export const connectionKeys = {
@@ -99,6 +100,20 @@ export function useAllConnections() {
     staleTime: STALE_TIME,
     refetchOnWindowFocus: true,
   })
+}
+
+// Count connection slots used (accepted + pending sent by me)
+// Matches backend logic in send_connection_request RPC
+export function useConnectionSlotsUsed(): number {
+  const { user } = useAuth()
+  const { data: connections } = useAllConnections()
+
+  return useMemo(() => {
+    if (!connections || !user) return 0
+    return connections.filter(
+      (c) => c.status === 'accepted' || (c.status === 'pending' && c.sender_id === user.id)
+    ).length
+  }, [connections, user])
 }
 
 // Send a connection request
