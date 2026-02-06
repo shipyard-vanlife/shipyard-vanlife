@@ -10,11 +10,11 @@
     },
     "dataCollected": {
       "title": "2. Données collectées",
-      "content": "Nous collectons les données suivantes :\n\n• Données de compte : nom, prénom, email, photo de profil\n• Données de localisation : position géographique (avec votre consentement explicite)\n• Données de voyage : itinéraires, étapes, photos de voyages\n• Données de communication : messages, demandes d'aide\n• Données techniques : type d'appareil, système d'exploitation, logs de connexion"
+      "content": "Nous collectons les données suivantes :\n\n• Données de compte : nom, prénom, email, photo de profil ainsi que photo de profil avec la plaque d'immatriculation de votre van\n• Données de localisation : position géographique (avec votre consentement explicite)\n• Données de voyage : itinéraires, étapes, photos de voyages\n• Données de communication : messages, demandes d'aide\n• Données techniques : type d'appareil, système d'exploitation, logs de connexion"
     },
     "dataUsage": {
       "title": "3. Utilisation des données",
-      "content": "Vos données sont utilisées pour :\n\n• Fournir et améliorer nos services\n• Vous connecter avec d'autres utilisateurs nomades\n• Afficher votre localisation sur la carte (avec votre consentement)\n• Personnaliser votre expérience\n• Assurer la sécurité de l'application\n• Vous envoyer des notifications importantes\n\nNous ne vendons jamais vos données à des tiers."
+      "content": "Vos données sont utilisées pour :\n\n• Fournir et améliorer nos services\n• Vous connecter avec d'autres utilisateurs\n• Afficher votre localisation sur la carte (avec votre consentement)\n• Personnaliser votre expérience\n• Assurer la sécurité de l'application\n• Vous envoyer des notifications importantes\n\nNous ne vendons jamais vos données à des tiers."
     },
     "dataSharing": {
       "title": "4. Partage des données",
@@ -26,7 +26,7 @@
     },
     "rights": {
       "title": "6. Vos droits (RGPD)",
-      "content": "Conformément au RGPD, vous disposez des droits suivants :\n\n• Droit d'accès à vos données\n• Droit de rectification\n• Droit à l'effacement (droit à l'oubli)\n• Droit à la portabilité\n• Droit d'opposition au traitement\n• Droit de limitation du traitement\n\nPour exercer vos droits, contactez-nous à : privacy@nomli.app"
+      "content": "Conformément au RGPD, vous disposez des droits suivants :\n\n• Droit d'accès à vos données\n• Droit de rectification\n• Droit à l'effacement (droit à l'oubli)\n• Droit à la portabilité\n• Droit d'opposition au traitement\n• Droit de limitation du traitement\n\nPour exercer vos droits, contactez-nous à : app.nomli@gmail.com"
     },
     "security": {
       "title": "7. Sécurité",
@@ -38,11 +38,11 @@
     },
     "minors": {
       "title": "9. Mineurs",
-      "content": "Nomli est réservé aux utilisateurs âgés de 16 ans et plus. Nous ne collectons pas sciemment de données concernant des mineurs de moins de 16 ans."
+      "content": "Nomli est réservé aux utilisateurs âgés de 18 ans et plus."
     },
     "contact": {
       "title": "10. Contact",
-      "content": "Pour toute question relative à cette politique de confidentialité ou à vos données personnelles, contactez-nous :\n\nEmail : privacy@nomli.app\nCourrier : [Adresse du siège social]"
+      "content": "Pour toute question relative à cette politique de confidentialité ou à vos données personnelles, contactez-nous :\n\nEmail : app.nomli@gmail.com"
     }
   }
 }

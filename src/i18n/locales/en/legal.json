@@ -8,11 +8,11 @@
   "sections": {
     "editor": {
       "title": "1. Application Publisher",
-      "content": "Nomli is a mobile application developed and published by [Your company/organization name].\n\nHeadquarters: [Address]\nContact email: contact@nomli.app\nPhone number: [Number]"
+      "content": "Nomli is a mobile application developed and published by Alexandre Goumain and Médy Daniel.\n\nContact email: app.nomli@gmail.com"
     },
     "purpose": {
       "title": "2. Purpose of the Application",
-      "content": "Nomli is a social network application for nomadic travelers. It allows users to:\n- Locate and connect with other users\n- Share trips and travel journals\n- Request and offer help to the community\n- Participate in community events"
+      "content": "Nomli is a social network application for travelers. It allows users to:\n- Locate and connect with other users\n- Share trips and travel journals\n- Request and offer help to the community\n- Participate in community events"
     },
     "data": {
       "title": "3. Personal Data",

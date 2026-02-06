@@ -10,7 +10,7 @@
     },
     "account": {
       "title": "2. Account Creation",
-      "content": "To use Nomli, you must create an account by providing accurate and up-to-date information. You are responsible for the confidentiality of your login credentials.\n\nYou must:\n- Be at least 16 years old\n- Provide truthful information\n- Not create multiple accounts\n- Not impersonate others"
+      "content": "To use Nomli, you must create an account by providing accurate and up-to-date information. You are responsible for the confidentiality of your login credentials.\n\nYou must:\n- Be at least 18 years old\n- Provide truthful information\n- Not create multiple accounts\n- Not impersonate others"
     },
     "usage": {
       "title": "3. Acceptable Use",
@@ -22,7 +22,7 @@
     },
     "premium": {
       "title": "5. Premium Services",
-      "content": "Nomli offers premium features accessible through a paid subscription of €7 per month.\n\nThe subscription is:\n- Billed monthly\n- Auto-renewable\n- Cancellable at any time\n\nNo refunds will be provided for unused periods."
+      "content": "Nomli offers premium features accessible through a paid subscription of €4.99 per month or €39.99 per year.\n\nThe subscription is:\n- Billed monthly or annually\n- Auto-renewable\n- Cancellable at any time\n\nNo refunds will be provided for unused periods."
     },
     "termination": {
       "title": "6. Suspension and Termination",

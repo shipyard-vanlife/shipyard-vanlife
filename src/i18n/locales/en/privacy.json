@@ -10,11 +10,11 @@
     },
     "dataCollected": {
       "title": "2. Data Collected",
-      "content": "We collect the following data:\n\n• Account data: name, email, profile picture\n• Location data: geographic position (with your explicit consent)\n• Travel data: itineraries, stops, travel photos\n• Communication data: messages, help requests\n• Technical data: device type, operating system, connection logs"
+      "content": "We collect the following data:\n\n• Account data: name, email, profile picture and profile picture with your van's license plate\n• Location data: geographic position (with your explicit consent)\n• Travel data: itineraries, stops, travel photos\n• Communication data: messages, help requests\n• Technical data: device type, operating system, connection logs"
     },
     "dataUsage": {
       "title": "3. Data Usage",
-      "content": "Your data is used to:\n\n• Provide and improve our services\n• Connect you with other nomadic users\n• Display your location on the map (with your consent)\n• Personalize your experience\n• Ensure application security\n• Send you important notifications\n\nWe never sell your data to third parties."
+      "content": "Your data is used to:\n\n• Provide and improve our services\n• Connect you with other users\n• Display your location on the map (with your consent)\n• Personalize your experience\n• Ensure application security\n• Send you important notifications\n\nWe never sell your data to third parties."
     },
     "dataSharing": {
       "title": "4. Data Sharing",
@@ -26,7 +26,7 @@
     },
     "rights": {
       "title": "6. Your Rights (GDPR)",
-      "content": "In accordance with GDPR, you have the following rights:\n\n• Right of access to your data\n• Right of rectification\n• Right to erasure (right to be forgotten)\n• Right to portability\n• Right to object to processing\n• Right to restriction of processing\n\nTo exercise your rights, contact us at: privacy@nomli.app"
+      "content": "In accordance with GDPR, you have the following rights:\n\n• Right of access to your data\n• Right of rectification\n• Right to erasure (right to be forgotten)\n• Right to portability\n• Right to object to processing\n• Right to restriction of processing\n\nTo exercise your rights, contact us at: app.nomli@gmail.com"
     },
     "security": {
       "title": "7. Security",
@@ -38,11 +38,11 @@
     },
     "minors": {
       "title": "9. Minors",
-      "content": "Nomli is reserved for users aged 16 and over. We do not knowingly collect data concerning minors under 16."
+      "content": "Nomli is reserved for users aged 18 and over."
     },
     "contact": {
       "title": "10. Contact",
-      "content": "For any questions regarding this privacy policy or your personal data, contact us:\n\nEmail: privacy@nomli.app\nMail: [Head office address]"
+      "content": "For any questions regarding this privacy policy or your personal data, contact us:\n\nEmail: app.nomli@gmail.com"
     }
   }
 }

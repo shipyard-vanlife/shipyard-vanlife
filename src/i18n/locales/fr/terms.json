@@ -10,7 +10,7 @@
     },
     "account": {
       "title": "2. Création de compte",
-      "content": "Pour utiliser Nomli, vous devez créer un compte en fournissant des informations exactes et à jour. Vous êtes responsable de la confidentialité de vos identifiants de connexion.\n\nVous devez :\n- Être âgé d'au moins 16 ans\n- Fournir des informations véridiques\n- Ne pas créer plusieurs comptes\n- Ne pas usurper l'identité d'autrui"
+      "content": "Pour utiliser Nomli, vous devez créer un compte en fournissant des informations exactes et à jour. Vous êtes responsable de la confidentialité de vos identifiants de connexion.\n\nVous devez :\n- Être âgé d'au moins 18 ans\n- Fournir des informations véridiques\n- Ne pas créer plusieurs comptes\n- Ne pas usurper l'identité d'autrui"
     },
     "usage": {
       "title": "3. Utilisation acceptable",
@@ -22,7 +22,7 @@
     },
     "premium": {
       "title": "5. Services Premium",
-      "content": "Nomli propose des fonctionnalités premium accessibles via un abonnement payant de 7€ par mois.\n\nL'abonnement est :\n- Facturé mensuellement\n- Renouvelable automatiquement\n- Annulable à tout moment\n\nAucun remboursement ne sera effectué pour les périodes non utilisées."
+      "content": "Nomli propose des fonctionnalités premium accessibles via un abonnement payant de 4,99€ par mois ou 39,99€ par an.\n\nL'abonnement est :\n- Facturé mensuellement ou annuellement\n- Renouvelable automatiquement\n- Annulable à tout moment\n\nAucun remboursement ne sera effectué pour les périodes non utilisées."
     },
     "termination": {
       "title": "6. Suspension et résiliation",

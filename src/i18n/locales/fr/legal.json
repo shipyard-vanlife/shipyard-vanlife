@@ -8,11 +8,11 @@
   "sections": {
     "editor": {
       "title": "1. Éditeur de l'application",
-      "content": "Nomli est une application mobile développée et éditée par [Nom de votre société/organisation].\n\nSiège social : [Adresse]\nEmail de contact : contact@nomli.app\nNuméro de téléphone : [Numéro]"
+      "content": "Nomli est une application mobile développée et éditée par Alexandre Goumain et Médy Daniel.\n\nEmail de contact : app.nomli@gmail.com"
     },
     "purpose": {
       "title": "2. Objet de l'application",
-      "content": "Nomli est une application de réseau social destinée aux voyageurs nomades. Elle permet de :\n- Localiser et connecter avec d'autres utilisateurs\n- Partager ses voyages et carnets de route\n- Demander et offrir de l'aide à la communauté\n- Participer à des événements communautaires"
+      "content": "Nomli est une application de réseau social destinée aux voyageurs. Elle permet de :\n- Localiser et connecter avec d'autres utilisateurs\n- Partager ses voyages et carnets de route\n- Demander et offrir de l'aide à la communauté\n- Participer à des événements communautaires"
     },
     "data": {
       "title": "3. Données personnelles",
