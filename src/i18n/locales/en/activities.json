@@ -142,5 +142,11 @@
     "cancelledDesc": "Activity cancelled",
     "finished": "Finished",
     "finishedDesc": "Past activity"
+},
+
+  "verificationPending": {
+    "title": "Verification in progress",
+    "message": "You'll be able to discover and join activities once your verification is approved."
   }
+
 }

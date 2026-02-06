@@ -15,6 +15,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import {
   useMyFriends,
   useConnectionRequests,
+  useConnectionSlotsUsed,
   useAcceptConnection,
   useRejectConnection,
   useDeleteConnection,
@@ -68,6 +69,7 @@ const { t } = useTranslation(['common', 'chat'])
   const { mutate: deleteConnection } = useDeleteConnection()
   const { data: myProfile } = useMyProfile()
   const { canAddFriend, showPaywall } = usePremiumGate()
+  const slotsUsed = useConnectionSlotsUsed()
 
   const handleAcceptConnection = useCallback(
     async (connectionId: string) => {
@@ -75,16 +77,15 @@ const { t } = useTranslation(['common', 'chat'])
         Alert.alert(t('verification.requiredTitle'), t('verification.requiredMessage'))
         return
       }
-      // Check friend limit for free users
-      const friendsCount = friends?.filter(f => f.status === 'accepted').length ?? 0
-      if (!canAddFriend(friendsCount)) {
+      // Check friend limit for free users (accepted + pending sent)
+      if (!canAddFriend(slotsUsed)) {
         Alert.alert(t('premium.upgradeTitle'), t('premium.friendsLimit'))
         await showPaywall()
         return
       }
       acceptConnection(connectionId)
     },
-    [myProfile?.verification_status, t, acceptConnection, friends, canAddFriend, showPaywall]
+    [myProfile?.verification_status, t, acceptConnection, slotsUsed, canAddFriend, showPaywall]
   )
 
   // Build lookup map for O(1) friend access by connectionId

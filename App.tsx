@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { StatusBar } from 'expo-status-bar'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet, View, Text } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { AuthProvider, useAuth } from './src/contexts/AuthContext'
@@ -35,10 +35,19 @@ type VerificationFlow = 'choice' | 'invitation' | 'verification'
 // Composant pour les utilisateurs authentifiés
 function AuthenticatedApp() {
   const { data: profile, isLoading } = useMyProfile()
-  const { hasCompletedOnboarding, isLoading: isOnboardingLoading } = useOnboarding()
+  const { hasCompletedOnboarding, isLoading: isOnboardingLoading, resetOnboarding } = useOnboarding()
   const [verificationFlow, setVerificationFlow] = useState<VerificationFlow>('choice')
+  const [verificationSubmitted, setVerificationSubmitted] = useState(false)
   const [onboardingScreen, setOnboardingScreen] = useState<'slides' | 'pricing'>('slides')
   const [skipOnboarding, setSkipOnboarding] = useState(false)
+
+  // Reset onboarding pour les nouveaux utilisateurs
+  // AsyncStorage persiste entre comptes sur le même device
+  useEffect(() => {
+    if (!isLoading && profile && !profile.username && hasCompletedOnboarding) {
+      resetOnboarding()
+    }
+  }, [isLoading, profile?.username, hasCompletedOnboarding, resetOnboarding])
 
   if (isLoading || isOnboardingLoading) {
     return (
@@ -50,7 +59,9 @@ function AuthenticatedApp() {
 
   // Déterminer si l'utilisateur a besoin de vérification
   // Un profil peut exister (créé par use_invitation_code) mais sans vérification
-  const needsVerification = !profile || !profile.verification_status
+  // verificationSubmitted bypasse le check quand l'utilisateur vient de soumettre
+  const needsVerification =
+    !verificationSubmitted && (!profile || !profile.verification_status)
 
   // Cas 1: Pas de profil OU profil sans vérification → Flow de vérification
   if (needsVerification) {
@@ -79,11 +90,11 @@ function AuthenticatedApp() {
     }
 
     // Étape 2b/3: Vérification d'identité (même flow pour les deux chemins)
-    return <VerificationScreen />
+    return <VerificationScreen onVerificationComplete={() => setVerificationSubmitted(true)} />
   }
 
   // Cas 2: Profil vérifié mais pas de username → Profile Setup
-  if (!profile.username) {
+  if (!profile?.username) {
     return <ProfileSetupScreen />
   }
 

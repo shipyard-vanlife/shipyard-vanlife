@@ -19,8 +19,10 @@ import { NomadProfileCard } from '../components/search/NomadProfileCard'
 import { VisitorProfileSheet } from '../components/visitor'
 import { useMyProfile, profileKeys } from '../hooks/useProfiles'
 import { supabase } from '../services/supabase'
-import { useSendConnectionRequest, useAllConnections, useMyFriends } from '../hooks/useConnections'
+import { useSendConnectionRequest, useAllConnections, useConnectionSlotsUsed } from '../hooks/useConnections'
 import { usePremiumGate } from '../hooks/usePremiumGate'
+import { ProfileLimitBanner } from '../components/ui/ProfileLimitBanner'
+import { FREE_LIMITS } from '../config/premiumLimits'
 import { SkillType, ALL_SKILLS } from '../types/user'
 import type { NearbyProfile } from '../types/location'
 
@@ -78,8 +80,8 @@ export const SearchScreen: React.FC = () => {
   const { data: myProfile } = useMyProfile()
   const { mutate: sendRequest } = useSendConnectionRequest()
   const { data: allConnections } = useAllConnections()
-  const { data: myFriends } = useMyFriends()
-  const { canAddFriend, showPaywall } = usePremiumGate()
+  const { isPro, canAddFriend, showPaywall } = usePremiumGate()
+  const slotsUsed = useConnectionSlotsUsed()
 
   const [profiles, setProfiles] = useState<NearbyProfile[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -220,9 +222,8 @@ export const SearchScreen: React.FC = () => {
         return
       }
 
-      // Check friend limit for free users
-      const friendsCount = myFriends?.filter(f => f.status === 'accepted').length ?? 0
-      if (!canAddFriend(friendsCount)) {
+      // Check friend limit for free users (accepted + pending sent)
+      if (!canAddFriend(slotsUsed)) {
         Alert.alert(t('common:premium.upgradeTitle'), t('common:premium.friendsLimit'))
         await showPaywall()
         return
@@ -242,7 +243,7 @@ export const SearchScreen: React.FC = () => {
         },
       })
     },
-    [myProfile?.verification_status, t, sendRequest, myFriends, canAddFriend, showPaywall]
+    [myProfile?.verification_status, t, sendRequest, slotsUsed, canAddFriend, showPaywall]
   )
 
   const handleProfileSelect = useCallback(
@@ -276,12 +277,33 @@ export const SearchScreen: React.FC = () => {
     [connectionStatusMap, handleAddFriend, handleProfileSelect]
   )
 
-  // Load more when reaching end of list
+  // Load more when reaching end of list (disabled for free users — backend caps at 10)
   const handleLoadMore = useCallback(() => {
-    if (!isLoading && hasMore) {
+    if (!isLoading && hasMore && isPro) {
       setPage(prev => prev + 1)
     }
-  }, [isLoading, hasMore])
+  }, [isLoading, hasMore, isPro])
+
+  const isApproved = myProfile?.verification_status === 'approved'
+
+  if (!isApproved) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
+            <View style={styles.headerLeft}>
+              <Text style={styles.headerTitle}>{t('title')}</Text>
+            </View>
+          </View>
+        </View>
+        <View style={styles.emptyContainer}>
+          <Ionicons name="shield-checkmark-outline" size={64} color={colors.text.tertiary} />
+          <Text style={styles.emptyText}>{t('verificationPending.title')}</Text>
+          <Text style={styles.emptySubtext}>{t('verificationPending.message')}</Text>
+        </View>
+      </View>
+    )
+  }
 
   return (
     <View style={styles.container}>
@@ -335,13 +357,25 @@ export const SearchScreen: React.FC = () => {
       {/* Quick filters */}
       <View style={styles.filtersScrollContainer}>
         <TouchableOpacity
-          style={styles.filterPill}
-          onPress={() => setShowSkillModal(true)}
+          style={[styles.filterPill, !isPro && styles.filterPillLocked]}
+          onPress={() => {
+            if (!isPro) {
+              showPaywall()
+              return
+            }
+            setShowSkillModal(true)
+          }}
           activeOpacity={0.7}
         >
-          <Ionicons name="grid" size={16} color={colors.text.secondary} />
-          <Text style={styles.filterPillLabel}>{t('filters.skillsFilter')}</Text>
-          <Ionicons name="chevron-down" size={14} color={colors.text.tertiary} />
+          <Ionicons name="grid" size={16} color={isPro ? colors.text.secondary : colors.text.muted} />
+          <Text style={[styles.filterPillLabel, !isPro && styles.filterPillLabelLocked]}>
+            {t('filters.skillsFilter')}
+          </Text>
+          {isPro ? (
+            <Ionicons name="chevron-down" size={14} color={colors.text.tertiary} />
+          ) : (
+            <Ionicons name="lock-closed" size={14} color={colors.text.muted} />
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.filterIconButton} activeOpacity={0.7}>
@@ -382,6 +416,12 @@ export const SearchScreen: React.FC = () => {
               <View style={styles.loadMoreContainer}>
                 <ActivityIndicator size="small" color={colors.secondary.main} />
               </View>
+            ) : !isPro && profiles.length >= FREE_LIMITS.MAX_MAP_PROFILES ? (
+              <ProfileLimitBanner
+                currentCount={Math.min(profiles.length, FREE_LIMITS.MAX_MAP_PROFILES)}
+                maxCount={FREE_LIMITS.MAX_MAP_PROFILES}
+                onUpgrade={showPaywall}
+              />
             ) : null
           }
         />
@@ -601,11 +641,17 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     ...shadows.small,
   },
+  filterPillLocked: {
+    opacity: 0.6,
+  },
   filterPillLabel: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.medium,
     color: colors.text.secondary,
     marginRight: spacing.xs,
+  },
+  filterPillLabelLocked: {
+    color: colors.text.muted,
   },
   filterIconButton: {
     width: 44,

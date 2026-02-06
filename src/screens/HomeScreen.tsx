@@ -18,6 +18,8 @@ import {
   useUpdateLocation,
 } from '../hooks/useProfiles'
 import { usePremiumGate } from '../hooks/usePremiumGate'
+import { ProfileLimitBanner } from '../components/ui/ProfileLimitBanner'
+import { FREE_LIMITS } from '../config/premiumLimits'
 import { colors } from '../styles/theme'
 import type { NearbyProfile } from '../types/location'
 import type { Trip } from '../types/trip'
@@ -38,7 +40,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const { data: profile, isLoading } = useMyProfile()
   const { mutate: updateLocation } = useUpdateLocation()
   const { isLoading: locationLoading, requestLocation } = useLocation()
-  const { canViewProfile, canViewNonFriendActivity, showPaywall } = usePremiumGate()
+  const { isPro, canViewProfile, canViewNonFriendActivity, showPaywall } = usePremiumGate()
 
   // Track viewed profiles for free users (first 10 taps are free per session)
   const viewedProfilesRef = useRef(new Set<string>())
@@ -181,6 +183,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           {profile.city && !overlay.tripOverlay ? (
             <View style={styles.mapOverlay}>
               <Text style={styles.cityLabel}>{profile.city}</Text>
+            </View>
+          ) : null}
+
+          {/* Profile limit banner for free users */}
+          {!isPro && allProfiles && allProfiles.length > 0 && !overlay.tripOverlay ? (
+            <View style={styles.limitBannerOverlay}>
+              <ProfileLimitBanner
+                currentCount={Math.min(allProfiles.length, FREE_LIMITS.MAX_MAP_PROFILES)}
+                maxCount={FREE_LIMITS.MAX_MAP_PROFILES}
+                onUpgrade={showPaywall}
+              />
             </View>
           ) : null}
 
@@ -348,5 +361,11 @@ const styles = StyleSheet.create({
     color: colors.text.tertiary,
     textAlign: 'center',
     fontStyle: 'italic',
+  },
+  limitBannerOverlay: {
+    position: 'absolute',
+    bottom: 100,
+    left: 0,
+    right: 80,
   },
 })

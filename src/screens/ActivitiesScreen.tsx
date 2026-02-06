@@ -155,7 +155,26 @@ export const ActivitiesScreen: React.FC = () => {
     )
   }
 
-  const hasActiveFilters = selectedType !== null || selectedStatus !== null
+  const isApproved = myProfile?.verification_status === 'approved'
+
+  if (!isApproved) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.header}>
+          <Text style={styles.title}>{t('title')}</Text>
+        </View>
+        <View style={styles.loadingContainer}>
+          <Ionicons name="shield-checkmark-outline" size={64} color={colors.text.tertiary} />
+          <Text style={[styles.title, { fontSize: fontSize.xl, marginTop: spacing.lg }]}>
+            {t('verificationPending.title')}
+          </Text>
+          <Text style={{ fontSize: fontSize.base, color: colors.text.tertiary, marginTop: spacing.sm, textAlign: 'center', paddingHorizontal: spacing.xxxl }}>
+            {t('verificationPending.message')}
+          </Text>
+        </View>
+      </SafeAreaView>
+    )
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>

@@ -142,5 +142,10 @@
     "cancelledDesc": "Activité annulée",
     "finished": "Terminé",
     "finishedDesc": "Activité passée"
+ 
+},
+ "verificationPending": {
+    "title": "Vérification en cours",
+    "message": "Tu pourras découvrir et rejoindre les activités une fois ta vérification approuvée."
   }
 }

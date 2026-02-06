@@ -38,5 +38,9 @@
   },
   "skillModal": {
     "title": "Filter by skill"
+  },
+  "verificationPending": {
+    "title": "Verification in progress",
+    "message": "You'll be able to discover the community once your verification is approved."
   }
 }
