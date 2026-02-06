@@ -9,6 +9,8 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Animated,
+  ScrollView,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
@@ -32,7 +34,9 @@ export const ActivitiesScreen: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedType, setSelectedType] = useState<ActivityType | null>(null)
-  const [selectedStatus, setSelectedStatus] = useState<ActivityStatus | null>(null)
+  const [selectedStatus, setSelectedStatus] = useState<'open' | 'full' | 'cancelled' | 'finished' | null>(null)
+  const [showFilters, setShowFilters] = useState(false)
+  const [showStatusHelp, setShowStatusHelp] = useState(false)
 
   const { data: myProfile } = useMyProfile()
   const { data: friends } = useMyFriends()
@@ -58,7 +62,6 @@ export const ActivitiesScreen: React.FC = () => {
       case 'my':
         return myActivities ?? []
       case 'invitations':
-        // TODO: Filter activities where user has pending invitation
         return []
       default:
         return []
@@ -68,6 +71,11 @@ export const ActivitiesScreen: React.FC = () => {
   // Filter and search activities
   const filteredActivities = useMemo(() => {
     let result = getActivitiesForTab()
+
+    // Hide finished/cancelled activities from "nearby" tab
+    if (activeTab === 'nearby') {
+      result = result.filter(activity => activity.status !== 'finished' && activity.status !== 'cancelled')
+    }
 
     // Search by title or location
     if (searchQuery) {
@@ -86,7 +94,16 @@ export const ActivitiesScreen: React.FC = () => {
 
     // Filter by status
     if (selectedStatus) {
-      result = result.filter(activity => activity.status === selectedStatus)
+      if (selectedStatus === 'full') {
+        // Filter for full activities (calculated)
+        result = result.filter(activity =>
+          activity.max_participants !== null &&
+          (activity.current_participants ?? 0) >= activity.max_participants
+        )
+      } else {
+        // Filter by actual DB status
+        result = result.filter(activity => activity.status === selectedStatus)
+      }
     }
 
     return result
@@ -124,11 +141,14 @@ export const ActivitiesScreen: React.FC = () => {
 
     return (
       <View style={styles.emptyContainer}>
-        <Ionicons name="calendar-outline" size={64} color={colors.text.tertiary} />
+        <View style={styles.emptyIconContainer}>
+          <Ionicons name="calendar-outline" size={56} color={colors.secondary.main} />
+        </View>
         <Text style={styles.emptyText}>{t(emptyKey)}</Text>
         {activeTab === 'my' && (
-          <TouchableOpacity style={styles.createButton} onPress={handleCreateActivity}>
-            <Text style={styles.createButtonText}>{t('empty.create')}</Text>
+          <TouchableOpacity style={styles.emptyButton} onPress={handleCreateActivity}>
+            <Ionicons name="add-circle" size={20} color={colors.white} />
+            <Text style={styles.emptyButtonText}>{t('empty.create')}</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -161,61 +181,86 @@ export const ActivitiesScreen: React.FC = () => {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>{t('title')}</Text>
+        <View style={styles.headerButtons}>
+          <TouchableOpacity
+            style={styles.helpButton}
+            onPress={() => setShowStatusHelp(true)}
+          >
+            <Ionicons name="help-circle-outline" size={24} color={colors.text.secondary} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.filterButton, hasActiveFilters && styles.filterButtonActive]}
+            onPress={() => setShowFilters(!showFilters)}
+          >
+            <Ionicons
+              name={showFilters ? 'close' : 'options'}
+              size={24}
+              color={hasActiveFilters ? colors.white : colors.text.primary}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* Tabs */}
-      <View style={styles.tabs}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'nearby' && styles.tabActive]}
-          onPress={() => setActiveTab('nearby')}
-        >
-          <Text style={[styles.tabText, activeTab === 'nearby' && styles.tabTextActive]}>
-            {t('tabs.nearby')}
-          </Text>
-        </TouchableOpacity>
+      {/* Tabs - Fixed 3 pills */}
+      <View style={styles.tabsContainer}>
+        <View style={styles.tabsContent}>
+          <TouchableOpacity
+            style={[styles.tabPill, activeTab === 'nearby' && styles.tabPillActive]}
+            onPress={() => setActiveTab('nearby')}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name="compass"
+              size={18}
+              color={activeTab === 'nearby' ? colors.white : colors.text.secondary}
+            />
+            <Text style={[styles.tabPillText, activeTab === 'nearby' && styles.tabPillTextActive]}>
+              {t('tabs.nearby')}
+            </Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'my' && styles.tabActive]}
-          onPress={() => setActiveTab('my')}
-        >
-          <Text style={[styles.tabText, activeTab === 'my' && styles.tabTextActive]}>
-            {t('tabs.my')}
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tabPill, activeTab === 'my' && styles.tabPillActive]}
+            onPress={() => setActiveTab('my')}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name="person"
+              size={18}
+              color={activeTab === 'my' ? colors.white : colors.text.secondary}
+            />
+            <Text style={[styles.tabPillText, activeTab === 'my' && styles.tabPillTextActive]}>
+              {t('tabs.my')}
+            </Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'invitations' && styles.tabActive]}
-          onPress={() => setActiveTab('invitations')}
-        >
-          <View style={{ position: 'relative' }}>
-            <Text style={[styles.tabText, activeTab === 'invitations' && styles.tabTextActive]}>
+          <TouchableOpacity
+            style={[styles.tabPill, activeTab === 'invitations' && styles.tabPillActive]}
+            onPress={() => setActiveTab('invitations')}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name="mail"
+              size={18}
+              color={activeTab === 'invitations' ? colors.white : colors.text.secondary}
+            />
+            <Text
+              style={[styles.tabPillText, activeTab === 'invitations' && styles.tabPillTextActive]}
+            >
               {t('tabs.invitations')}
             </Text>
             {invitations?.filter(inv => inv.status === 'pending').length > 0 && (
-              <View
-                style={{
-                  position: 'absolute',
-                  top: -15,
-                  right: -10,
-                  backgroundColor: colors.secondary.main,
-                  borderRadius: 10,
-                  minWidth: 20,
-                  height: 20,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  paddingHorizontal: 5,
-                }}
-              >
-                <Text style={{ color: colors.white, fontSize: 11, fontWeight: 'bold' }}>
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>
                   {invitations?.filter(inv => inv.status === 'pending').length}
                 </Text>
               </View>
             )}
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* Search Bar */}
+      {/* Search Bar - Minimalist */}
       <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
           <Ionicons name="search" size={20} color={colors.text.tertiary} />
@@ -227,51 +272,84 @@ export const ActivitiesScreen: React.FC = () => {
             placeholderTextColor={colors.text.tertiary}
           />
           {searchQuery !== '' && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
               <Ionicons name="close-circle" size={20} color={colors.text.tertiary} />
             </TouchableOpacity>
           )}
         </View>
       </View>
 
-      {/* Filters */}
-      <View style={styles.filtersContainer}>
-        <View style={styles.filterRow}>
-          <Text style={styles.filterLabel}>{t('filters.type')}:</Text>
-          <View style={styles.filterChips}>
+      {/* Filters - Collapsible horizontal scroll */}
+      {showFilters && (
+        <View style={styles.filtersContainer}>
+          {/* Type Filters */}
+          <Text style={styles.filterSectionTitle}>{t('filters.type')}</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterScroll}
+          >
             {(
               ['outdoor', 'food', 'skills', 'social', 'sport', 'culture', 'other'] as ActivityType[]
             ).map(type => (
               <TouchableOpacity
                 key={type}
-                style={[styles.chip, selectedType === type && styles.chipActive]}
+                style={[styles.filterChip, selectedType === type && styles.filterChipActive]}
                 onPress={() => setSelectedType(selectedType === type ? null : type)}
+                activeOpacity={0.7}
               >
-                <Text style={[styles.chipText, selectedType === type && styles.chipTextActive]}>
+                <Text
+                  style={[
+                    styles.filterChipText,
+                    selectedType === type && styles.filterChipTextActive,
+                  ]}
+                >
                   {t(`types.${type}`)}
                 </Text>
               </TouchableOpacity>
             ))}
-          </View>
-        </View>
+          </ScrollView>
 
-        <View style={styles.filterRow}>
-          <Text style={styles.filterLabel}>{t('filters.status')}:</Text>
-          <View style={styles.filterChips}>
+          {/* Status Filters */}
+          <Text style={styles.filterSectionTitle}>{t('filters.status')}</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterScroll}
+          >
             {(['open', 'full', 'cancelled', 'finished'] as ActivityStatus[]).map(status => (
               <TouchableOpacity
                 key={status}
-                style={[styles.chip, selectedStatus === status && styles.chipActive]}
+                style={[styles.filterChip, selectedStatus === status && styles.filterChipActive]}
                 onPress={() => setSelectedStatus(selectedStatus === status ? null : status)}
+                activeOpacity={0.7}
               >
-                <Text style={[styles.chipText, selectedStatus === status && styles.chipTextActive]}>
+                <Text
+                  style={[
+                    styles.filterChipText,
+                    selectedStatus === status && styles.filterChipTextActive,
+                  ]}
+                >
                   {t(`status.${status}`)}
                 </Text>
               </TouchableOpacity>
             ))}
-          </View>
+          </ScrollView>
+
+          {hasActiveFilters && (
+            <TouchableOpacity
+              style={styles.clearFiltersButton}
+              onPress={() => {
+                setSelectedType(null)
+                setSelectedStatus(null)
+              }}
+            >
+              <Ionicons name="refresh" size={16} color={colors.secondary.main} />
+              <Text style={styles.clearFiltersText}>Réinitialiser</Text>
+            </TouchableOpacity>
+          )}
         </View>
-      </View>
+      )}
 
       {/* Content */}
       {isLoading ? (
@@ -321,8 +399,13 @@ export const ActivitiesScreen: React.FC = () => {
         />
       )}
 
-      <TouchableOpacity style={styles.fab} onPress={handleCreateActivity}>
-        <Ionicons name="add" size={32} color={colors.white} />
+      {/* FAB - Floating action button with pulse animation */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={handleCreateActivity}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="add" size={28} color={colors.white} />
       </TouchableOpacity>
 
       <CreateActivityModal visible={showCreateModal} onClose={() => setShowCreateModal(false)} />
@@ -339,6 +422,51 @@ export const ActivitiesScreen: React.FC = () => {
             : false
         }
       />
+
+      {/* Status Help Modal */}
+      {showStatusHelp && (
+        <View style={styles.helpModal}>
+          <TouchableOpacity
+            style={styles.helpBackdrop}
+            onPress={() => setShowStatusHelp(false)}
+            activeOpacity={1}
+          />
+          <View style={styles.helpContent}>
+            <View style={styles.helpHeader}>
+              <Text style={styles.helpTitle}>{t('help.title')}</Text>
+              <TouchableOpacity onPress={() => setShowStatusHelp(false)}>
+                <Ionicons name="close" size={24} color={colors.text.primary} />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.helpItems}>
+              <View style={styles.helpItem}>
+                <View style={[styles.helpDot, { backgroundColor: '#10B981' }]} />
+                <Text style={styles.helpItemText}>
+                  <Text style={styles.helpItemBold}>{t('help.open')}</Text> - {t('help.openDesc')}
+                </Text>
+              </View>
+              <View style={styles.helpItem}>
+                <View style={[styles.helpDot, { backgroundColor: '#F59E0B' }]} />
+                <Text style={styles.helpItemText}>
+                  <Text style={styles.helpItemBold}>{t('help.full')}</Text> - {t('help.fullDesc')}
+                </Text>
+              </View>
+              <View style={styles.helpItem}>
+                <View style={[styles.helpDot, { backgroundColor: '#DC2626' }]} />
+                <Text style={styles.helpItemText}>
+                  <Text style={styles.helpItemBold}>{t('help.cancelled')}</Text> - {t('help.cancelledDesc')}
+                </Text>
+              </View>
+              <View style={styles.helpItem}>
+                <View style={[styles.helpDot, { backgroundColor: '#666666' }]} />
+                <Text style={styles.helpItemText}>
+                  <Text style={styles.helpItemBold}>{t('help.finished')}</Text> - {t('help.finishedDesc')}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   )
 }
@@ -349,45 +477,172 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary.main,
   },
   header: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
     paddingBottom: spacing.md,
-    backgroundColor: colors.white,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
+    fontSize: 32,
+    fontWeight: '800',
     color: colors.text.primary,
+    letterSpacing: -0.5,
   },
-  tabs: {
+  headerButtons: {
     flexDirection: 'row',
-    backgroundColor: colors.white,
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
+    alignItems: 'center',
     gap: spacing.sm,
   },
-  tab: {
-    flex: 1,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.md,
+  helpButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.white,
     alignItems: 'center',
-    backgroundColor: colors.primary.light,
+    justifyContent: 'center',
+    ...shadows.small,
   },
-  tabActive: {
+  filterButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadows.small,
+  },
+  filterButtonActive: {
     backgroundColor: colors.secondary.main,
   },
-  tabText: {
+  tabsContainer: {
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+  },
+  tabsContent: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    justifyContent: 'space-between',
+  },
+  tabPill: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.white,
+    gap: spacing.xs,
+    ...shadows.medium,
+  },
+  tabPillActive: {
+    backgroundColor: colors.secondary.main,
+    ...shadows.large,
+  },
+  tabPillText: {
     fontSize: fontSize.sm,
     fontWeight: '600',
     color: colors.text.secondary,
   },
-  tabTextActive: {
+  tabPillTextActive: {
     color: colors.white,
   },
+  badge: {
+    backgroundColor: colors.white,
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+    marginLeft: spacing.xs,
+  },
+  badgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.secondary.main,
+  },
+  searchContainer: {
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.sm,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.full,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    gap: spacing.sm,
+    ...shadows.medium,
+    elevation: 4,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: fontSize.md,
+    color: colors.text.primary,
+  },
+  filtersContainer: {
+    paddingVertical: spacing.md,
+    paddingBottom: spacing.lg,
+    backgroundColor: colors.white,
+    marginHorizontal: spacing.xl,
+    borderRadius: borderRadius.xl,
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.sm,
+    ...shadows.small,
+  },
+  filterSectionTitle: {
+    fontSize: fontSize.sm,
+    fontWeight: '700',
+    color: colors.text.primary,
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  filterScroll: {
+    gap: spacing.xs,
+    paddingVertical: spacing.xs,
+  },
+  filterChip: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.primary.light,
+    borderWidth: 1.5,
+    borderColor: colors.border.light,
+  },
+  filterChipActive: {
+    backgroundColor: colors.secondary.main,
+    borderColor: colors.secondary.main,
+  },
+  filterChipText: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.text.secondary,
+  },
+  filterChipTextActive: {
+    color: colors.white,
+  },
+  clearFiltersButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    marginTop: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  clearFiltersText: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.secondary.main,
+  },
   listContent: {
-    paddingTop: spacing.md,
-    paddingBottom: 100, // Space for FAB
+    paddingTop: spacing.sm,
+    paddingBottom: 120,
   },
   loadingContainer: {
     flex: 1,
@@ -399,96 +654,111 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.xxxl,
+    paddingVertical: spacing.xxxl * 2,
+  },
+  emptyIconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: colors.secondary.light + '20',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xl,
   },
   emptyText: {
     fontSize: fontSize.lg,
-    color: colors.text.tertiary,
+    color: colors.text.secondary,
     textAlign: 'center',
-    marginTop: spacing.lg,
     marginBottom: spacing.xl,
+    fontWeight: '500',
+    lineHeight: 24,
   },
-  createButton: {
+  emptyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
     backgroundColor: colors.secondary.main,
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md,
-    borderRadius: borderRadius.md,
-  },
-  createButtonText: {
-    color: colors.white,
-    fontSize: fontSize.md,
-    fontWeight: '600',
-  },
-  searchContainer: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    backgroundColor: colors.white,
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.primary.light,
-    borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    gap: spacing.sm,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: fontSize.md,
-    color: colors.text.primary,
-  },
-  filtersContainer: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    backgroundColor: colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border.light,
-  },
-  filterRow: {
-    marginBottom: spacing.md,
-  },
-  filterLabel: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: colors.text.secondary,
-    marginBottom: spacing.xs,
-  },
-  filterChips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-  },
-  chip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
     borderRadius: borderRadius.full,
-    backgroundColor: colors.primary.light,
-    borderWidth: 1,
-    borderColor: colors.border.main,
+    ...shadows.medium,
   },
-  chipActive: {
-    backgroundColor: colors.secondary.main,
-    borderColor: colors.secondary.main,
-  },
-  chipText: {
-    fontSize: fontSize.xs,
-    fontWeight: '500',
-    color: colors.text.secondary,
-  },
-  chipTextActive: {
+  emptyButtonText: {
     color: colors.white,
+    fontSize: fontSize.md,
+    fontWeight: '700',
   },
   fab: {
     position: 'absolute',
-    bottom: 100,
+    bottom: spacing.xl + 60,
     right: spacing.xl,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: colors.secondary.main,
     alignItems: 'center',
     justifyContent: 'center',
     ...shadows.large,
+  },
+  helpModal: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  helpBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  helpContent: {
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.xl,
+    padding: spacing.xl,
+    marginHorizontal: spacing.xl,
+    maxWidth: 400,
+    width: '90%',
+    ...shadows.large,
+    elevation: 10,
+  },
+  helpHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  helpTitle: {
+    fontSize: fontSize.xl,
+    fontWeight: '700',
+    color: colors.text.primary,
+  },
+  helpItems: {
+    gap: spacing.md,
+  },
+  helpItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  helpDot: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+  },
+  helpItemText: {
+    fontSize: fontSize.md,
+    color: colors.text.secondary,
+    flex: 1,
+  },
+  helpItemBold: {
+    fontWeight: '700',
+    color: colors.text.primary,
   },
 })

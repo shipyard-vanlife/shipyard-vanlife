@@ -14,11 +14,9 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.medy.nomli",
-      "package": "com.medy.nomli"
+      "bundleIdentifier": "com.medy.nomli"
     },
     "android": {
-      "package": "com.medy.nomli",
       "adaptiveIcon": {
         "foregroundImage": "./assets/nomli-logo.png",
         "backgroundColor": "#F3ECDC"

@@ -10,7 +10,7 @@
     "participants": "participants",
     "creator": "Créateur",
     "participating": "Inscrit",
-    "restrictedCreator": "Communauté vanlife",
+    "restrictedCreator": "Utilisateur",
     "restrictedLocation": "Passe à Pro pour voir"
   },
   "status": {
@@ -132,7 +132,19 @@
     "placeholder": "Écris un message...",
     "empty": "Aucun message pour le moment"
   },
-  "verificationPending": {
+  "help": {
+    "title": "Statuts des activités",
+    "open": "Ouvert",
+    "openDesc": "Places disponibles",
+    "full": "Complet",
+    "fullDesc": "Plus de places",
+    "cancelled": "Annulé",
+    "cancelledDesc": "Activité annulée",
+    "finished": "Terminé",
+    "finishedDesc": "Activité passée"
+ 
+},
+ "verificationPending": {
     "title": "Vérification en cours",
     "message": "Tu pourras découvrir et rejoindre les activités une fois ta vérification approuvée."
   }

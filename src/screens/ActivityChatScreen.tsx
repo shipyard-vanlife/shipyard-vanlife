@@ -27,6 +27,7 @@ import { useActivityById, useLeaveActivity } from '../hooks/useActivities'
 import { ActivityMessage } from '../types/activityChat'
 import { format } from 'date-fns'
 import { fr, enUS } from 'date-fns/locale'
+import { VisitorProfileSheet } from '../components/visitor/VisitorProfileSheet'
 
 interface ActivityChatScreenProps {
   route: {
@@ -45,6 +46,7 @@ export const ActivityChatScreen: React.FC<ActivityChatScreenProps> = ({ route, n
   const locale = i18n.language === 'fr' ? fr : enUS
 
   const [messageText, setMessageText] = useState('')
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null)
   const flatListRef = useRef<FlatList>(null)
 
   // Ensure chat exists
@@ -133,13 +135,15 @@ export const ActivityChatScreen: React.FC<ActivityChatScreenProps> = ({ route, n
       <View style={[styles.messageContainer, item.is_mine && styles.myMessageContainer]}>
         {!item.is_mine && (
           <View style={styles.senderInfo}>
-            {item.sender_avatar ? (
-              <Image source={{ uri: item.sender_avatar }} style={styles.senderAvatar} />
-            ) : (
-              <View style={[styles.senderAvatar, styles.senderAvatarPlaceholder]}>
-                <Ionicons name="person" size={16} color={colors.text.tertiary} />
-              </View>
-            )}
+            <TouchableOpacity onPress={() => setSelectedProfileId(item.sender_id)} activeOpacity={0.7}>
+              {item.sender_avatar ? (
+                <Image source={{ uri: item.sender_avatar }} style={styles.senderAvatar} />
+              ) : (
+                <View style={[styles.senderAvatar, styles.senderAvatarPlaceholder]}>
+                  <Ionicons name="person" size={16} color={colors.text.tertiary} />
+                </View>
+              )}
+            </TouchableOpacity>
             <Text style={styles.senderName}>{item.sender_username}</Text>
           </View>
         )}
@@ -231,6 +235,14 @@ export const ActivityChatScreen: React.FC<ActivityChatScreenProps> = ({ route, n
           </TouchableOpacity>
         </View>
       </SafeAreaView>
+
+      {/* Profil de l'utilisateur sélectionné */}
+      {selectedProfileId && (
+        <VisitorProfileSheet
+          profileId={selectedProfileId}
+          onClose={() => setSelectedProfileId(null)}
+        />
+      )}
     </KeyboardAvoidingView>
   )
 }
@@ -305,8 +317,8 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   senderAvatar: {
-    width: 20,
-    height: 20,
+    width: 40,
+    height: 40,
     borderRadius: 10,
   },
   senderAvatarPlaceholder: {

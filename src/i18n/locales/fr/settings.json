@@ -16,7 +16,9 @@
     },
     "legal": {
       "title": "Mentions Légales",
-      "view": "Voir les mentions légales",
+      "terms": "Conditions Générales d'Utilisation",
+      "privacy": "Politique de Confidentialité",
+      "view": "Mentions Légales",
       "lastUpdated": "Dernière mise à jour : {{date}}"
     }
   },

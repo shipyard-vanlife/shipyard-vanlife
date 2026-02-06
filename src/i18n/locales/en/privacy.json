@@ -37,7 +37,7 @@
       "content": "Nomli uses local storage technologies to:\n\n• Maintain your logged-in session\n• Remember your preferences\n• Improve application performance\n\nYou can disable these features in your device settings."
     },
     "minors": {
-      "title": "9. Minors",
+      "title": "9. Minimum Age",
       "content": "Nomli is reserved for users aged 18 and over."
     },
     "contact": {
