@@ -10,7 +10,7 @@
     "participants": "participants",
     "creator": "Creator",
     "participating": "Participating",
-    "restrictedCreator": "Vanlife community",
+    "restrictedCreator": "User",
     "restrictedLocation": "Upgrade to Pro to see"
   },
   "status": {
@@ -131,5 +131,16 @@
     "subtitle": "Activity group",
     "placeholder": "Write a message...",
     "empty": "No messages yet"
+  },
+  "help": {
+    "title": "Activity statuses",
+    "open": "Open",
+    "openDesc": "Spots available",
+    "full": "Full",
+    "fullDesc": "No spots left",
+    "cancelled": "Cancelled",
+    "cancelledDesc": "Activity cancelled",
+    "finished": "Finished",
+    "finishedDesc": "Past activity"
   }
 }

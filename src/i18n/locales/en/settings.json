@@ -16,7 +16,9 @@
     },
     "legal": {
       "title": "Legal Notice",
-      "view": "View legal notice",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "view": "Legal Notice",
       "lastUpdated": "Last updated: {{date}}"
     }
   },

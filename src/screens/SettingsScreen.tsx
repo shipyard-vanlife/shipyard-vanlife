@@ -12,6 +12,8 @@ import { PremiumActiveCard } from '../components/settings/PremiumActiveCard'
 import { PremiumUpgradeCard } from '../components/settings/PremiumUpgradeCard'
 import { ManageSubscriptionCard } from '../components/settings/ManageSubscriptionCard'
 import { DeleteAccountModal } from '../components/settings/DeleteAccountModal'
+import { TermsConditionsModal } from '../components/TermsConditionsModal'
+import { PrivacyPolicyModal } from '../components/PrivacyPolicyModal'
 
 interface SettingsScreenProps {
   onClose: () => void
@@ -25,6 +27,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
 
   const [showLegalModal, setShowLegalModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showTermsModal, setShowTermsModal] = useState(false)
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false)
 
   const handleDeleteAccount = useCallback(() => {
     Alert.alert(
@@ -84,12 +88,39 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
         {/* Legal Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('sections.legal.title')}</Text>
+
           <TouchableOpacity
             style={styles.legalCard}
-            onPress={() => setShowLegalModal(true)}
+            onPress={() => setShowTermsModal(true)}
           >
             <View style={styles.legalIconContainer}>
               <Ionicons name="document-text" size={24} color={colors.text.secondary} />
+            </View>
+            <View style={styles.legalContent}>
+              <Text style={styles.legalTitle}>{t('sections.legal.terms')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color={colors.text.tertiary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.legalCard, { marginTop: spacing.md }]}
+            onPress={() => setShowPrivacyModal(true)}
+          >
+            <View style={styles.legalIconContainer}>
+              <Ionicons name="shield-checkmark" size={24} color={colors.text.secondary} />
+            </View>
+            <View style={styles.legalContent}>
+              <Text style={styles.legalTitle}>{t('sections.legal.privacy')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color={colors.text.tertiary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.legalCard, { marginTop: spacing.md }]}
+            onPress={() => setShowLegalModal(true)}
+          >
+            <View style={styles.legalIconContainer}>
+              <Ionicons name="information-circle" size={24} color={colors.text.secondary} />
             </View>
             <View style={styles.legalContent}>
               <Text style={styles.legalTitle}>{t('sections.legal.view')}</Text>
@@ -114,6 +145,18 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Terms & Conditions Modal */}
+      <TermsConditionsModal
+        visible={showTermsModal}
+        onClose={() => setShowTermsModal(false)}
+      />
+
+      {/* Privacy Policy Modal */}
+      <PrivacyPolicyModal
+        visible={showPrivacyModal}
+        onClose={() => setShowPrivacyModal(false)}
+      />
 
       {/* Legal Modal */}
       <LegalModal
