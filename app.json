@@ -17,6 +17,7 @@
       "bundleIdentifier": "com.medy.nomli"
     },
     "android": {
+      "package": "com.medy.nomli",
       "adaptiveIcon": {
         "foregroundImage": "./assets/nomli-logo.png",
         "backgroundColor": "#F3ECDC"

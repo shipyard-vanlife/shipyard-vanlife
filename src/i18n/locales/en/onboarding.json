@@ -68,6 +68,8 @@
     "cancelText": "Cancellable at any time.",
     "terms": "Terms",
     "privacy": "Privacy",
-    "restore": "Restore"
+    "restore": "Restore",
+    "devTitle": "Development mode",
+    "devMessage": "Purchases are not available in development mode. Use a native build to test."
   }
 }

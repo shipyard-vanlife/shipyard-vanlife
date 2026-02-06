@@ -3,8 +3,9 @@ import Purchases from 'react-native-purchases'
 import type { CustomerInfo, PurchasesOfferings, PurchasesPackage } from 'react-native-purchases'
 import RevenueCatUI, { PAYWALL_RESULT } from 'react-native-purchases-ui'
 import { useAuth } from './AuthContext'
-import { initializeRevenueCat, hasProEntitlement } from '../services/revenueCat'
+import { initializeRevenueCat, hasProEntitlement, isExpoGo } from '../services/revenueCat'
 import { useMyProfile } from '../hooks/useProfiles'
+import { PaywallModal } from '../components/PaywallModal'
 import type { RevenueCatContextType } from '../types/subscription'
 
 const RevenueCatContext = createContext<RevenueCatContextType | undefined>(undefined)
@@ -34,6 +35,12 @@ export const RevenueCatProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   // 1. Register listener FIRST — catches configure()'s internal fetch + real-time updates
   useEffect(() => {
+    if (isExpoGo) {
+      sdkReadyRef.current.resolve()
+      setIsLoading(false)
+      return
+    }
+
     let isFirstCallback = true
 
     const listener = (info: CustomerInfo) => {
@@ -52,6 +59,8 @@ export const RevenueCatProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   // 2. Configure SDK — the listener above catches the initial customer info
   useEffect(() => {
+    if (isExpoGo) return
+
     const init = async () => {
       try {
         await initializeRevenueCat()
@@ -73,6 +82,8 @@ export const RevenueCatProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   // 3. Auth sync — waits for SDK ready before any API calls
   useEffect(() => {
+    if (isExpoGo) return
+
     let cancelled = false
 
     const syncUser = async () => {
@@ -122,6 +133,10 @@ export const RevenueCatProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, [user?.id])
 
   const purchasePackage = useCallback(async (pkg: PurchasesPackage): Promise<boolean> => {
+    if (isExpoGo) {
+      console.warn('[RevenueCat] Purchases unavailable in Expo Go')
+      return false
+    }
     try {
       const { customerInfo: info } = await Purchases.purchasePackage(pkg)
       setCustomerInfo(info)
@@ -135,6 +150,7 @@ export const RevenueCatProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, [])
 
   const restorePurchases = useCallback(async (): Promise<boolean> => {
+    if (isExpoGo) return false
     try {
       const info = await Purchases.restorePurchases()
       setCustomerInfo(info)
@@ -145,27 +161,63 @@ export const RevenueCatProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   }, [])
 
-  const presentPaywall = useCallback(async (): Promise<boolean> => {
+  // Custom paywall modal state
+  const [paywallVisible, setPaywallVisible] = useState(false)
+  const paywallResolveRef = useRef<((value: boolean) => void) | null>(null)
+
+  // Actual SDK purchase (used inside PaywallModal)
+  const purchaseWithSDK = useCallback(async (): Promise<boolean> => {
+    if (isExpoGo) return false
     try {
       const result: PAYWALL_RESULT = await RevenueCatUI.presentPaywall()
-
       switch (result) {
         case PAYWALL_RESULT.PURCHASED:
         case PAYWALL_RESULT.RESTORED:
           return true
-        case PAYWALL_RESULT.NOT_PRESENTED:
-        case PAYWALL_RESULT.ERROR:
-        case PAYWALL_RESULT.CANCELLED:
         default:
           return false
       }
     } catch (error) {
-      console.error('[RevenueCat] Paywall presentation failed:', error)
+      console.error('[RevenueCat] Purchase failed:', error)
       return false
     }
   }, [])
 
+  // Actual SDK restore (used inside PaywallModal)
+  const restoreWithSDK = useCallback(async (): Promise<boolean> => {
+    if (isExpoGo) return false
+    try {
+      const info = await Purchases.restorePurchases()
+      setCustomerInfo(info)
+      return hasProEntitlement(info)
+    } catch (error) {
+      console.error('[RevenueCat] Restore failed:', error)
+      return false
+    }
+  }, [])
+
+  // Shows the custom paywall modal
+  const presentPaywall = useCallback(async (): Promise<boolean> => {
+    return new Promise<boolean>((resolve) => {
+      paywallResolveRef.current = resolve
+      setPaywallVisible(true)
+    })
+  }, [])
+
+  const handlePaywallClose = useCallback(() => {
+    setPaywallVisible(false)
+    paywallResolveRef.current?.(false)
+    paywallResolveRef.current = null
+  }, [])
+
+  const handlePaywallPurchaseSuccess = useCallback(() => {
+    setPaywallVisible(false)
+    paywallResolveRef.current?.(true)
+    paywallResolveRef.current = null
+  }, [])
+
   const presentCustomerCenter = useCallback(async (): Promise<void> => {
+    if (isExpoGo) return
     try {
       await RevenueCatUI.presentCustomerCenter()
     } catch (error) {
@@ -174,6 +226,7 @@ export const RevenueCatProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, [])
 
   const refreshCustomerInfo = useCallback(async (): Promise<void> => {
+    if (isExpoGo) return
     try {
       const info = await Purchases.getCustomerInfo()
       setCustomerInfo(info)
@@ -197,6 +250,13 @@ export const RevenueCatProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       }}
     >
       {children}
+      <PaywallModal
+        visible={paywallVisible}
+        onClose={handlePaywallClose}
+        onPurchaseSuccess={handlePaywallPurchaseSuccess}
+        purchaseWithSDK={purchaseWithSDK}
+        restoreWithSDK={restoreWithSDK}
+      />
     </RevenueCatContext.Provider>
   )
 }

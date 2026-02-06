@@ -8,7 +8,8 @@
     "continue": "Continuer",
     "createProfile": "Créer mon profil",
     "save": "Enregistrer",
-    "completeProfile": "Créer mon profil"
+    "completeProfile": "Créer mon profil",
+    "done": "Terminé"
   },
   "success": {
     "title": "Succès"
@@ -212,6 +213,8 @@
     "activitiesCreate": "Crée tes propres activités avec Nomli Pro",
     "activitiesView": "Découvre toutes les activités avec Nomli Pro",
     "proBadge": "Pro",
-    "stagesCounter": "{{current}}/{{max}} étapes"
+    "stagesCounter": "{{current}}/{{max}} étapes",
+    "profilesLimitBanner": "{{current}}/{{max}} profils visibles",
+    "seeAllProfiles": "Voir tous les profils"
   }
 }

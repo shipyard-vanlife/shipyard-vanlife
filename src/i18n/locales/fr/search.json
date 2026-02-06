@@ -38,5 +38,9 @@
   },
   "skillModal": {
     "title": "Filtrer par compétence"
+  },
+  "verificationPending": {
+    "title": "Vérification en cours",
+    "message": "Tu pourras découvrir la communauté une fois ta vérification approuvée."
   }
 }

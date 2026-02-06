@@ -131,5 +131,9 @@
     "subtitle": "Activity group",
     "placeholder": "Write a message...",
     "empty": "No messages yet"
+  },
+  "verificationPending": {
+    "title": "Verification in progress",
+    "message": "You'll be able to discover and join activities once your verification is approved."
   }
 }

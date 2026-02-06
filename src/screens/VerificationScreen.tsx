@@ -43,7 +43,11 @@ interface FormErrors {
   registrationPlatePhoto?: string
 }
 
-export const VerificationScreen: React.FC = () => {
+interface VerificationScreenProps {
+  onVerificationComplete?: () => void
+}
+
+export const VerificationScreen: React.FC<VerificationScreenProps> = ({ onVerificationComplete }) => {
   const { t } = useTranslation(['verification', 'common', 'profile'])
   const { mutate: signOut } = useSignOut()
   const queryClient = useQueryClient()
@@ -194,8 +198,10 @@ export const VerificationScreen: React.FC = () => {
   }
 
   const handleContinueToProfile = () => {
-    // Invalidate profile query to trigger navigation to ProfileSetupScreen
+    // Invalidate profile query to refresh cached data in background
     queryClient.invalidateQueries({ queryKey: profileKeys.my() })
+    // Directly notify parent to navigate to ProfileSetupScreen
+    onVerificationComplete?.()
   }
 
   const renderStep = () => {
