@@ -1,6 +1,18 @@
 import { z } from 'zod'
 
 /**
+ * Detect if a Supabase error is an RLS policy violation (typically premium limit hit).
+ * RLS INSERT failures return code 42501 or message containing "row-level security".
+ */
+export function isRlsPolicyError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false
+  const err = error as Record<string, unknown>
+  const code = String(err.code ?? '')
+  const message = String(err.message ?? '').toLowerCase()
+  return code === '42501' || message.includes('row-level security') || message.includes('policy')
+}
+
+/**
  * Parse les erreurs Supabase en clés i18n (common:errors.*)
  */
 export function parseSupabaseError(error: Error): string {

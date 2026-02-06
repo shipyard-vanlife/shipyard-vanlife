@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons'
-import React, { memo, useState } from 'react'
-import { Image, StyleSheet, View } from 'react-native'
+import React, { memo, useEffect, useRef, useState } from 'react'
+import { Animated, Image, StyleSheet, View } from 'react-native'
 import { Marker } from 'react-native-maps'
-import { colors, shadows } from '../../styles/theme'
+import { colors } from '../../styles/theme'
 
 interface MyLocationMarkerProps {
   latitude: number
@@ -11,7 +11,8 @@ interface MyLocationMarkerProps {
   isVisible: boolean
 }
 
-const MARKER_SIZE = 42
+const MARKER_SIZE = 44
+const PULSE_SIZE = MARKER_SIZE + 24
 
 export const MyLocationMarker = memo<MyLocationMarkerProps>(function MyLocationMarker({
   latitude,
@@ -21,14 +22,51 @@ export const MyLocationMarker = memo<MyLocationMarkerProps>(function MyLocationM
 }) {
   const [imageLoaded, setImageLoaded] = useState(false)
 
+  // Pulse animation with standard Animated API (safe inside Marker bitmaps)
+  const pulseAnim = useRef(new Animated.Value(0)).current
+
+  useEffect(() => {
+    if (!isVisible) return
+
+    const animation = Animated.loop(
+      Animated.timing(pulseAnim, {
+        toValue: 1,
+        duration: 2000,
+        useNativeDriver: true,
+      })
+    )
+    animation.start()
+
+    return () => animation.stop()
+  }, [isVisible, pulseAnim])
+
+  const pulseScale = pulseAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1.6],
+  })
+  const pulseOpacity = pulseAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.35, 0],
+  })
+
   return (
     <Marker
       coordinate={{ latitude, longitude }}
       anchor={{ x: 0.5, y: 0.5 }}
-      tracksViewChanges={!!avatarUrl && !imageLoaded}
+      tracksViewChanges={isVisible || (!!avatarUrl && !imageLoaded)}
     >
       <View style={styles.wrapper}>
-        {/* Static glow ring (visible mode only) */}
+        {/* Animated pulse ring (visible mode only) */}
+        {isVisible ? (
+          <Animated.View
+            style={[
+              styles.pulseRing,
+              { transform: [{ scale: pulseScale }], opacity: pulseOpacity },
+            ]}
+          />
+        ) : null}
+
+        {/* Static glow ring */}
         {isVisible ? <View style={styles.glowRing} /> : null}
 
         {/* Main marker */}
@@ -41,14 +79,18 @@ export const MyLocationMarker = memo<MyLocationMarkerProps>(function MyLocationM
               onLoad={() => setImageLoaded(true)}
             />
           ) : (
-            <View style={[styles.dot, !isVisible && styles.dotInvisible]} />
+            <Ionicons
+              name="person"
+              size={20}
+              color={isVisible ? colors.white : colors.border.main}
+            />
           )}
         </View>
 
         {/* Invisible badge */}
         {!isVisible ? (
           <View style={styles.invisibleBadge}>
-            <Ionicons name="eye-off" size={10} color={colors.white} />
+            <Ionicons name="eye-off" size={9} color={colors.white} />
           </View>
         ) : null}
       </View>
@@ -56,21 +98,26 @@ export const MyLocationMarker = memo<MyLocationMarkerProps>(function MyLocationM
   )
 })
 
-const GLOW_SIZE = MARKER_SIZE + 16
-
 const styles = StyleSheet.create({
   wrapper: {
-    width: GLOW_SIZE + 8,
-    height: GLOW_SIZE + 8,
+    width: PULSE_SIZE + 8,
+    height: PULSE_SIZE + 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  pulseRing: {
+    position: 'absolute',
+    width: PULSE_SIZE,
+    height: PULSE_SIZE,
+    borderRadius: PULSE_SIZE / 2,
+    backgroundColor: colors.secondary.main,
+  },
   glowRing: {
     position: 'absolute',
-    width: GLOW_SIZE,
-    height: GLOW_SIZE,
-    borderRadius: GLOW_SIZE / 2,
-    backgroundColor: 'rgba(224, 122, 95, 0.2)',
+    width: MARKER_SIZE + 12,
+    height: MARKER_SIZE + 12,
+    borderRadius: (MARKER_SIZE + 12) / 2,
+    backgroundColor: 'rgba(224, 122, 95, 0.15)',
   },
   marker: {
     width: MARKER_SIZE,
@@ -82,7 +129,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    ...shadows.medium,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 6,
   },
   markerInvisible: {
     backgroundColor: colors.text.tertiary,
@@ -94,22 +145,13 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: MARKER_SIZE / 2,
   },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: colors.white,
-  },
-  dotInvisible: {
-    backgroundColor: colors.border.main,
-  },
   invisibleBadge: {
     position: 'absolute',
-    bottom: 4,
-    right: 4,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+    bottom: 6,
+    right: 6,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
     backgroundColor: colors.text.tertiary,
     borderWidth: 2,
     borderColor: colors.white,

@@ -53,6 +53,9 @@ export interface UserProfile {
   invitation_count: number
   // Username update tracking
   username_last_updated_at: string | null
+  // Premium subscription
+  is_pro: boolean
+  pro_expires_at: string | null
 }
 
 // Profile creation/update payload
@@ -121,6 +124,21 @@ export const SKILL_COLORS: Record<SkillType, string> = {
   cooking: '#D4A373',
   languages: '#3B82F6',
   photo: '#8B7355',
+}
+
+// Skill icons for map markers and badges (Ionicons names)
+export const SKILL_ICONS: Record<SkillType, string> = {
+  mechanic: 'construct',
+  plumbing: 'water',
+  decoration: 'color-palette',
+  construction: 'hammer',
+  electricity: 'flash',
+  carpentry: 'cut',
+  hiking: 'trail-sign',
+  tech: 'hardware-chip',
+  cooking: 'restaurant',
+  languages: 'chatbubbles',
+  photo: 'camera',
 }
 
 // All available skills (for forms/filters)

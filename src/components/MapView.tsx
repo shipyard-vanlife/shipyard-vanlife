@@ -1,13 +1,16 @@
 import { Ionicons } from '@expo/vector-icons'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import ClusteredMapView from 'react-native-map-clustering'
-import type { Region } from 'react-native-maps'
 import RNMapView, { Polyline, PROVIDER_GOOGLE } from 'react-native-maps'
+
+/** Apple Maps on iOS (native, stable), Google Maps on Android */
+const MAP_PROVIDER = Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined
 import { borderRadius, colors, shadows, spacing } from '../styles/theme'
+import { warmMapStyle } from '../config/mapStyle'
 import type { Activity } from '../types/activity'
-import type { MapZone, NearbyProfile, ViewportProfilesParams } from '../types/location'
+import type { NearbyProfile } from '../types/location'
 import type { TripOverlayData, TripOverlayStage } from '../types/map'
 import { ActivityMarker } from './map/ActivityMarker'
 import { ClusterMarker } from './map/ClusterMarker'
@@ -15,19 +18,6 @@ import { MyLocationMarker } from './map/MyLocationMarker'
 import { ProfileMarker } from './map/ProfileMarker'
 import { TripMapOverlay } from './map/TripMapOverlay'
 import { TripStageMarker } from './map/TripStageMarker'
-import { ZoneBubble } from './map/ZoneBubble'
-
-/** Convert a map Region to bounding box params with 20% buffer */
-function regionToViewport(region: Region): ViewportProfilesParams {
-  const latBuffer = region.latitudeDelta * 0.2
-  const lngBuffer = region.longitudeDelta * 0.2
-  return {
-    minLat: region.latitude - region.latitudeDelta / 2 - latBuffer,
-    maxLat: region.latitude + region.latitudeDelta / 2 + latBuffer,
-    minLng: region.longitude - region.longitudeDelta / 2 - lngBuffer,
-    maxLng: region.longitude + region.longitudeDelta / 2 + lngBuffer,
-  }
-}
 
 interface MapViewProps {
   latitude: number | null
@@ -35,10 +25,8 @@ interface MapViewProps {
   city: string | null
   myAvatarUrl: string | null
   isProfileVisible?: boolean
-  zones: MapZone[]
-  individualProfiles: NearbyProfile[]
+  profiles: NearbyProfile[]
   onProfileSelect: (profile: NearbyProfile) => void
-  onZonePress: (zone: MapZone) => void
   showProfiles: boolean
   onToggleProfiles: () => void
   nearbyActivities?: Activity[]
@@ -51,7 +39,6 @@ interface MapViewProps {
   onStagePress?: (stage: TripOverlayStage) => void
   onBackToProfile?: () => void
   sourceProfileUsername?: string | null
-  onViewportChange?: (viewport: ViewportProfilesParams) => void
 }
 
 export const MapView: React.FC<MapViewProps> = ({
@@ -59,10 +46,8 @@ export const MapView: React.FC<MapViewProps> = ({
   longitude,
   myAvatarUrl,
   isProfileVisible = true,
-  zones,
-  individualProfiles,
+  profiles,
   onProfileSelect,
-  onZonePress,
   showProfiles,
   onToggleProfiles,
   nearbyActivities = [],
@@ -75,27 +60,9 @@ export const MapView: React.FC<MapViewProps> = ({
   onStagePress,
   onBackToProfile,
   sourceProfileUsername,
-  onViewportChange,
 }) => {
   const { t } = useTranslation('home')
   const mapRef = useRef<RNMapView>(null)
-
-  // Report initial viewport on mount
-  useEffect(() => {
-    if (latitude !== null && longitude !== null && onViewportChange) {
-      onViewportChange(
-        regionToViewport({ latitude, longitude, latitudeDelta: 0.2, longitudeDelta: 0.2 })
-      )
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Track viewport changes as user pans/zooms
-  const handleRegionChangeComplete = useCallback(
-    (region: Region) => {
-      onViewportChange?.(regionToViewport(region))
-    },
-    [onViewportChange]
-  )
 
   // Zoom to fit trip stages when tripOverlay is set
   useEffect(() => {
@@ -150,7 +117,7 @@ export const MapView: React.FC<MapViewProps> = ({
 
   const isTripMode = !!tripOverlay
 
-  // Custom cluster renderer (for individual markers that still get pixel-clustered)
+  // Custom cluster renderer — supercluster handles all profile grouping
   const renderCluster = useCallback(
     (cluster: any) => (
       <ClusterMarker
@@ -177,7 +144,8 @@ export const MapView: React.FC<MapViewProps> = ({
       <ClusteredMapView
         ref={mapRef}
         style={styles.map}
-        provider={PROVIDER_GOOGLE}
+        provider={MAP_PROVIDER}
+        customMapStyle={Platform.OS === 'android' ? warmMapStyle : undefined}
         initialRegion={{
           latitude,
           longitude,
@@ -190,16 +158,14 @@ export const MapView: React.FC<MapViewProps> = ({
         showsMyLocationButton={false}
         showsCompass={false}
         toolbarEnabled={false}
-        // Clustering config
+        // Supercluster handles all profile clustering
         clusteringEnabled={!isTripMode}
-        radius={50}
-        maxZoom={14}
-        minPoints={3}
+        radius={60}
+        maxZoom={16}
+        minPoints={2}
         clusterColor={colors.secondary.main}
         renderCluster={renderCluster}
         animationEnabled={false}
-        preserveClusterPressBehavior={false}
-        onRegionChangeComplete={handleRegionChangeComplete}
       >
         {/* My marker (hidden in trip mode) */}
         {!isTripMode ? (
@@ -211,26 +177,17 @@ export const MapView: React.FC<MapViewProps> = ({
           />
         ) : null}
 
-        {/* Zone bubbles (10+ users in ~11km) */}
+        {/* All profile markers — supercluster clusters them by zoom level */}
         {!isTripMode && showProfiles
-          ? zones.map(zone => (
-              <ZoneBubble
-                key={`zone-${zone.center.latitude}-${zone.center.longitude}`}
-                zone={zone}
-                onPress={() => onZonePress(zone)}
-              />
-            ))
-          : null}
-
-        {/* Individual profile markers (sparse areas) */}
-        {!isTripMode && showProfiles
-          ? individualProfiles.map(p =>
+          ? profiles.map(p =>
               p.zone_center ? (
                 <ProfileMarker
                   key={p.id}
                   profile={p}
-                  latitude={p.zone_center.latitude}
-                  longitude={p.zone_center.longitude}
+                  coordinate={{
+                    latitude: p.zone_center.latitude,
+                    longitude: p.zone_center.longitude,
+                  }}
                   onPress={() => onProfileSelect(p)}
                 />
               ) : null
@@ -244,7 +201,7 @@ export const MapView: React.FC<MapViewProps> = ({
             ))
           : null}
 
-        {/* Trip Polyline */}
+        {/* Trip Polyline - dashed for path */}
         {tripOverlay && tripOverlay.stages.length > 1 ? (
           <Polyline
             coordinates={tripOverlay.stages.map(s => ({
@@ -253,6 +210,7 @@ export const MapView: React.FC<MapViewProps> = ({
             }))}
             strokeColor={colors.secondary.main}
             strokeWidth={3}
+            lineDashPattern={Platform.OS === 'ios' ? [8, 6] : [12, 8]}
           />
         ) : null}
 
@@ -269,7 +227,7 @@ export const MapView: React.FC<MapViewProps> = ({
         ))}
       </ClusteredMapView>
 
-      {/* Loading indicator */}
+      {/* Loading indicator (only shown on initial fetch) */}
       {isDataLoading ? (
         <View style={styles.loadingPill}>
           <ActivityIndicator size="small" color={colors.secondary.main} />
@@ -283,24 +241,24 @@ export const MapView: React.FC<MapViewProps> = ({
           <TouchableOpacity
             style={[styles.controlButton, showProfiles ? styles.controlButtonActive : null]}
             onPress={onToggleProfiles}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
           >
             <Ionicons
               name="people"
-              size={20}
-              color={showProfiles ? colors.white : colors.text.tertiary}
+              size={18}
+              color={showProfiles ? colors.white : colors.text.secondary}
             />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.controlButton, showActivities ? styles.controlButtonActive : null]}
             onPress={onToggleActivities}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
           >
             <Ionicons
               name="calendar"
-              size={20}
-              color={showActivities ? colors.white : colors.text.tertiary}
+              size={18}
+              color={showActivities ? colors.white : colors.text.secondary}
             />
           </TouchableOpacity>
 
@@ -309,9 +267,9 @@ export const MapView: React.FC<MapViewProps> = ({
           <TouchableOpacity
             style={styles.controlButton}
             onPress={handleRecenter}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
           >
-            <Ionicons name="locate" size={20} color={colors.text.primary} />
+            <Ionicons name="locate" size={18} color={colors.secondary.main} />
           </TouchableOpacity>
         </View>
       ) : null}
@@ -333,7 +291,7 @@ export const MapView: React.FC<MapViewProps> = ({
   )
 }
 
-const CONTROL_SIZE = 44
+const CONTROL_SIZE = 42
 
 const styles = StyleSheet.create({
   container: {
@@ -376,16 +334,24 @@ const styles = StyleSheet.create({
     bottom: 100,
     right: spacing.lg,
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: spacing.xs,
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    borderRadius: borderRadius.round,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.xs,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 4,
   },
   controlButton: {
     width: CONTROL_SIZE,
     height: CONTROL_SIZE,
     borderRadius: CONTROL_SIZE / 2,
-    backgroundColor: colors.white,
+    backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadows.medium,
   },
   controlButtonActive: {
     backgroundColor: colors.secondary.main,

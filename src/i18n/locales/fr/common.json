@@ -5,7 +5,7 @@
     "logout": "Se déconnecter",
     "back": "Retour",
     "delete": "Supprimer",
-    "deleteProfile": "Supprimer le profil",
+    "continue": "Continuer",
     "createProfile": "Créer mon profil",
     "save": "Enregistrer",
     "completeProfile": "Créer mon profil"
@@ -35,8 +35,6 @@
     "bioMax": "Maximum 500 caractères"
   },
   "profile": {
-    "deleteTitle": "Supprimer le profil ?",
-    "deleteConfirmation": "Tu pourras recréer un profil avec le même compte.",
     "deleteAccountTitle": "Supprimer ton compte ?",
     "deleteAccountConfirmation": "Cette action est irréversible. Ton compte, profil, voyages et photos seront supprimés définitivement.",
     "setupTitle": "Bienvenue !",
@@ -78,6 +76,12 @@
       "unavailable": "La localisation n'est pas disponible sur cet appareil",
       "timeout": "La demande de localisation a expiré. Réessaie.",
       "unknown": "Une erreur est survenue lors de la localisation"
+    },
+    "tripRequiresLocation": {
+      "title": "Localisation requise",
+      "message": "Pour créer un voyage, tu dois autoriser l'accès à ta position. Cela permet de géolocaliser tes étapes et de partager ton itinéraire.",
+      "openSettings": "Ouvrir les réglages",
+      "cancel": "Annuler"
     }
   },
   "trip": {
@@ -166,7 +170,8 @@
     "accept": "Accepter",
     "rejecting": "Refus...",
     "friend": "Est votre ami",
-    "sending": "Envoi en cours..."
+    "sending": "Envoi en cours...",
+    "verificationRequired": "Vérification requise"
   },
   "moderation": {
     "reportProfile": "Signaler ce profil",
@@ -197,5 +202,16 @@
   },
   "search": {
     "title": "Rechercher"
+  },
+  "premium": {
+    "upgradeTitle": "Fonctionnalité Premium",
+    "friendsLimit": "Tu as atteint la limite de 8 amis. Passe à Nomli Pro pour en ajouter plus !",
+    "tripsLimit": "Crée des voyages illimités avec Nomli Pro",
+    "stagesLimit": "Tu as atteint la limite de {{max}} étapes. Passe à Nomli Pro pour en ajouter jusqu'à 50 !",
+    "mapLimit": "Découvre tous les profils autour de toi avec Nomli Pro",
+    "activitiesCreate": "Crée tes propres activités avec Nomli Pro",
+    "activitiesView": "Découvre toutes les activités avec Nomli Pro",
+    "proBadge": "Pro",
+    "stagesCounter": "{{current}}/{{max}} étapes"
   }
 }

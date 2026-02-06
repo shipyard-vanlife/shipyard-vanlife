@@ -68,6 +68,7 @@ export const ProfileContentView: React.FC<ProfileContentViewProps> = ({
         daysOnRoad={profile.days_on_road}
         isOwnProfile={false}
         onBackPress={onBackPress}
+        isPro={'is_pro' in profile ? profile.is_pro === true : false}
       />
 
       {/* Skills badges */}

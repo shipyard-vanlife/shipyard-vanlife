@@ -3,6 +3,8 @@ import { useEffect } from 'react'
 import { supabase } from '../services/supabase'
 import { Connection, ConnectionRequest, Friend } from '../types/chat'
 import { useQueryMutation } from './useQueryMutation'
+import { isRlsPolicyError } from '../utils/validation/errors'
+import { useRevenueCatContext } from '../contexts/RevenueCatContext'
 
 // Query keys
 export const connectionKeys = {
@@ -101,12 +103,20 @@ export function useAllConnections() {
 
 // Send a connection request
 export function useSendConnectionRequest() {
+  const { presentPaywall } = useRevenueCatContext()
+
   return useQueryMutation({
     mutationFn: async (receiverId: string): Promise<string> => {
       const { data, error } = await supabase.rpc('send_connection_request', {
         p_receiver_id: receiverId,
       })
-      if (error) throw error
+      if (error) {
+        if (isRlsPolicyError(error)) {
+          presentPaywall()
+          throw new Error('PREMIUM_REQUIRED')
+        }
+        throw error
+      }
       return data as string
     },
     invalidateKeys: [connectionKeys.all],

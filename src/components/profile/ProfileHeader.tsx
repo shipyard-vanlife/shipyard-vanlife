@@ -3,6 +3,7 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator } fr
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import { colors, spacing, fontSize, fontWeight } from '../../styles/theme'
+import { ProBadge } from './ProBadge'
 
 interface ProfileHeaderProps {
   avatarUrl: string | null
@@ -20,6 +21,7 @@ interface ProfileHeaderProps {
   onBackPress?: () => void
   onFavoritePress?: () => void
   isFavorite?: boolean
+  isPro?: boolean
 }
 
 export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
@@ -38,6 +40,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   onBackPress,
   onFavoritePress,
   isFavorite = false,
+  isPro = false,
 }) => {
   const { t } = useTranslation('profile')
 
@@ -136,16 +139,20 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       {/* Name */}
       <Text style={styles.name}>{displayName}</Text>
 
-      {/* Username */}
+      {/* Username + Pro Badge */}
       {isOwnProfile && onUsernamePress ? (
         <TouchableOpacity onPress={onUsernamePress} activeOpacity={0.7}>
           <View style={styles.usernameContainer}>
             <Text style={styles.username}>@{username}</Text>
+            {isPro ? <ProBadge /> : null}
             <Ionicons name="pencil" size={14} color={colors.text.tertiary} />
           </View>
         </TouchableOpacity>
       ) : (
-        <Text style={styles.username}>@{username}</Text>
+        <View style={styles.usernameContainer}>
+          <Text style={styles.username}>@{username}</Text>
+          {isPro ? <ProBadge /> : null}
+        </View>
       )}
 
       {/* Subtitle: location + van */}

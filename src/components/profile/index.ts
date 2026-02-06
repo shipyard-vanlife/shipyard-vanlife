@@ -1,3 +1,4 @@
+export { ProBadge } from './ProBadge'
 export { ProfileAboutSection } from './ProfileAboutSection'
 export { ProfileEditModal } from './ProfileEditModal'
 export { ProfileHeader } from './ProfileHeader'

@@ -19,7 +19,8 @@ import { NomadProfileCard } from '../components/search/NomadProfileCard'
 import { VisitorProfileSheet } from '../components/visitor'
 import { useMyProfile, profileKeys } from '../hooks/useProfiles'
 import { supabase } from '../services/supabase'
-import { useSendConnectionRequest, useAllConnections } from '../hooks/useConnections'
+import { useSendConnectionRequest, useAllConnections, useMyFriends } from '../hooks/useConnections'
+import { usePremiumGate } from '../hooks/usePremiumGate'
 import { SkillType, ALL_SKILLS } from '../types/user'
 import type { NearbyProfile } from '../types/location'
 
@@ -77,6 +78,8 @@ export const SearchScreen: React.FC = () => {
   const { data: myProfile } = useMyProfile()
   const { mutate: sendRequest } = useSendConnectionRequest()
   const { data: allConnections } = useAllConnections()
+  const { data: myFriends } = useMyFriends()
+  const { canAddFriend, showPaywall } = usePremiumGate()
 
   const [profiles, setProfiles] = useState<NearbyProfile[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -208,12 +211,20 @@ export const SearchScreen: React.FC = () => {
   ])
 
   const handleAddFriend = useCallback(
-    (profileId: string, username: string) => {
+    async (profileId: string, username: string) => {
       if (myProfile?.verification_status !== 'approved') {
         Alert.alert(
           t('common:verification.requiredTitle'),
           t('common:verification.requiredMessage')
         )
+        return
+      }
+
+      // Check friend limit for free users
+      const friendsCount = myFriends?.filter(f => f.status === 'accepted').length ?? 0
+      if (!canAddFriend(friendsCount)) {
+        Alert.alert(t('common:premium.upgradeTitle'), t('common:premium.friendsLimit'))
+        await showPaywall()
         return
       }
 
@@ -231,7 +242,7 @@ export const SearchScreen: React.FC = () => {
         },
       })
     },
-    [myProfile?.verification_status, t, sendRequest]
+    [myProfile?.verification_status, t, sendRequest, myFriends, canAddFriend, showPaywall]
   )
 
   const handleProfileSelect = useCallback(
