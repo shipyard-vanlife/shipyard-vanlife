@@ -155,6 +155,7 @@ export const ActivitiesScreen: React.FC = () => {
     )
   }
 
+  const hasActiveFilters = selectedType !== null || selectedStatus !== null
   const isApproved = myProfile?.verification_status === 'approved'
 
   if (!isApproved) {
