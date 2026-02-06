@@ -27,6 +27,7 @@ import { ActivityChatScreen } from './ActivityChatScreen'
 import { useMyActivityChats } from '../hooks/useActivityChat'
 import { ACTIVITY_TYPE_ICONS, ACTIVITY_TYPE_COLORS } from '../types/activity'
 import type { ActivityChatPreview } from '../types/activityChat'
+import { usePremiumGate } from '../hooks/usePremiumGate'
 import { colors } from '../styles/theme'
 
 type ChatTab = 'friends' | 'groups' | 'requests'
@@ -66,16 +67,24 @@ const { t } = useTranslation(['common', 'chat'])
   const { mutate: rejectConnection } = useRejectConnection()
   const { mutate: deleteConnection } = useDeleteConnection()
   const { data: myProfile } = useMyProfile()
+  const { canAddFriend, showPaywall } = usePremiumGate()
 
   const handleAcceptConnection = useCallback(
-    (connectionId: string) => {
+    async (connectionId: string) => {
       if (myProfile?.verification_status !== 'approved') {
         Alert.alert(t('verification.requiredTitle'), t('verification.requiredMessage'))
         return
       }
+      // Check friend limit for free users
+      const friendsCount = friends?.filter(f => f.status === 'accepted').length ?? 0
+      if (!canAddFriend(friendsCount)) {
+        Alert.alert(t('premium.upgradeTitle'), t('premium.friendsLimit'))
+        await showPaywall()
+        return
+      }
       acceptConnection(connectionId)
     },
-    [myProfile?.verification_status, t, acceptConnection]
+    [myProfile?.verification_status, t, acceptConnection, friends, canAddFriend, showPaywall]
   )
 
   // Build lookup map for O(1) friend access by connectionId

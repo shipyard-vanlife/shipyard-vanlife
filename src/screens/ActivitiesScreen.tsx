@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   StyleSheet,
   Text,
@@ -17,13 +18,15 @@ import { ActivityDetailModal } from '../components/activities/ActivityDetailModa
 import { CreateActivityModal } from '../components/activities/CreateActivityModal'
 import { InvitationCard } from '../components/activities/InvitationCard'
 import { useMyActivities, useNearbyActivities, useMyInvitations } from '../hooks/useActivities'
+import { useMyFriends } from '../hooks/useConnections'
+import { usePremiumGate } from '../hooks/usePremiumGate'
 import { useMyProfile } from '../hooks/useProfiles'
 import { Activity, ActivityType, ActivityStatus } from '../types/activity'
 
 type TabType = 'nearby' | 'my' | 'invitations'
 
 export const ActivitiesScreen: React.FC = () => {
-  const { t } = useTranslation('activities')
+  const { t } = useTranslation(['activities', 'common'])
   const [activeTab, setActiveTab] = useState<TabType>('nearby')
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -32,12 +35,20 @@ export const ActivitiesScreen: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<ActivityStatus | null>(null)
 
   const { data: myProfile } = useMyProfile()
+  const { data: friends } = useMyFriends()
+  const { canCreateActivity, canViewNonFriendActivity, showPaywall } = usePremiumGate()
   const { data: nearbyActivities, isLoading: loadingNearby } = useNearbyActivities(
     myProfile?.location?.latitude ?? null,
     myProfile?.location?.longitude ?? null
   )
   const { data: myActivities, isLoading: loadingMy } = useMyActivities()
   const { data: invitations, isLoading: loadingInvitations } = useMyInvitations()
+
+  // Build friend ID set for O(1) lookup
+  const friendIds = useMemo(
+    () => new Set(friends?.filter(f => f.status === 'accepted').map(f => f.friend_id) ?? []),
+    [friends]
+  )
 
   // Filter activities based on active tab
   const getActivitiesForTab = (): Activity[] => {
@@ -88,7 +99,12 @@ export const ActivitiesScreen: React.FC = () => {
     setSelectedActivity(activity)
   }
 
-  const handleCreateActivity = () => {
+  const handleCreateActivity = async () => {
+    if (!canCreateActivity) {
+      Alert.alert(t('common:premium.upgradeTitle'), t('common:premium.activitiesCreate'))
+      await showPaywall()
+      return
+    }
     setShowCreateModal(true)
   }
 
@@ -265,9 +281,19 @@ export const ActivitiesScreen: React.FC = () => {
         <FlatList
           data={filteredActivities}
           keyExtractor={item => item.id}
-          renderItem={({ item }) => (
-            <ActivityCard activity={item} onPress={() => handleActivityPress(item)} />
-          )}
+          renderItem={({ item }) => {
+            const isOwnerOrFriend =
+              item.creator_id === myProfile?.id || friendIds.has(item.creator_id)
+            const isRestricted =
+              activeTab === 'nearby' && !isOwnerOrFriend && !canViewNonFriendActivity
+            return (
+              <ActivityCard
+                activity={item}
+                onPress={() => handleActivityPress(item)}
+                isRestricted={isRestricted}
+              />
+            )
+          }}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={renderEmptyState}
           showsVerticalScrollIndicator={false}
@@ -283,6 +309,14 @@ export const ActivitiesScreen: React.FC = () => {
       <ActivityDetailModal
         activityId={selectedActivity?.id ?? null}
         onClose={() => setSelectedActivity(null)}
+        isRestricted={
+          selectedActivity
+            ? activeTab === 'nearby' &&
+              selectedActivity.creator_id !== myProfile?.id &&
+              !friendIds.has(selectedActivity.creator_id) &&
+              !canViewNonFriendActivity
+            : false
+        }
       />
     </SafeAreaView>
   )

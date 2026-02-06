@@ -48,6 +48,7 @@
     "createFailed": "Failed to create trip",
     "endFailed": "Failed to end trip",
     "addStageFailed": "Failed to add stage",
+    "tooCloseToLastStage": "You're too close to your last stage (less than 5 km). Move a bit further before recording a new position.",
     "deleteFailed": "Failed to delete trip",
     "loadFailed": "Failed to load trips",
     "locationRequired": "Location required to create a trip"

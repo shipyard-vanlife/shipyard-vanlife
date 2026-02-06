@@ -244,6 +244,7 @@ export const ProfileScreen: React.FC = () => {
           onEditPress={handleEditPress}
           onUsernamePress={() => setShowUsernameModal(true)}
           isUploadingAvatar={isUploadingAvatar}
+          isPro={profile.is_pro}
         />
 
         {/* Verification pending banner */}

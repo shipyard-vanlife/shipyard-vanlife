@@ -48,6 +48,7 @@
     "createFailed": "Impossible de créer le voyage",
     "endFailed": "Impossible de terminer le voyage",
     "addStageFailed": "Impossible d'ajouter l'étape",
+    "tooCloseToLastStage": "Tu es trop proche de ta dernière étape (moins de 5 km). Déplace-toi un peu avant d'enregistrer une nouvelle position.",
     "deleteFailed": "Impossible de supprimer le voyage",
     "loadFailed": "Impossible de charger les voyages",
     "locationRequired": "Position requise pour créer un voyage"

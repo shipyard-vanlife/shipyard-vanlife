@@ -11,6 +11,21 @@ interface ClusterMarkerProps {
   onPress: () => void
 }
 
+/** Smooth logarithmic sizing instead of abrupt steps */
+function getClusterSize(count: number): number {
+  const minSize = 40
+  const maxSize = 68
+  const scale = Math.min(Math.log2(count) / Math.log2(200), 1)
+  return Math.round(minSize + (maxSize - minSize) * scale)
+}
+
+/** Slightly darker coral as cluster grows */
+function getClusterOpacity(count: number): number {
+  if (count < 10) return 0.85
+  if (count < 50) return 0.9
+  return 1
+}
+
 export const ClusterMarker = memo<ClusterMarkerProps>(function ClusterMarker({
   id,
   geometry,
@@ -20,7 +35,10 @@ export const ClusterMarker = memo<ClusterMarkerProps>(function ClusterMarker({
   const count = properties.point_count
   const size = getClusterSize(count)
   const innerSize = size - 6
-  const iconSize = count < 10 ? 12 : 14
+  const glowSize = size + 10
+  const opacity = getClusterOpacity(count)
+  const iconSize = size < 44 ? 11 : 13
+  const countSize = count >= 100 ? 10 : 12
 
   return (
     <Marker
@@ -32,15 +50,22 @@ export const ClusterMarker = memo<ClusterMarkerProps>(function ClusterMarker({
       onPress={onPress}
       tracksViewChanges={false}
     >
-      {/* Outer glow ring */}
-      <View
-        style={[
-          styles.outerRing,
-          { width: size + 8, height: size + 8, borderRadius: (size + 8) / 2 },
-        ]}
-      >
+      <View style={[styles.wrapper, { width: glowSize + 4, height: glowSize + 4 }]}>
+        {/* Outer glow ring */}
+        <View
+          style={[
+            styles.outerRing,
+            { width: glowSize, height: glowSize, borderRadius: glowSize / 2 },
+          ]}
+        />
+
         {/* White border ring */}
-        <View style={[styles.borderRing, { width: size, height: size, borderRadius: size / 2 }]}>
+        <View
+          style={[
+            styles.borderRing,
+            { width: size, height: size, borderRadius: size / 2 },
+          ]}
+        >
           {/* Colored inner circle */}
           <View
             style={[
@@ -49,11 +74,12 @@ export const ClusterMarker = memo<ClusterMarkerProps>(function ClusterMarker({
                 width: innerSize,
                 height: innerSize,
                 borderRadius: innerSize / 2,
+                opacity,
               },
             ]}
           >
             <Ionicons name="people" size={iconSize} color={colors.white} style={styles.icon} />
-            <Text style={[styles.count, count >= 100 ? styles.countSmall : null]}>
+            <Text style={[styles.count, { fontSize: countSize }]}>
               {properties.point_count_abbreviated}
             </Text>
           </View>
@@ -63,18 +89,14 @@ export const ClusterMarker = memo<ClusterMarkerProps>(function ClusterMarker({
   )
 })
 
-function getClusterSize(count: number): number {
-  if (count < 10) return 42
-  if (count < 50) return 50
-  if (count < 100) return 58
-  return 64
-}
-
 const styles = StyleSheet.create({
-  outerRing: {
-    backgroundColor: `${colors.secondary.main}20`,
+  wrapper: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  outerRing: {
+    position: 'absolute',
+    backgroundColor: `${colors.secondary.main}1A`,
   },
   borderRing: {
     backgroundColor: colors.white,
@@ -82,9 +104,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 4,
+    shadowOpacity: 0.18,
+    shadowRadius: 5,
+    elevation: 5,
   },
   inner: {
     backgroundColor: colors.secondary.main,
@@ -96,11 +118,7 @@ const styles = StyleSheet.create({
   },
   count: {
     color: colors.white,
-    fontSize: 13,
     fontWeight: '800',
-    lineHeight: 15,
-  },
-  countSmall: {
-    fontSize: 11,
+    lineHeight: 14,
   },
 })

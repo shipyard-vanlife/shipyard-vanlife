@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.border.light,
   },
   title: {
     fontSize: fontSize.xxl,
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.lg,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: colors.border.light,
   },
   acceptButton: {
     backgroundColor: colors.secondary.main,

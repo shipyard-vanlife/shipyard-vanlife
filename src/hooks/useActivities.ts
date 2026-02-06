@@ -8,6 +8,8 @@ import type {
   CreateActivityInput,
   UpdateActivityInput,
 } from '../types/activity'
+import { isRlsPolicyError } from '../utils/validation/errors'
+import { useRevenueCatContext } from '../contexts/RevenueCatContext'
 import { activityChatKeys } from './useActivityChat'
 
 // Query keys
@@ -235,10 +237,12 @@ export function useActivityById(activityId: string | null) {
         .eq('user_id', userId || '')
         .single()
 
+      const creator = data.creator as unknown as { username: string; avatar_url: string } | null
+
       return {
         ...data,
-        creator_username: data.creator?.username,
-        creator_avatar: data.creator?.avatar_url,
+        creator_username: creator?.username,
+        creator_avatar: creator?.avatar_url,
         location,
         is_creator: data.creator_id === userId,
         is_participant: !!participantData,
@@ -289,6 +293,7 @@ export function useActivityParticipants(activityId: string | null) {
 
 export function useCreateActivity() {
   const queryClient = useQueryClient()
+  const { presentPaywall } = useRevenueCatContext()
 
   return useMutation({
     mutationFn: async (input: CreateActivityInput): Promise<string> => {
@@ -313,7 +318,13 @@ export function useCreateActivity() {
         .select('id')
         .single()
 
-      if (error) throw error
+      if (error) {
+        if (isRlsPolicyError(error)) {
+          presentPaywall()
+          throw new Error('PREMIUM_REQUIRED')
+        }
+        throw error
+      }
 
       // Ensure activity chat exists when creating
       await supabase.rpc('ensure_activity_chat', {

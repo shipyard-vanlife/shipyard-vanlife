@@ -1,9 +1,12 @@
 import { Ionicons } from '@expo/vector-icons'
+import * as Location from 'expo-location'
 import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
+  Linking,
   RefreshControl,
   StyleSheet,
   Text,
@@ -13,6 +16,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { CreateTripModal, TripCard, TripDetailModal } from '../components/trips'
 import { EmptyState } from '../components/ui'
+import { usePremiumGate } from '../hooks/usePremiumGate'
+import { useMyProfile } from '../hooks/useProfiles'
 import { useActiveTrip, useMyTrips } from '../hooks/useTrips'
 import { colors, fontSize, fontWeight, spacing } from '../styles/theme'
 import type { Trip } from '../types/trip'
@@ -22,9 +27,12 @@ interface TripsScreenProps {
 }
 
 export const TripsScreen: React.FC<TripsScreenProps> = ({ onViewTripOnMap }) => {
-  const { t } = useTranslation('trips')
+  const { t } = useTranslation(['trips', 'common'])
   const { data: trips, isLoading, refetch, isRefetching } = useMyTrips()
   const { data: activeTrip } = useActiveTrip()
+  const { data: myProfile } = useMyProfile()
+  const { canCreateTrip, showPaywall } = usePremiumGate()
+  const isVerified = myProfile?.verification_status === 'approved'
 
   // Modal states
   const [createModalVisible, setCreateModalVisible] = useState(false)
@@ -38,9 +46,34 @@ export const TripsScreen: React.FC<TripsScreenProps> = ({ onViewTripOnMap }) => 
     refetch()
   }, [refetch])
 
-  const handleCreatePress = useCallback(() => {
+  const handleCreatePress = useCallback(async () => {
+    // Check trip limit for free users
+    const tripsCount = trips?.length ?? 0
+    if (!canCreateTrip(tripsCount)) {
+      Alert.alert(t('common:premium.upgradeTitle'), t('common:premium.tripsLimit'))
+      await showPaywall()
+      return
+    }
+
+    // Check location permission before opening modal
+    const { status } = await Location.getForegroundPermissionsAsync()
+    if (status === 'denied') {
+      Alert.alert(
+        t('common:location.tripRequiresLocation.title'),
+        t('common:location.tripRequiresLocation.message'),
+        [
+          { text: t('common:location.tripRequiresLocation.cancel'), style: 'cancel' },
+          {
+            text: t('common:location.tripRequiresLocation.openSettings'),
+            onPress: () => Linking.openSettings(),
+          },
+        ]
+      )
+      return
+    }
+
     setCreateModalVisible(true)
-  }, [])
+  }, [trips, canCreateTrip, showPaywall, t])
 
   const handleTripPress = useCallback((trip: Trip) => {
     setSelectedTripId(trip.id)
@@ -54,13 +87,20 @@ export const TripsScreen: React.FC<TripsScreenProps> = ({ onViewTripOnMap }) => 
 
   const handleViewTripOnMap = useCallback(
     (trip: Trip) => {
+      if (!isVerified) {
+        Alert.alert(
+          t('common:verification.mapBlockedTitle'),
+          t('common:verification.mapBlockedMessage') + '\n' + t('common:verification.mapBlockedNote')
+        )
+        return
+      }
       // Close the modal first
       setDetailModalVisible(false)
       setSelectedTripId(null)
       // Then navigate to map with the trip
       onViewTripOnMap?.(trip)
     },
-    [onViewTripOnMap]
+    [isVerified, onViewTripOnMap, t]
   )
 
   const handleCreateClose = useCallback(() => {

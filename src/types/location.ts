@@ -24,6 +24,7 @@ export interface MapZone {
   count: number // Number of vans in this zone
   sampleAvatars: string[] // Up to 3 avatar URLs for preview
   profiles?: NearbyProfile[] // Loaded when zone is tapped
+  queryRadius?: number // Degrees around center to query when tapped (larger for merged zones)
 }
 
 // Row returned by get_viewport_data RPC
@@ -32,7 +33,7 @@ export interface ViewportZone {
   zone_lng: number
   profile_count: number
   sample_avatars: string[]
-  profiles: NearbyProfile[] | null // null for dense zones (>=10), loaded on demand
+  profiles: NearbyProfile[] | null // null for dense zones (>=2), loaded on demand
 }
 
 // Profile as returned by get_nearby_profiles, get_all_visible_profiles, get_profiles_in_zone
@@ -76,6 +77,7 @@ export interface PublicProfile {
   bio: string | null
   photos: string[]
   verification_status: import('./verification').VerificationStatus | null
+  is_pro?: boolean
 }
 
 // Parameters for nearby profiles query
