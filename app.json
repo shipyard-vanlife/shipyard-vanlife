@@ -4,6 +4,7 @@
     "slug": "shipyard-vanlife",
     "scheme": "nomli",
     "version": "1.0.0",
+    "platforms": ["ios"],
     "orientation": "portrait",
     "icon": "./assets/nomli-logo.png",
     "userInterfaceStyle": "light",
