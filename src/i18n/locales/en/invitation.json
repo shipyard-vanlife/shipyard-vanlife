@@ -14,11 +14,15 @@
   "codeInput": {
     "title": "Invitation code",
     "subtitle": "Enter the code you received",
+    "label": "Invitation code",
     "placeholder": "VAN-XXXX",
     "hint": "The code format is VAN-XXXX",
+    "submit": "Validate code",
     "validate": "Validate code",
     "validating": "Validating...",
     "success": "Valid code!",
+    "successTitle": "Welcome!",
+    "successMessage": "Your code has been successfully validated",
     "continue": "Continue"
   },
   "generate": {

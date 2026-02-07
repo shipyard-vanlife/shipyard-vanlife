@@ -14,11 +14,15 @@
   "codeInput": {
     "title": "Code d'invitation",
     "subtitle": "Entre le code que tu as reçu",
+    "label": "Code d'invitation",
     "placeholder": "VAN-XXXX",
     "hint": "Le code est au format VAN-XXXX",
+    "submit": "Valider le code",
     "validate": "Valider le code",
     "validating": "Vérification...",
     "success": "Code valide !",
+    "successTitle": "Bienvenue !",
+    "successMessage": "Ton code a été validé avec succès",
     "continue": "Continuer"
   },
   "generate": {

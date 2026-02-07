@@ -14,6 +14,7 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useSignIn } from '../hooks'
+import { useGoogleAuth } from '../hooks/useGoogleAuth'
 import { sanitizeEmail, isValidEmail } from '../utils/security/validation'
 import { colors, spacing, fontSize, fontWeight, borderRadius, shadows } from '../styles/theme'
 
@@ -27,6 +28,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister }
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const { mutateAsync: signIn, isPending: loading } = useSignIn()
+  const { signInWithGoogle } = useGoogleAuth()
   const emailRef = useRef<TextInput>(null)
   const passwordRef = useRef<TextInput>(null)
 
@@ -106,6 +108,27 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister }
           ) : (
             <Text style={styles.buttonText}>{t('submit')}</Text>
           )}
+        </TouchableOpacity>
+
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>OU</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        <TouchableOpacity
+          style={styles.googleButton}
+          onPress={async () => {
+            try {
+              await signInWithGoogle()
+            } catch (error: any) {
+              Alert.alert('Erreur de connexion', error.message || 'Impossible de se connecter avec Google')
+            }
+          }}
+          disabled={loading}
+        >
+          <Ionicons name="logo-google" size={24} color={colors.text.primary} />
+          <Text style={styles.googleButtonText}>Continuer avec Google</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -189,6 +212,39 @@ const styles = StyleSheet.create({
   linkText: {
     color: colors.secondary.main,
     fontSize: fontSize.base,
+    fontWeight: fontWeight.medium,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: spacing.lg,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border.main,
+  },
+  dividerText: {
+    marginHorizontal: spacing.md,
+    color: colors.text.muted,
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.medium,
+  },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border.main,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    gap: spacing.sm,
+    ...shadows.small,
+  },
+  googleButtonText: {
+    color: colors.text.primary,
+    fontSize: fontSize.lg,
     fontWeight: fontWeight.medium,
   },
 })
