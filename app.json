@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "shipyard-vanlife",
+    "name": "Nomli",
     "slug": "shipyard-vanlife",
     "scheme": "nomli",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/nomli-logo.png",
+    "icon": "./assets/icon_ios_nomli.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": false,
     "splash": {
