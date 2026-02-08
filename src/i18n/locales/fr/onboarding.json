@@ -63,7 +63,12 @@
       }
     },
     "dontShowAgain": "Ne plus afficher cet écran au démarrage",
+    "yearlyBadge": "Économisez 10€",
+    "yearlyTitle": "Abonnement Annuel",
+    "monthlyTitle": "Abonnement Mensuel",
+    "yearlySavings": "Soit 3,33€ / mois",
     "premiumButton": "Passer Premium",
+    "price": "4,99€ / mois",
     "priceMonthly": "4,99€ / mois",
     "priceYearly": "39,99€ / an",
     "cancelText": "Annulable à tout moment",

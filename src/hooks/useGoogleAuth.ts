@@ -3,6 +3,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin'
 
 // Configuration - le Client ID est lu depuis Info.plist via la config Expo
 GoogleSignin.configure({
+  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
   offlineAccess: true,
 })
 
@@ -16,10 +17,10 @@ export const useGoogleAuth = () => {
 
       // Sign in with Google
       const userInfo = await GoogleSignin.signIn()
-      console.log('✅ Google Sign In successful:', userInfo.user.email)
+      console.log('✅ Google Sign In successful:', userInfo)
 
-      // Get the ID token
-      const { idToken } = userInfo.data
+      // Get the ID token - structure changed in v16
+      const idToken = userInfo.data?.idToken
 
       if (!idToken) {
         throw new Error('No ID token received from Google')

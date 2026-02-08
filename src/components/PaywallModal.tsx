@@ -52,6 +52,7 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
   const { t } = useTranslation('onboarding')
   const [showTermsModal, setShowTermsModal] = useState(false)
   const [showPrivacyModal, setShowPrivacyModal] = useState(false)
+  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly')
 
   const handlePurchase = async () => {
     if (isExpoGo) {
@@ -111,9 +112,43 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
           </View>
 
           <View style={styles.footerContainer}>
+            <View style={styles.planSelector}>
+              <TouchableOpacity
+                style={[styles.planOption, selectedPlan === 'yearly' && styles.planOptionSelected]}
+                onPress={() => setSelectedPlan('yearly')}
+              >
+                <View style={styles.planHeader}>
+                  <View style={styles.planBadge}>
+                    <Text style={styles.planBadgeText}>{t('paywall.yearlyBadge')}</Text>
+                  </View>
+                  <View style={[styles.radioButton, selectedPlan === 'yearly' && styles.radioButtonSelected]}>
+                    {selectedPlan === 'yearly' && <View style={styles.radioButtonInner} />}
+                  </View>
+                </View>
+                <Text style={styles.planTitle}>{t('paywall.yearlyTitle')}</Text>
+                <Text style={styles.planPrice}>{t('paywall.priceYearly')}</Text>
+                <Text style={styles.planSavings}>{t('paywall.yearlySavings')}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.planOption, selectedPlan === 'monthly' && styles.planOptionSelected]}
+                onPress={() => setSelectedPlan('monthly')}
+              >
+                <View style={styles.planHeader}>
+                  <View style={styles.planHeaderSpacer} />
+                  <View style={[styles.radioButton, selectedPlan === 'monthly' && styles.radioButtonSelected]}>
+                    {selectedPlan === 'monthly' && <View style={styles.radioButtonInner} />}
+                  </View>
+                </View>
+                <Text style={styles.planTitle}>{t('paywall.monthlyTitle')}</Text>
+                <Text style={styles.planPrice}>{t('paywall.priceMonthly')}</Text>
+                <View style={styles.planSpacer} />
+              </TouchableOpacity>
+            </View>
+
             <TouchableOpacity style={styles.premiumButton} onPress={handlePurchase}>
               <Text style={styles.premiumButtonText}>
-                {t('paywall.premiumButton')}     {t('paywall.price')}
+                {t('paywall.premiumButton')}
               </Text>
             </TouchableOpacity>
 
@@ -232,6 +267,88 @@ const styles = StyleSheet.create({
   footerContainer: {
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.xl,
+  },
+  planSelector: {
+    gap: spacing.md,
+    marginBottom: spacing.xl,
+  },
+  planOption: {
+    backgroundColor: colors.white,
+    padding: spacing.lg + 4,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  planOptionSelected: {
+    borderColor: '#E07856',
+    backgroundColor: '#FFF9F7',
+    shadowColor: '#E07856',
+    shadowOpacity: 0.15,
+  },
+  planHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  planHeaderSpacer: {
+    flex: 1,
+  },
+  planBadge: {
+    backgroundColor: '#10B981',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs - 2,
+    borderRadius: 8,
+  },
+  planBadgeText: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.bold,
+    color: colors.white,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  radioButton: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#D1D5DB',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  radioButtonSelected: {
+    borderColor: '#E07856',
+  },
+  radioButtonInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#E07856',
+  },
+  planTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+    color: '#1F2937',
+    marginBottom: spacing.xs - 2,
+  },
+  planPrice: {
+    fontSize: fontSize.xl + 4,
+    fontWeight: fontWeight.bold,
+    color: '#E07856',
+    marginBottom: spacing.xs - 2,
+  },
+  planSavings: {
+    fontSize: fontSize.sm,
+    color: '#10B981',
+    fontWeight: fontWeight.semibold,
+  },
+  planSpacer: {
+    height: 20,
   },
   premiumButton: {
     backgroundColor: '#E07856',

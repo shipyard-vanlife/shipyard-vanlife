@@ -63,7 +63,12 @@
       }
     },
     "dontShowAgain": "Don't show this screen at startup anymore",
+    "yearlyBadge": "Save €10",
+    "yearlyTitle": "Yearly Plan",
+    "monthlyTitle": "Monthly Plan",
+    "yearlySavings": "€3.33 / month",
     "premiumButton": "Go Premium",
+    "price": "€4.99 / month",
     "priceMonthly": "€4.99 / month",
     "priceYearly": "€39.99 / year",
     "cancelText": "Cancellable at any time.",
