@@ -85,14 +85,11 @@ export const resources = {
   },
 } as const
 
-const deviceLanguage = Localization.getLocales()[0]?.languageCode ?? 'fr'
-const supportedLanguages = ['fr', 'en']
-const initialLanguage = supportedLanguages.includes(deviceLanguage) ? deviceLanguage : 'fr'
-
+// Initialize with fallback, will be updated when Localization is ready
 i18n.use(initReactI18next).init({
   compatibilityJSON: 'v4',
   resources,
-  lng: initialLanguage,
+  lng: 'fr', // Default to French, will be updated
   fallbackLng: 'fr',
   defaultNS,
   ns: [
@@ -119,5 +116,17 @@ i18n.use(initReactI18next).init({
     escapeValue: false,
   },
 })
+
+// Update language after initialization (safe to call native module)
+setTimeout(() => {
+  try {
+    const deviceLanguage = Localization.getLocales()[0]?.languageCode ?? 'fr'
+    const supportedLanguages = ['fr', 'en']
+    const initialLanguage = supportedLanguages.includes(deviceLanguage) ? deviceLanguage : 'fr'
+    i18n.changeLanguage(initialLanguage)
+  } catch (error) {
+    console.log('Failed to get device language, using default')
+  }
+}, 0)
 
 export default i18n
