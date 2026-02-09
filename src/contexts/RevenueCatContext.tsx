@@ -33,7 +33,7 @@ export const RevenueCatProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   // Hybrid sync: SDK entitlement OR server-side is_pro flag
   const isPro = hasProEntitlement(customerInfo) || myProfile?.is_pro === true
 
-  // 1. Register listener FIRST — catches configure()'s internal fetch + real-time updates
+  // Initialize SDK and register listener (in correct order)
   useEffect(() => {
     if (isExpoGo) {
       sdkReadyRef.current.resolve()
@@ -42,28 +42,24 @@ export const RevenueCatProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
 
     let isFirstCallback = true
-
-    const listener = (info: CustomerInfo) => {
-      setCustomerInfo(info)
-      if (isFirstCallback) {
-        isFirstCallback = false
-        sdkReadyRef.current.resolve()
-      }
-    }
-
-    Purchases.addCustomerInfoUpdateListener(listener)
-    return () => {
-      Purchases.removeCustomerInfoUpdateListener(listener)
-    }
-  }, [])
-
-  // 2. Configure SDK — the listener above catches the initial customer info
-  useEffect(() => {
-    if (isExpoGo) return
+    let cleanup: (() => void) | null = null
 
     const init = async () => {
       try {
+        // 1. Configure FIRST
         await initializeRevenueCat()
+
+        // 2. THEN register listener
+        const listener = (info: CustomerInfo) => {
+          setCustomerInfo(info)
+          if (isFirstCallback) {
+            isFirstCallback = false
+            sdkReadyRef.current.resolve()
+          }
+        }
+
+        Purchases.addCustomerInfoUpdateListener(listener)
+        cleanup = () => Purchases.removeCustomerInfoUpdateListener(listener)
       } catch (error) {
         console.error('[RevenueCat] Initialization failed:', error)
         sdkReadyRef.current.resolve()
@@ -77,7 +73,10 @@ export const RevenueCatProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       sdkReadyRef.current.resolve()
     }, 5000)
 
-    return () => clearTimeout(timeout)
+    return () => {
+      clearTimeout(timeout)
+      cleanup?.()
+    }
   }, [])
 
   // 3. Auth sync — waits for SDK ready before any API calls
