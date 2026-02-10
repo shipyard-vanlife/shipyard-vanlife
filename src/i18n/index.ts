@@ -1,6 +1,7 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
-import * as Localization from 'expo-localization'
+// ⚠️ NE PAS importer au top-level - cause crash iOS production
+// import * as Localization from 'expo-localization'
 
 import frCommon from './locales/fr/common.json'
 import frLogin from './locales/fr/login.json'
@@ -118,8 +119,10 @@ i18n.use(initReactI18next).init({
 })
 
 // Update language after initialization (safe to call native module)
-setTimeout(() => {
+setTimeout(async () => {
   try {
+    // ✅ Import dynamique - évite le chargement au module load time
+    const Localization = await import('expo-localization')
     const deviceLanguage = Localization.getLocales()[0]?.languageCode ?? 'fr'
     const supportedLanguages = ['fr', 'en']
     const initialLanguage = supportedLanguages.includes(deviceLanguage) ? deviceLanguage : 'fr'
