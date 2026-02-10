@@ -66,8 +66,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "6b234ab4-4f52-4261-99c9-745992dfb42e"
+        "projectId": "9cf139d4-cbe6-4e6e-b592-5e3b7d76aff1"
       }
-    }
+    },
+    "owner": "medy75"
   }
 }
