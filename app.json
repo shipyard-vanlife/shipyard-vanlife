@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Nomli",
-    "slug": "shipyard-vanlife",
+    "slug": "nomli",
     "scheme": "nomli",
     "version": "1.0.2",
     "orientation": "portrait",
@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.medy.nomli",
-      "buildNumber": "8",
+      "buildNumber": "9",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
