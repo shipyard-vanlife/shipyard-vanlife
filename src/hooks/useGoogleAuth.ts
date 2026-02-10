@@ -1,15 +1,25 @@
 import { supabase } from '../services/supabase'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 
-// Configuration - le Client ID est lu depuis Info.plist via la config Expo
-GoogleSignin.configure({
-  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-  offlineAccess: true,
-})
+// Lazy initialization flag
+let isConfigured = false
+
+const ensureConfigured = () => {
+  if (!isConfigured) {
+    GoogleSignin.configure({
+      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+      offlineAccess: true,
+    })
+    isConfigured = true
+  }
+}
 
 export const useGoogleAuth = () => {
   const signInWithGoogle = async () => {
     try {
+      // Configure only when actually needed (lazy init)
+      ensureConfigured()
+
       console.log('🔐 Starting Google Sign In...')
 
       // Check if device supports Google Play Services (iOS always does)
