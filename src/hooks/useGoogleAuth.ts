@@ -1,6 +1,8 @@
 import { supabase } from '../services/supabase'
-import { GoogleSignin } from '@react-native-google-signin/google-signin'
+// ❌ BUILD 11 - NEUTRALISÉ POUR TEST ISOLATION
+// import { GoogleSignin } from '@react-native-google-signin/google-signin'
 
+/*
 // Lazy initialization flag
 let isConfigured = false
 
@@ -13,9 +15,15 @@ const ensureConfigured = () => {
     isConfigured = true
   }
 }
+*/
 
 export const useGoogleAuth = () => {
   const signInWithGoogle = async () => {
+    // ❌ BUILD 11 - DISABLED
+    console.log('[GoogleSignin] DISABLED - Build 11')
+    throw new Error('Google Sign-In disabled for testing')
+
+    /*
     try {
       // Configure only when actually needed (lazy init)
       ensureConfigured()
@@ -63,6 +71,7 @@ export const useGoogleAuth = () => {
 
       throw error
     }
+    */
   }
 
   return { signInWithGoogle }

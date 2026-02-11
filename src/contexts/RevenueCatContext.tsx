@@ -1,11 +1,12 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
-import Purchases from 'react-native-purchases'
-import type { CustomerInfo, PurchasesOfferings, PurchasesPackage } from 'react-native-purchases'
-import RevenueCatUI, { PAYWALL_RESULT } from 'react-native-purchases-ui'
+// ❌ BUILD 11 - NEUTRALISÉ POUR TEST ISOLATION
+// import Purchases from 'react-native-purchases'
+// import type { CustomerInfo, PurchasesOfferings, PurchasesPackage } from 'react-native-purchases'
+// import RevenueCatUI, { PAYWALL_RESULT } from 'react-native-purchases-ui'
 import { useAuth } from './AuthContext'
-import { initializeRevenueCat, hasProEntitlement, isExpoGo } from '../services/revenueCat'
+// import { initializeRevenueCat, hasProEntitlement, isExpoGo } from '../services/revenueCat'
 import { useMyProfile } from '../hooks/useProfiles'
-import { PaywallModal } from '../components/PaywallModal'
+// import { PaywallModal } from '../components/PaywallModal'
 import type { RevenueCatContextType } from '../types/subscription'
 
 const RevenueCatContext = createContext<RevenueCatContextType | undefined>(undefined)
@@ -22,18 +23,19 @@ export const RevenueCatProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const { user } = useAuth()
   const { data: myProfile } = useMyProfile()
 
-  const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null)
-  const [offerings, setOfferings] = useState<PurchasesOfferings | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  // ❌ BUILD 11 - Mock state
+  // const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null)
+  // const [offerings, setOfferings] = useState<PurchasesOfferings | null>(null)
+  const [isLoading, setIsLoading] = useState(false) // ✅ Mock: toujours prêt
 
-  const previousUserIdRef = useRef<string | null | undefined>(undefined)
-  // Resolves once SDK's internal getCustomerInfo (from configure) completes
-  const sdkReadyRef = useRef(createDeferred())
+  // const previousUserIdRef = useRef<string | null | undefined>(undefined)
+  // const sdkReadyRef = useRef(createDeferred())
 
-  // Hybrid sync: SDK entitlement OR server-side is_pro flag
-  const isPro = hasProEntitlement(customerInfo) || myProfile?.is_pro === true
+  // ❌ BUILD 11 - Mock isPro
+  const isPro = myProfile?.is_pro === true
 
-  // Initialize SDK and register listener (in correct order)
+  // ❌ BUILD 11 - TOUT LE CODE REVENUECAT COMMENTÉ
+  /*
   useEffect(() => {
     if (isExpoGo) {
       sdkReadyRef.current.resolve()
@@ -233,13 +235,38 @@ export const RevenueCatProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       console.error('[RevenueCat] Refresh failed:', error)
     }
   }, [])
+  */
+
+  // ❌ BUILD 11 - FONCTIONS MOCK
+  const purchasePackage = useCallback(async (): Promise<boolean> => {
+    console.log('[RevenueCat] DISABLED')
+    return false
+  }, [])
+
+  const restorePurchases = useCallback(async (): Promise<boolean> => {
+    console.log('[RevenueCat] DISABLED')
+    return false
+  }, [])
+
+  const presentPaywall = useCallback(async (): Promise<boolean> => {
+    console.log('[RevenueCat] DISABLED')
+    return false
+  }, [])
+
+  const presentCustomerCenter = useCallback(async (): Promise<void> => {
+    console.log('[RevenueCat] DISABLED')
+  }, [])
+
+  const refreshCustomerInfo = useCallback(async (): Promise<void> => {
+    console.log('[RevenueCat] DISABLED')
+  }, [])
 
   return (
     <RevenueCatContext.Provider
       value={{
         isPro,
-        customerInfo,
-        offerings,
+        customerInfo: null,
+        offerings: null,
         isLoading,
         purchasePackage,
         restorePurchases,
@@ -249,13 +276,6 @@ export const RevenueCatProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       }}
     >
       {children}
-      <PaywallModal
-        visible={paywallVisible}
-        onClose={handlePaywallClose}
-        onPurchaseSuccess={handlePaywallPurchaseSuccess}
-        purchaseWithSDK={purchaseWithSDK}
-        restoreWithSDK={restoreWithSDK}
-      />
     </RevenueCatContext.Provider>
   )
 }
