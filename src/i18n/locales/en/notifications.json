@@ -1,0 +1,53 @@
+{
+  "message": {
+    "title": "New message",
+    "body": "{{username}}: {{preview}}"
+  },
+  "connectionRequest": {
+    "title": "Connection request",
+    "body": "{{username}} wants to connect with you"
+  },
+  "connectionAccepted": {
+    "title": "Connection accepted",
+    "body": "{{username}} accepted your request"
+  },
+  "activityInvitation": {
+    "title": "Activity invitation",
+    "body": "{{username}} invited you to {{activity}}"
+  },
+  "activityMessage": {
+    "title": "{{activity}}",
+    "body": "{{username}}: {{preview}}"
+  },
+  "activityJoined": {
+    "title": "New participant",
+    "body": "{{username}} joined {{activity}}"
+  },
+  "activityCancelled": {
+    "title": "Activity cancelled",
+    "body": "{{username}} cancelled {{activity}}"
+  },
+  "helpRequest": {
+    "title": "Help request",
+    "body": "{{username}} needs help with {{skill}}"
+  },
+  "helpResponse": {
+    "title": "Help response",
+    "body": "{{username}} {{status}} your help request"
+  },
+  "invitationResponse": {
+    "title": "Invitation response",
+    "body": "{{username}} {{status}} the invitation for {{activity}}"
+  },
+  "invitationCodeUsed": {
+    "title": "Invitation code used",
+    "body": "{{username}} used your invitation code"
+  },
+  "verificationStatus": {
+    "title": "Verification",
+    "body": {
+      "approved": "Your profile has been verified!",
+      "rejected": "Your verification was rejected."
+    }
+  }
+}

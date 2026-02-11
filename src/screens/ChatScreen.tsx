@@ -30,10 +30,19 @@ import { ACTIVITY_TYPE_ICONS, ACTIVITY_TYPE_COLORS } from '../types/activity'
 import type { ActivityChatPreview } from '../types/activityChat'
 import { usePremiumGate } from '../hooks/usePremiumGate'
 import { colors } from '../styles/theme'
+import type { NotificationNavigationData } from '../types/notification'
 
 type ChatTab = 'friends' | 'groups' | 'requests'
 
-export const ChatScreen: React.FC = () => {
+interface ChatScreenProps {
+  notificationIntent?: NotificationNavigationData | null
+  onClearNotificationIntent?: () => void
+}
+
+export const ChatScreen: React.FC<ChatScreenProps> = ({
+  notificationIntent,
+  onClearNotificationIntent,
+}) => {
 const { t } = useTranslation(['common', 'chat'])
   const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState<ChatTab>('friends')
@@ -102,6 +111,31 @@ const { t } = useTranslation(['common', 'chat'])
       refetchRequests()
     }
   }, [activeTab])
+
+  // Handle notification deep link
+  useEffect(() => {
+    if (!notificationIntent) return
+
+    if (notificationIntent.screen === 'chat' && notificationIntent.connectionId) {
+      const friend = friends?.find((f) => f.connection_id === notificationIntent.connectionId)
+      if (friend) {
+        setOpenConversation({
+          connectionId: friend.connection_id,
+          friendName: friend.friend_username,
+          friendAvatar: friend.friend_avatar_url,
+          friendId: friend.friend_id,
+        })
+      }
+      onClearNotificationIntent?.()
+    } else if (notificationIntent.screen === 'activityChat' && notificationIntent.activityId) {
+      setActiveTab('groups')
+      setOpenActivityChat(notificationIntent.activityId)
+      onClearNotificationIntent?.()
+    } else if (notificationIntent.screen === 'connections') {
+      setActiveTab('requests')
+      onClearNotificationIntent?.()
+    }
+  }, [notificationIntent, friends, onClearNotificationIntent])
 
   const renderFriendItem = useCallback(
     ({ item }: { item: Friend }) => (

@@ -20,6 +20,7 @@ import frLegal from './locales/fr/legal.json'
 import frSettings from './locales/fr/settings.json'
 import frTerms from './locales/fr/terms.json'
 import frPrivacy from './locales/fr/privacy.json'
+import frNotifications from './locales/fr/notifications.json'
 
 import enCommon from './locales/en/common.json'
 import enLogin from './locales/en/login.json'
@@ -39,6 +40,7 @@ import enLegal from './locales/en/legal.json'
 import enSettings from './locales/en/settings.json'
 import enTerms from './locales/en/terms.json'
 import enPrivacy from './locales/en/privacy.json'
+import enNotifications from './locales/en/notifications.json'
 
 export const defaultNS = 'common'
 
@@ -62,6 +64,7 @@ export const resources = {
     settings: frSettings,
     terms: frTerms,
     privacy: frPrivacy,
+    notifications: frNotifications,
   },
   en: {
     common: enCommon,
@@ -82,6 +85,7 @@ export const resources = {
     settings: enSettings,
     terms: enTerms,
     privacy: enPrivacy,
+    notifications: enNotifications,
   },
 } as const
 
@@ -114,6 +118,7 @@ i18n.use(initReactI18next).init({
     'settings',
     'terms',
     'privacy',
+    'notifications',
   ],
   interpolation: {
     escapeValue: false,

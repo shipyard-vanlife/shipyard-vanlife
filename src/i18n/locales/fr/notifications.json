@@ -1,0 +1,53 @@
+{
+  "message": {
+    "title": "Nouveau message",
+    "body": "{{username}} : {{preview}}"
+  },
+  "connectionRequest": {
+    "title": "Demande de connexion",
+    "body": "{{username}} souhaite devenir ton ami"
+  },
+  "connectionAccepted": {
+    "title": "Connexion acceptée",
+    "body": "{{username}} a accepté ta demande"
+  },
+  "activityInvitation": {
+    "title": "Invitation à une activité",
+    "body": "{{username}} t'invite à {{activity}}"
+  },
+  "activityMessage": {
+    "title": "{{activity}}",
+    "body": "{{username}} : {{preview}}"
+  },
+  "activityJoined": {
+    "title": "Nouveau participant",
+    "body": "{{username}} a rejoint {{activity}}"
+  },
+  "activityCancelled": {
+    "title": "Activité annulée",
+    "body": "{{username}} a annulé {{activity}}"
+  },
+  "helpRequest": {
+    "title": "Demande d'aide",
+    "body": "{{username}} a besoin d'aide en {{skill}}"
+  },
+  "helpResponse": {
+    "title": "Réponse à ta demande",
+    "body": "{{username}} a {{status}} ta demande d'aide"
+  },
+  "invitationResponse": {
+    "title": "Réponse à ton invitation",
+    "body": "{{username}} a {{status}} l'invitation pour {{activity}}"
+  },
+  "invitationCodeUsed": {
+    "title": "Code d'invitation utilisé",
+    "body": "{{username}} a utilisé ton code d'invitation"
+  },
+  "verificationStatus": {
+    "title": "Vérification",
+    "body": {
+      "approved": "Ton profil a été vérifié avec succès !",
+      "rejected": "Ta vérification a été refusée."
+    }
+  }
+}

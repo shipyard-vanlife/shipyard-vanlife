@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { ActivitiesScreen } from '../screens/ActivitiesScreen'
 import { ChatScreen } from '../screens/ChatScreen'
@@ -7,6 +7,8 @@ import { ProfileScreen } from '../screens/ProfileScreen'
 import { SearchScreen } from '../screens/SearchScreen'
 import { TripsScreen } from '../screens/TripsScreen'
 import type { Trip } from '../types/trip'
+import type { NotificationNavigationData } from '../types/notification'
+import { useNotificationContext } from '../contexts/NotificationContext'
 import { BottomTabNavigator } from './BottomTabNavigator'
 
 type TabName = 'trips' | 'home' | 'activities' | 'chat' | 'search' | 'profile'
@@ -14,6 +16,10 @@ type TabName = 'trips' | 'home' | 'activities' | 'chat' | 'search' | 'profile'
 export const MainNavigator: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabName>('home')
   const [tripToShow, setTripToShow] = useState<Trip | null>(null)
+  const [notificationIntent, setNotificationIntent] = useState<NotificationNavigationData | null>(
+    null
+  )
+  const { notificationNavigateRef } = useNotificationContext()
 
   // Track which tabs have been visited for lazy mounting
   const [mountedTabs, setMountedTabs] = useState<Set<TabName>>(() => new Set(['home']))
@@ -44,6 +50,35 @@ export const MainNavigator: React.FC = () => {
     handleTabChange('chat')
   }, [handleTabChange])
 
+  // Register the notification navigation callback
+  useEffect(() => {
+    notificationNavigateRef.current = (data: NotificationNavigationData) => {
+      setNotificationIntent(data)
+
+      switch (data.screen) {
+        case 'chat':
+        case 'activityChat':
+        case 'connections':
+          handleTabChange('chat')
+          break
+        case 'activities':
+          handleTabChange('activities')
+          break
+        case 'profile':
+          handleTabChange('profile')
+          break
+      }
+    }
+
+    return () => {
+      notificationNavigateRef.current = null
+    }
+  }, [handleTabChange, notificationNavigateRef])
+
+  const handleClearNotificationIntent = useCallback(() => {
+    setNotificationIntent(null)
+  }, [])
+
   return (
     <View style={styles.container}>
       {/* All screens rendered simultaneously, hidden via display style.
@@ -64,11 +99,21 @@ export const MainNavigator: React.FC = () => {
       </View>
 
       <View style={activeTab === 'activities' ? styles.activeScreen : styles.hiddenScreen}>
-        {mountedTabs.has('activities') ? <ActivitiesScreen /> : null}
+        {mountedTabs.has('activities') ? (
+          <ActivitiesScreen
+            notificationIntent={notificationIntent}
+            onClearNotificationIntent={handleClearNotificationIntent}
+          />
+        ) : null}
       </View>
 
       <View style={activeTab === 'chat' ? styles.activeScreen : styles.hiddenScreen}>
-        {mountedTabs.has('chat') ? <ChatScreen /> : null}
+        {mountedTabs.has('chat') ? (
+          <ChatScreen
+            notificationIntent={notificationIntent}
+            onClearNotificationIntent={handleClearNotificationIntent}
+          />
+        ) : null}
       </View>
 
       <View style={activeTab === 'search' ? styles.activeScreen : styles.hiddenScreen}>

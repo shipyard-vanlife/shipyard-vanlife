@@ -14,7 +14,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.medy.nomli"
+      "bundleIdentifier": "com.medy.nomli",
+      "infoPlist": {
+        "UIBackgroundModes": ["remote-notification"]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -47,6 +50,12 @@
         {
           "photosPermission": "L'application a besoin d'accéder à vos photos pour choisir une photo de profil.",
           "cameraPermission": "L'application a besoin d'accéder à votre caméra pour prendre une photo de profil."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#E07A5F"
         }
       ]
     ]

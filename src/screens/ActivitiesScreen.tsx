@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
@@ -24,10 +24,19 @@ import { useMyFriends } from '../hooks/useConnections'
 import { usePremiumGate } from '../hooks/usePremiumGate'
 import { useMyProfile } from '../hooks/useProfiles'
 import { Activity, ActivityType, ActivityStatus } from '../types/activity'
+import type { NotificationNavigationData } from '../types/notification'
 
 type TabType = 'nearby' | 'my' | 'invitations'
 
-export const ActivitiesScreen: React.FC = () => {
+interface ActivitiesScreenProps {
+  notificationIntent?: NotificationNavigationData | null
+  onClearNotificationIntent?: () => void
+}
+
+export const ActivitiesScreen: React.FC<ActivitiesScreenProps> = ({
+  notificationIntent,
+  onClearNotificationIntent,
+}) => {
   const { t } = useTranslation(['activities', 'common'])
   const [activeTab, setActiveTab] = useState<TabType>('nearby')
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null)
@@ -154,6 +163,25 @@ export const ActivitiesScreen: React.FC = () => {
       </View>
     )
   }
+
+  // Handle notification deep link
+  useEffect(() => {
+    if (!notificationIntent || notificationIntent.screen !== 'activities') return
+    if (!notificationIntent.activityId) {
+      onClearNotificationIntent?.()
+      return
+    }
+
+    // Find the activity in nearby or my lists
+    const activity =
+      nearbyActivities?.find((a) => a.id === notificationIntent.activityId) ??
+      myActivities?.find((a) => a.id === notificationIntent.activityId)
+
+    if (activity) {
+      setSelectedActivity(activity)
+    }
+    onClearNotificationIntent?.()
+  }, [notificationIntent, nearbyActivities, myActivities, onClearNotificationIntent])
 
   const isApproved = myProfile?.verification_status === 'approved'
 

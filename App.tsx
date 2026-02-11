@@ -5,6 +5,7 @@ import { ActivityIndicator, StyleSheet, View, Text } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { AuthProvider, useAuth } from './src/contexts/AuthContext'
 import { RevenueCatProvider } from './src/contexts/RevenueCatContext'
+import { NotificationProvider } from './src/contexts/NotificationContext'
 import { useMyProfile } from './src/hooks/useProfiles'
 import { useOnboarding } from './src/hooks/useOnboarding'
 import './src/i18n'
@@ -146,7 +147,9 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <RevenueCatProvider>
-            <Navigation />
+            <NotificationProvider>
+              <Navigation />
+            </NotificationProvider>
           </RevenueCatProvider>
           <StatusBar style="auto" />
         </AuthProvider>
