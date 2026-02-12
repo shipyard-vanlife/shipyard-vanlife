@@ -113,4 +113,3 @@ cat <<EOF > ios/shipyardvanlife/Info.plist
   <false/>
 </dict>
 </plist>
-EOF
