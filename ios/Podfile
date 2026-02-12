@@ -7,6 +7,9 @@ install! 'cocoapods', :deterministic_uuids => false
 # Force New Architecture
 ENV['RCT_NEW_ARCH_ENABLED'] = '1'
 
+# Force Folly version stable
+$RCTFollyVersion = '2024.01.01.00'
+
 target 'Nomli' do
   use_expo_modules!
   
