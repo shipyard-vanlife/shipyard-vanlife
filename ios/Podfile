@@ -1,80 +1,123 @@
 require File.join(File.dirname(`node --print "require.resolve('expo/package.json')"`), "scripts/autolinking")
 require File.join(File.dirname(`node --print "require.resolve('react-native/package.json')"`), "scripts/react_native_pods")
 
-require 'json'
-podfile_properties = JSON.parse(File.read(File.join(__dir__, 'Podfile.properties.json'))) rescue {}
+platform :ios, '15.1'
+install! 'cocoapods', :deterministic_uuids => false
 
-def ccache_enabled?(podfile_properties)
-  return ENV['USE_CCACHE'] == '1' if ENV['USE_CCACHE']
-  podfile_properties['apple.ccacheEnabled'] == 'true'
-end
-
-react_native_path = "../node_modules/react-native"
-
-# Force RCT_NEW_ARCH_ENABLED de façon déterministe
-new_arch_enabled = (podfile_properties['newArchEnabled'].to_s == 'true') ? '1' : '0'
-ENV['RCT_NEW_ARCH_ENABLED'] = new_arch_enabled
-ENV['EX_DEV_CLIENT_NETWORK_INSPECTOR'] ||= podfile_properties['EX_DEV_CLIENT_NETWORK_INSPECTOR']
-ENV['RCT_USE_RN_DEP'] ||= '1' if podfile_properties['ios.buildReactNativeFromSource'] != 'true' && podfile_properties['newArchEnabled'] != 'false'
-ENV['RCT_USE_PREBUILT_RNCORE'] ||= '1' if podfile_properties['ios.buildReactNativeFromSource'] != 'true' && podfile_properties['newArchEnabled'] != 'false'
-platform :ios, podfile_properties['ios.deploymentTarget'] || '15.1'
-
-prepare_react_native_project!
+# Force New Architecture (Activée pour appliquer les correctifs)
+ENV['RCT_NEW_ARCH_ENABLED'] = '1'
 
 target 'Nomli' do
   use_expo_modules!
-
-  if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'
-    config_command = ['node', '-e', "process.argv=['', '', 'config'];require('@react-native-community/cli').run()"];
-  else
-    config_command = [
-      'node',
-      '--no-warnings',
-      '--eval',
-      'require(\'expo/bin/autolinking\')',
-      'expo-modules-autolinking',
-      'react-native-config',
-      '--json',
-      '--platform',
-      'ios'
-    ]
-  end
-
-  config = use_native_modules!(config_command)
-
-  use_frameworks! :linkage => podfile_properties['ios.useFrameworks'].to_sym if podfile_properties['ios.useFrameworks']
-  use_frameworks! :linkage => ENV['USE_FRAMEWORKS'].to_sym if ENV['USE_FRAMEWORKS']
+  
+  # CRITICAL: Static linking pour Swift/Expo
+  use_frameworks! :linkage => :static
+  
+  config = use_native_modules!
 
   use_react_native!(
     :path => config[:reactNativePath],
-    :hermes_enabled => podfile_properties['expo.jsEngine'] == nil || podfile_properties['expo.jsEngine'] == 'hermes',
-    :app_path => "#{Pod::Config.instance.installation_root}/..",
-    :privacy_file_aggregation_enabled => podfile_properties['apple.privacyManifestAggregationEnabled'] != 'false',
+    :hermes_enabled => true,
+    :fabric_enabled => true,
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  # Déclaration explicite de RCT-Folly
-  pod 'RCT-Folly', :podspec => "#{react_native_path}/third-party-podspecs/RCT-Folly.podspec"
-
   post_install do |installer|
-    installer.pods_project.targets.each do |target|
-      target.build_configurations.each do |config|
-        config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
-      end
-
-      # Header search paths pour Folly
-      if target.name == 'RCT-Folly'
-        target.build_configurations.each do |config|
-          config.build_settings['HEADER_SEARCH_PATHS'] ||= '$(inherited)'
-          config.build_settings['HEADER_SEARCH_PATHS'] += " $(PODS_ROOT)/RCT-Folly/folly"
-        end
-      end
-    end
-
+    # Fix React Native pour New Arch
     react_native_post_install(
       installer,
       config[:reactNativePath],
-      :mac_catalyst_enabled => false,
-      :ccache_enabled => ccache_enabled?(podfile_properties),
+      :mac_catalyst_enabled => false
     )
+
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        
+        # FORCE iOS 15.1 (requis pour New Arch)
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
+        
+        # 1️⃣ ARCHITECTURE : Seulement arm64 pour M1
+        config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'i386 x86_64'
+        config.build_settings['ONLY_ACTIVE_ARCH'] = 'NO'
+        config.build_settings['ARCHS'] = 'arm64'
+        
+        # 2️⃣ C++ STANDARD : C++20 pour supporter .contains()
+        config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'gnu++20'
+        config.build_settings['CLANG_CXX_LIBRARY'] = 'libc++'
+        
+        # 3️⃣ FOLLY FLAGS : Ajout de FOLLY_CFG_NO_COROUTINES pour corriger l'erreur Coroutine.h
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_NO_CONFIG=1'
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_MOBILE=1'
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_USE_LIBCPP=1'
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_HAVE_CLOCK_GETTIME=1'
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_CFG_NO_COROUTINES=1'
+        
+        # 4️⃣ AUTRES OPTIMISATIONS
+        config.build_settings['ENABLE_BITCODE'] = 'NO'
+        config.build_settings['COMPILER_INDEX_STORE_ENABLE'] = 'NO'
+        
+        # 5️⃣ FIX Swift/Objective-C interop
+        config.build_settings['SWIFT_VERSION'] = '5.0'
+        config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
+        
+        # 6️⃣ FIX warnings et erreurs strictes
+        config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
+        config.build_settings['GCC_TREAT_WARNINGS_AS_ERRORS'] = 'NO'
+        config.build_settings['CLANG_WARN_STRICT_PROTOTYPES'] = 'NO'
+        
+        # 7️⃣ FIX spécifique React-perflogger et autres modules React Native
+        if target.name.start_with?('React-') || target.name == 'RCT-Folly'
+          config.build_settings['OTHER_CPLUSPLUSFLAGS'] ||= ['$(inherited)']
+          config.build_settings['OTHER_CPLUSPLUSFLAGS'] << '-Wno-error'
+          config.build_settings['OTHER_CPLUSPLUSFLAGS'] << '-Wno-unused-variable'
+          config.build_settings['OTHER_CPLUSPLUSFLAGS'] << '-Wno-unused-function'
+          config.build_settings['OTHER_CPLUSPLUSFLAGS'] << '-Wno-unreachable-code'
+          
+          # Fix Header Search Paths pour RCT-Folly (Solution 4 de ton prompt)
+          if target.name == 'RCT-Folly'
+            config.build_settings['HEADER_SEARCH_PATHS'] ||= ['$(inherited)']
+            config.build_settings['HEADER_SEARCH_PATHS'] << '"$(PODS_ROOT)/RCT-Folly"'
+            config.build_settings['HEADER_SEARCH_PATHS'] << '"$(PODS_ROOT)/boost"'
+            config.build_settings['HEADER_SEARCH_PATHS'] << '"$(PODS_ROOT)/DoubleConversion"'
+            config.build_settings['HEADER_SEARCH_PATHS'] << '"$(PODS_ROOT)/fmt/include"'
+          end
+        end
+      end
+      
+      # 8️⃣ FIX React-Codegen spécifique New Arch
+      if target.name == 'React-Codegen'
+        target.build_configurations.each do |config|
+          config.build_settings['HEADER_SEARCH_PATHS'] ||= ['$(inherited)']
+          config.build_settings['HEADER_SEARCH_PATHS'] << '"$(PODS_ROOT)/Headers/Private/React-Codegen/React"'
+        end
+      end
+    end
+    
+    # 🔥 PATCH PHYSIQUE : Désactiver les coroutines dans Folly (Solution 2)
+    system("chmod -R u+w #{installer.sandbox.root}/RCT-Folly")
+    portability_h = "#{installer.sandbox.root}/RCT-Folly/folly/Portability.h"
+    if File.exist?(portability_h)
+      text = File.read(portability_h)
+      new_text = text.gsub('#define FOLLY_HAS_COROUTINES 1', '#define FOLLY_HAS_COROUTINES 0')
+      File.write(portability_h, new_text)
+      puts "✅ Folly coroutines désactivées dans Portability.h"
+    end
+
+    # 🔥 PATCH PHYSIQUE : FuseboxTracer .contains() -> .count() (Solution 3)
+    fusebox_tracer = "#{installer.sandbox.root}/../node_modules/react-native/ReactCommon/reactperflogger/fusebox/FuseboxTracer.cpp"
+    if File.exist?(fusebox_tracer)
+      text = File.read(fusebox_tracer)
+      new_text = text.gsub(/(\w+)\.contains\(([^)]+)\)/, '\1.count(\2) > 0')
+      if text != new_text
+        File.write(fusebox_tracer, new_text)
+        puts "✅ FuseboxTracer.cpp patché (.contains() -> .count())"
+      end
+    end
+
+    # 9️⃣ Force deployment target sur le projet principal
+    installer.pods_project.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
+    end
   end
 end
