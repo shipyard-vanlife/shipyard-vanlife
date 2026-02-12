@@ -33,7 +33,7 @@ target 'Nomli' do
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
         
-        # 🔥 FORCE iOS 15.1 (requis pour New Arch)
+        #  FORCE iOS 15.1 (requis pour New Arch)
         config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
         
         # 1️⃣ ARCHITECTURE : Seulement arm64 pour M1
@@ -42,7 +42,7 @@ target 'Nomli' do
         config.build_settings['ARCHS'] = 'arm64'
         
         # 2️⃣ C++ STANDARD : gnu++17 pour Folly sur M1
-        config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'gnu++17'
+        config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'gnu++20'
         config.build_settings['CLANG_CXX_LIBRARY'] = 'libc++'
         
         # 3️⃣ FOLLY FLAGS : Tous les defines nécessaires
