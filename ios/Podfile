@@ -11,7 +11,7 @@ end
 
 react_native_path = "../node_modules/react-native"
 
-# ✅ New Architecture activée
+# On force la New Arch car c'est elle qui stabilise tes notifs/reanimated
 ENV['RCT_NEW_ARCH_ENABLED'] = '1'
 
 ENV['EX_DEV_CLIENT_NETWORK_INSPECTOR'] ||= podfile_properties['EX_DEV_CLIENT_NETWORK_INSPECTOR']
@@ -52,29 +52,33 @@ target 'Nomli' do
     :privacy_file_aggregation_enabled => podfile_properties['apple.privacyManifestAggregationEnabled'] != 'false',
   )
 
+  # Déclaration explicite
   pod 'RCT-Folly', :podspec => "#{react_native_path}/third-party-podspecs/RCT-Folly.podspec"
 
   post_install do |installer|
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
-        # 1. Empêcher le conflit x86_64 sur le simulateur pour Mac Silicon
+        # 1. Empêcher Xcode de chercher de l'Intel (x86) sur ton Mac Silicon
         config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "x86_64"
         
-        # 2. Fix classique pour les headers
+        # 2. Fix headers
         config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
 
-        # 3. 🛡️ LE FIX ULTIME POUR FOLLY / SYSUIO / COROUTINES 🛡️
+        # 3. 🛡️ CONFIGURATION DÉTERMINISTE POUR FOLLY 🛡️
+        # On définit tout ici pour éviter les erreurs de "SysUio" ou de "Coroutines"
         config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
-        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_NO_CONFIG=1'
-        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_MOBILE=1'
-        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_USE_LIBCPP=1'
-        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_CFG_NO_COROUTINES=1'
-        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_HAS_COROUTINES=0'
-        
-        # On force spécifiquement Folly à voir les headers système pour SysUio
         if target.name == 'RCT-Folly'
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_NO_CONFIG=1'
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_MOBILE=1'
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_USE_LIBCPP=1'
           config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_HAVE_PTHREAD=1'
           config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_HAVE_SYS_UIO_H=1'
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_CFG_NO_COROUTINES=1'
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_HAS_COROUTINES=0'
+          
+          # On remet ton ancien fix de header paths qui aidait bien
+          config.build_settings['HEADER_SEARCH_PATHS'] ||= '$(inherited)'
+          config.build_settings['HEADER_SEARCH_PATHS'] += " $(PODS_ROOT)/RCT-Folly/folly"
         end
       end
     end
