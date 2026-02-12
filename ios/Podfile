@@ -10,8 +10,7 @@ ENV['RCT_NEW_ARCH_ENABLED'] = '1'
 target 'Nomli' do
   use_expo_modules!
   
-  # CRITICAL: Static linking pour Swift/Expo
-  use_frameworks! :linkage => :static
+
   
   config = use_native_modules!
 
@@ -22,7 +21,7 @@ target 'Nomli' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  pod 'react-native-worklets-core', :path => '../node_modules/react-native-worklets-core'
+
 
 
   post_install do |installer|
