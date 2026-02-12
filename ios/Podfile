@@ -94,3 +94,4 @@ target 'Nomli' do
       :ccache_enabled => ccache_enabled?(podfile_properties),
     )
   end
+end
