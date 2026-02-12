@@ -22,6 +22,8 @@ target 'Nomli' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
+  pod 'RNWorklets', :path => '../node_modules/react-native-worklets-core'
+
   post_install do |installer|
     # Fix React Native pour New Arch
     react_native_post_install(
