@@ -19,9 +19,7 @@ target 'Nomli' do
     :path => config[:reactNativePath],
     :hermes_enabled => true,
     :fabric_enabled => true,
-    :app_path => "#{Pod::Config.instance.installation_root}/..",
-    # Exclure Flipper (incompatible New Arch en Release)
-    :flipper_configuration => FlipperConfiguration.disabled
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
   post_install do |installer|
