@@ -58,16 +58,21 @@ target 'Nomli' do
   post_install do |installer|
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
-        # 1. Empêcher Xcode de chercher de l'Intel (x86) sur ton Mac Silicon
+        # 1. Empêcher Xcode de chercher de l'Intel sur Mac Silicon
         config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "x86_64"
         
-        # 2. Fix headers
+        # 2. Fix headers généraux
         config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
 
-        # 3. 🛡️ CONFIGURATION DÉTERMINISTE POUR FOLLY 🛡️
-        # On définit tout ici pour éviter les erreurs de "SysUio" ou de "Coroutines"
-        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
+        # 3. 🛡️ CONFIGURATION CHIRURGICALE RCT-FOLLY 🛡️
         if target.name == 'RCT-Folly'
+          # Forcer C++17 (C++20 fait planter json_pointer sur M1)
+          config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+          
+          # Désactiver Header Maps pour éviter les conflits de chemins
+          config.build_settings['USE_HEADERMAP'] = 'NO'
+
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
           config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_NO_CONFIG=1'
           config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_MOBILE=1'
           config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_USE_LIBCPP=1'
@@ -76,7 +81,6 @@ target 'Nomli' do
           config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_CFG_NO_COROUTINES=1'
           config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_HAS_COROUTINES=0'
           
-          # On remet ton ancien fix de header paths qui aidait bien
           config.build_settings['HEADER_SEARCH_PATHS'] ||= '$(inherited)'
           config.build_settings['HEADER_SEARCH_PATHS'] += " $(PODS_ROOT)/RCT-Folly/folly"
         end
@@ -90,4 +94,3 @@ target 'Nomli' do
       :ccache_enabled => ccache_enabled?(podfile_properties),
     )
   end
-end
