@@ -1,0 +1,5 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -workspace Nomli.xcworkspace -scheme Nomli -configuration Debug -destination "platform=iOS Simulator,id=A76A584B-354B-43CE-BB4B-3CF9854266D3" -derivedDataPath ./build build
+
+2026-02-12 17:47:35.179 xcodebuild[93522:721571] Writing error result bundle to /var/folders/jc/k34776q96hx81f2_vsn6sw9c0000gn/T/ResultBundle_2026-12-02_17-47-0035.xcresult
+xcodebuild: error: 'Nomli.xcworkspace' does not exist.
