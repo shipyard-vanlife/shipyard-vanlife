@@ -60,11 +60,22 @@ target 'Nomli' do
         config.build_settings['SWIFT_VERSION'] = '5.0'
         config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
         
-        # 6️⃣ FIX warnings Hermes
+        # 6️⃣ FIX warnings et erreurs strictes
         config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
+        config.build_settings['GCC_TREAT_WARNINGS_AS_ERRORS'] = 'NO'
+        config.build_settings['CLANG_WARN_STRICT_PROTOTYPES'] = 'NO'
+        
+        # 7️⃣ FIX spécifique React-perflogger et autres modules React Native
+        if target.name.start_with?('React-') || target.name == 'RCT-Folly'
+          config.build_settings['OTHER_CPLUSPLUSFLAGS'] ||= ['$(inherited)']
+          config.build_settings['OTHER_CPLUSPLUSFLAGS'] << '-Wno-error'
+          config.build_settings['OTHER_CPLUSPLUSFLAGS'] << '-Wno-unused-variable'
+          config.build_settings['OTHER_CPLUSPLUSFLAGS'] << '-Wno-unused-function'
+          config.build_settings['OTHER_CPLUSPLUSFLAGS'] << '-Wno-unreachable-code'
+        end
       end
       
-      # 7️⃣ FIX React-Codegen spécifique New Arch
+      # 8️⃣ FIX React-Codegen spécifique New Arch
       if target.name == 'React-Codegen'
         target.build_configurations.each do |config|
           config.build_settings['HEADER_SEARCH_PATHS'] ||= ['$(inherited)']
@@ -73,7 +84,7 @@ target 'Nomli' do
       end
     end
     
-    # 8️⃣ Force deployment target sur le projet principal
+    # 9️⃣ Force deployment target sur le projet principal
     installer.pods_project.build_configurations.each do |config|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
     end
