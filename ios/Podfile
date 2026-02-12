@@ -73,12 +73,9 @@ target 'Nomli' do
       end
     end
     
-    # 8️⃣ Force deployment target sur le projet principal aussi
+    # 8️⃣ Force deployment target sur le projet principal
     installer.pods_project.build_configurations.each do |config|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
     end
-    
-    # 9️⃣ Expo modules post-install
-    __apply_Xcode_12_5_M1_post_install_workaround(installer)
   end
 end
