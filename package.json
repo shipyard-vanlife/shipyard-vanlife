@@ -55,6 +55,9 @@
     "zod": "^4.3.5"
   },
   "devDependencies": {
+    "@react-native-community/cli": "^20.1.1",
+    "@react-native-community/cli-platform-android": "^20.1.1",
+    "@react-native-community/cli-platform-ios": "^20.1.1",
     "@types/react": "~19.1.0",
     "prettier": "^3.8.0",
     "typescript": "~5.9.2"
