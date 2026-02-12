@@ -33,6 +33,9 @@ target 'Nomli' do
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
         
+        # 🔥 FORCE iOS 13.4 EN PREMIER (avant tout)
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.4'
+        
         # 1️⃣ ARCHITECTURE : Seulement arm64 pour M1
         config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'i386 x86_64'
         config.build_settings['ONLY_ACTIVE_ARCH'] = 'NO'
@@ -50,7 +53,6 @@ target 'Nomli' do
         config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FOLLY_HAVE_CLOCK_GETTIME=1'
         
         # 4️⃣ AUTRES OPTIMISATIONS
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.4'
         config.build_settings['ENABLE_BITCODE'] = 'NO'
         config.build_settings['COMPILER_INDEX_STORE_ENABLE'] = 'NO'
         
@@ -71,7 +73,12 @@ target 'Nomli' do
       end
     end
     
-    # 8️⃣ Expo modules post-install
+    # 8️⃣ Force deployment target sur le projet principal aussi
+    installer.pods_project.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.4'
+    end
+    
+    # 9️⃣ Expo modules post-install
     __apply_Xcode_12_5_M1_post_install_workaround(installer)
   end
 end
