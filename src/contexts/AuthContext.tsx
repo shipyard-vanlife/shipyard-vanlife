@@ -10,9 +10,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Timeout de sécurité : si Supabase ne répond pas en 5s, on continue quand même
+    const timeout = setTimeout(() => {
+      console.warn('[AuthProvider] Timeout - forcing loading to false')
+      setLoading(false)
+    }, 5000)
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      clearTimeout(timeout)
       setUser(session?.user ? { id: session.user.id, email: session.user.email || '' } : null)
+      setLoading(false)
+    }).catch((error) => {
+      clearTimeout(timeout)
+      console.error('[AuthProvider] Failed to get session:', error)
       setLoading(false)
     })
 
@@ -23,7 +34,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ? { id: session.user.id, email: session.user.email || '' } : null)
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      clearTimeout(timeout)
+      subscription.unsubscribe()
+    }
   }, [])
 
   return <AuthContext.Provider value={{ user, loading }}>{children}</AuthContext.Provider>

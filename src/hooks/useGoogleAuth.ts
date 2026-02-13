@@ -6,8 +6,12 @@ let isConfigured = false
 
 const ensureConfigured = () => {
   if (!isConfigured) {
+    const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID
+    if (!webClientId) {
+      throw new Error('EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID manquant')
+    }
     GoogleSignin.configure({
-      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+      webClientId,
       offlineAccess: true,
     })
     isConfigured = true
@@ -17,15 +21,9 @@ const ensureConfigured = () => {
 export const useGoogleAuth = () => {
   const signInWithGoogle = async () => {
     try {
-      // Configure only when actually needed (lazy init)
       ensureConfigured()
 
-      console.log('🔐 Starting Google Sign In...')
-
-      // Check if device supports Google Play Services (iOS always does)
-      await GoogleSignin.hasPlayServices()
-
-      // Sign in with Google
+      // Sign in with Google (hasPlayServices() crash sur iOS, on skip)
       const userInfo = await GoogleSignin.signIn()
       console.log('✅ Google Sign In successful:', userInfo)
 
