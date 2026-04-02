@@ -45,6 +45,8 @@ export const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
     )
   }
 
+  // Envoyer les invitations 
+
   const handleSend = () => {
     if (!activityId || selectedFriends.length === 0) return
 
